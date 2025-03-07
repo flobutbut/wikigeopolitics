@@ -1,0 +1,52 @@
+{
+  "id": "vanuatu",
+  "title": "Vanuatu",
+  "flag": "🇻🇺",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "République parlementaire"
+    },
+    {
+      "title": "Président",
+      "value": "Nikenike Vurobaravu"
+    },
+    {
+      "title": "Premier ministre",
+      "value": "Charlot Salwai"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "934 millions de dollars" },
+        { "key": "Population", "value": "307 150" },
+        { "key": "Revenus médiants", "value": "3 170 dollars" },
+        { "key": "Superficie", "value": "12 189 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "histoire",
+      "title": "Histoire",
+      "expanded": false,
+      "content": "Le Vanuatu a été peuplé il y a environ 3 000 ans par des peuples austronésiens. L'explorateur portugais Pedro Fernandes de Queirós fut le premier Européen à découvrir ces îles en 1606. Au XIXe siècle, les îles furent colonisées par les Français et les Britanniques, créant en 1906 un condominium unique appelé les Nouvelles-Hébrides. Le pays a obtenu son indépendance le 30 juillet 1980 sous le nom de Vanuatu, qui signifie 'notre terre' en plusieurs langues locales. Depuis, le Vanuatu a maintenu une politique étrangère non alignée et a mis l'accent sur la préservation de sa culture traditionnelle.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Vanuatu"
+    },
+    {
+      "id": "politique",
+      "title": "Système politique",
+      "expanded": false,
+      "content": "Le Vanuatu est une république parlementaire où le président, élu par un collège électoral, a principalement un rôle cérémoniel. Le Premier ministre est le chef du gouvernement. Le Parlement est monocaméral avec 52 membres élus pour un mandat de quatre ans. Le système politique du Vanuatu est caractérisé par une grande instabilité, avec de fréquents votes de défiance et des changements de gouvernement. Le pays reconnaît également le rôle des chefs traditionnels à travers le Malvatumauri (Conseil national des chefs).",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Politique_au_Vanuatu"
+    }
+  ],
+  "coalitions": [
+    { "id": "commonwealth", "title": "Commonwealth" },
+    { "id": "francophonie", "title": "Organisation internationale de la Francophonie" },
+    { "id": "un", "title": "ONU" },
+    { "id": "nam", "title": "Mouvement des non-alignés" },
+    { "id": "pif", "title": "Forum des îles du Pacifique" }
+  ]
+} 

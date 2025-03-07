@@ -1,0 +1,46 @@
+{
+  "id": "micronesia",
+  "title": "Micronésie",
+  "flag": "🇫🇲",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "République fédérale"
+    },
+    {
+      "title": "Président",
+      "value": "Wesley Simina"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "402 millions de dollars" },
+        { "key": "Population", "value": "113 131" },
+        { "key": "Revenus médiants", "value": "3 680 dollars" },
+        { "key": "Superficie", "value": "702 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "histoire",
+      "title": "Histoire",
+      "expanded": false,
+      "content": "Les îles de la Micronésie ont été peuplées il y a environ 4 000 ans par des migrants austronésiens. Les premiers Européens à les visiter furent les Espagnols au XVIe siècle. Au XIXe siècle, les îles furent colonisées successivement par l'Espagne, l'Allemagne et le Japon. Après la Seconde Guerre mondiale, elles devinrent un territoire sous tutelle des Nations Unies administré par les États-Unis, connu sous le nom de Territoire sous tutelle des îles du Pacifique. Les États fédérés de Micronésie ont obtenu leur indépendance le 3 novembre 1986, mais maintiennent une association libre avec les États-Unis à travers le Compact of Free Association, qui leur fournit une aide financière et une protection militaire.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/%C3%89tats_f%C3%A9d%C3%A9r%C3%A9s_de_Micron%C3%A9sie"
+    },
+    {
+      "id": "politique",
+      "title": "Système politique",
+      "expanded": false,
+      "content": "Les États fédérés de Micronésie sont une république fédérale composée de quatre États : Chuuk, Kosrae, Pohnpei et Yap. Le président est à la fois chef d'État et chef de gouvernement, élu par le Congrès parmi ses membres pour un mandat de quatre ans. Le Congrès est monocaméral avec 14 membres : 10 élus pour deux ans (un par district électoral) et 4 élus pour quatre ans (un par État). Le système politique micronésien combine démocratie moderne et structures traditionnelles. Chaque État a sa propre constitution, son gouvernement et ses coutumes locales.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Politique_des_%C3%89tats_f%C3%A9d%C3%A9r%C3%A9s_de_Micron%C3%A9sie"
+    }
+  ],
+  "coalitions": [
+    { "id": "un", "title": "ONU" },
+    { "id": "acp", "title": "ACP" },
+    { "id": "pif", "title": "Forum des îles du Pacifique" }
+  ]
+} 

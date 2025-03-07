@@ -1,0 +1,46 @@
+{
+  "id": "marshall_islands",
+  "title": "Îles Marshall",
+  "flag": "🇲🇭",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "République présidentielle"
+    },
+    {
+      "title": "Président",
+      "value": "Hilda Heine"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "228 millions de dollars" },
+        { "key": "Population", "value": "59 194" },
+        { "key": "Revenus médiants", "value": "4 630 dollars" },
+        { "key": "Superficie", "value": "181 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "histoire",
+      "title": "Histoire",
+      "expanded": false,
+      "content": "Les Îles Marshall ont été peuplées par des migrants micronésiens il y a environ 2 000 ans. Elles furent découvertes par l'explorateur espagnol Alonso de Salazar en 1526 et nommées d'après le navigateur britannique John Marshall qui les visita en 1788. Au XIXe siècle, elles devinrent une colonie allemande, puis furent occupées par le Japon après la Première Guerre mondiale. Pendant la Seconde Guerre mondiale, elles furent le théâtre d'importantes batailles du Pacifique. Après la guerre, elles devinrent partie du Territoire sous tutelle des îles du Pacifique administré par les États-Unis. Entre 1946 et 1958, les États-Unis y menèrent 67 essais nucléaires, notamment sur les atolls de Bikini et d'Enewetak. Les Îles Marshall ont obtenu leur indépendance le 21 octobre 1986 dans le cadre d'un accord de libre association avec les États-Unis.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/%C3%8Eles_Marshall"
+    },
+    {
+      "id": "politique",
+      "title": "Système politique",
+      "expanded": false,
+      "content": "Les Îles Marshall sont une république présidentielle où le président est à la fois chef d'État et chef de gouvernement, élu par le Parlement. Le Parlement (Nitijela) est monocaméral avec 33 membres élus pour un mandat de quatre ans. Il existe également un conseil consultatif des chefs traditionnels (Iroij) qui a un rôle consultatif sur les questions relatives aux coutumes et aux terres. Le système politique marshallais combine démocratie moderne et structures traditionnelles. Les Îles Marshall maintiennent des liens étroits avec les États-Unis, qui assurent leur défense et fournissent une aide économique substantielle.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Politique_des_%C3%8Eles_Marshall"
+    }
+  ],
+  "coalitions": [
+    { "id": "un", "title": "ONU" },
+    { "id": "acp", "title": "ACP" },
+    { "id": "pif", "title": "Forum des îles du Pacifique" }
+  ]
+} 

@@ -1,0 +1,51 @@
+{
+  "id": "solomon_islands",
+  "title": "Îles Salomon",
+  "flag": "🇸🇧",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "Monarchie constitutionnelle parlementaire"
+    },
+    {
+      "title": "Chef d'État",
+      "value": "Roi Charles III (représenté par Sir David Vunagi, Gouverneur général)"
+    },
+    {
+      "title": "Premier ministre",
+      "value": "Jeremiah Manele"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "1,58 milliard de dollars" },
+        { "key": "Population", "value": "707 851" },
+        { "key": "Revenus médiants", "value": "2 340 dollars" },
+        { "key": "Superficie", "value": "28 400 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "histoire",
+      "title": "Histoire",
+      "expanded": false,
+      "content": "Les Îles Salomon ont été peuplées il y a environ 30 000 ans. L'explorateur espagnol Álvaro de Mendaña de Neira fut le premier Européen à les découvrir en 1568 et les nomma d'après le roi biblique Salomon. Elles devinrent un protectorat britannique en 1893. Pendant la Seconde Guerre mondiale, elles furent le théâtre de violents combats entre les forces américaines et japonaises, notamment lors de la bataille de Guadalcanal. Les îles ont obtenu leur indépendance le 7 juillet 1978. Entre 1998 et 2003, le pays a connu des tensions ethniques qui ont nécessité l'intervention d'une force régionale de maintien de la paix.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/%C3%8Eles_Salomon"
+    },
+    {
+      "id": "politique",
+      "title": "Système politique",
+      "expanded": false,
+      "content": "Les Îles Salomon sont une monarchie constitutionnelle avec un système parlementaire. Le monarque britannique est le chef d'État, représenté par un gouverneur général. Le Premier ministre est le chef du gouvernement. Le Parlement national est monocaméral avec 50 membres élus pour un mandat de quatre ans. Le pays est divisé en neuf provinces et un territoire (la capitale Honiara). En 2019, les Îles Salomon ont établi des relations diplomatiques avec la Chine, rompant ainsi leurs liens avec Taïwan, ce qui a suscité des tensions internes et régionales.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Politique_des_%C3%8Eles_Salomon"
+    }
+  ],
+  "coalitions": [
+    { "id": "commonwealth", "title": "Commonwealth" },
+    { "id": "un", "title": "ONU" },
+    { "id": "acp", "title": "ACP" },
+    { "id": "pif", "title": "Forum des îles du Pacifique" }
+  ]
+} 

@@ -1,0 +1,51 @@
+{
+  "id": "samoa",
+  "title": "Samoa",
+  "flag": "🇼🇸",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "République parlementaire"
+    },
+    {
+      "title": "Chef d'État",
+      "value": "Tuimalealiifano Vaaletoa Sualauvi II"
+    },
+    {
+      "title": "Premier ministre",
+      "value": "Fiamē Naomi Mataʻafa"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "852 millions de dollars" },
+        { "key": "Population", "value": "198 410" },
+        { "key": "Revenus médiants", "value": "6 610 dollars" },
+        { "key": "Superficie", "value": "2 842 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "histoire",
+      "title": "Histoire",
+      "expanded": false,
+      "content": "Les îles Samoa ont été peuplées il y a environ 3 000 ans par des navigateurs austronésiens. Les premiers Européens à les visiter furent les Néerlandais en 1722, suivis par les Français en 1768. Au XIXe siècle, les îles devinrent un enjeu de rivalité entre les puissances coloniales. En 1899, les Samoa furent divisées entre l'Allemagne (Samoa occidentales) et les États-Unis (Samoa orientales). Après la Première Guerre mondiale, les Samoa occidentales passèrent sous mandat néo-zélandais. Le pays a obtenu son indépendance le 1er janvier 1962, devenant le premier État polynésien indépendant. En 1997, le pays a changé son nom de 'Samoa occidentales' à simplement 'Samoa'.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Samoa"
+    },
+    {
+      "id": "politique",
+      "title": "Système politique",
+      "expanded": false,
+      "content": "Les Samoa sont une république parlementaire où le chef d'État (O le Ao o le Malo) est élu par l'Assemblée législative pour un mandat de cinq ans. Le Premier ministre est le chef du gouvernement. L'Assemblée législative (Fono) est composée de 51 membres élus pour un mandat de cinq ans. Le système politique samoan est fortement influencé par le fa'amatai, le système traditionnel de chefferie. Seuls les matai (chefs de famille) peuvent être élus au Parlement. En 2021, Fiamē Naomi Mataʻafa est devenue la première femme Premier ministre du pays, marquant un tournant historique.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Politique_des_Samoa"
+    }
+  ],
+  "coalitions": [
+    { "id": "commonwealth", "title": "Commonwealth" },
+    { "id": "un", "title": "ONU" },
+    { "id": "acp", "title": "ACP" },
+    { "id": "pif", "title": "Forum des îles du Pacifique" }
+  ]
+} 

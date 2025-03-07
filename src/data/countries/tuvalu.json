@@ -1,0 +1,51 @@
+{
+  "id": "tuvalu",
+  "title": "Tuvalu",
+  "flag": "🇹🇻",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "Monarchie constitutionnelle parlementaire"
+    },
+    {
+      "title": "Chef d'État",
+      "value": "Roi Charles III (représenté par Tofiga Vaevalu Falani, Gouverneur général)"
+    },
+    {
+      "title": "Premier ministre",
+      "value": "Feleti Teo"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "53 millions de dollars" },
+        { "key": "Population", "value": "11 204" },
+        { "key": "Revenus médiants", "value": "5 840 dollars" },
+        { "key": "Superficie", "value": "26 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "histoire",
+      "title": "Histoire",
+      "expanded": false,
+      "content": "Tuvalu a été peuplé par des Polynésiens il y a environ 2 000 ans. Les îles furent découvertes par l'explorateur espagnol Álvaro de Mendaña en 1568. Au XIXe siècle, des commerçants et des missionnaires européens s'y installèrent. En 1892, les îles, alors connues sous le nom d'îles Ellice, devinrent un protectorat britannique avec les îles Gilbert (aujourd'hui Kiribati). En 1916, elles formèrent ensemble la colonie des îles Gilbert et Ellice. En 1974, les Tuvaluans votèrent pour la séparation d'avec les îles Gilbert, et Tuvalu obtint son indépendance le 1er octobre 1978. Aujourd'hui, Tuvalu est l'un des pays les plus menacés par le changement climatique et l'élévation du niveau de la mer.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Tuvalu"
+    },
+    {
+      "id": "politique",
+      "title": "Système politique",
+      "expanded": false,
+      "content": "Tuvalu est une monarchie constitutionnelle avec un système parlementaire. Le monarque britannique est le chef d'État, représenté par un gouverneur général. Le Premier ministre est le chef du gouvernement. Le Parlement (Fale i Fono) est monocaméral avec 16 membres élus pour un mandat de quatre ans. Il n'y a pas de partis politiques formels à Tuvalu ; les élections se font sur la base de la réputation personnelle et des liens familiaux. Les décisions politiques sont fortement influencées par les falekaupule (conseils insulaires traditionnels).",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Politique_des_Tuvalu"
+    }
+  ],
+  "coalitions": [
+    { "id": "commonwealth", "title": "Commonwealth" },
+    { "id": "un", "title": "ONU" },
+    { "id": "acp", "title": "ACP" },
+    { "id": "pif", "title": "Forum des îles du Pacifique" }
+  ]
+} 

@@ -1,0 +1,52 @@
+{
+  "id": "new_zealand",
+  "title": "Nouvelle-Zélande",
+  "flag": "🇳🇿",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "Monarchie constitutionnelle parlementaire"
+    },
+    {
+      "title": "Chef d'État",
+      "value": "Roi Charles III (représenté par Dame Cindy Kiro, Gouverneure générale)"
+    },
+    {
+      "title": "Premier ministre",
+      "value": "Christopher Luxon"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "212 milliards de dollars" },
+        { "key": "Population", "value": "5 122 600" },
+        { "key": "Revenus médiants", "value": "56 836 dollars néo-zélandais" },
+        { "key": "Superficie", "value": "268 021 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "histoire",
+      "title": "Histoire",
+      "expanded": false,
+      "content": "La Nouvelle-Zélande a été colonisée par les Maoris entre 1250 et 1300. L'explorateur néerlandais Abel Tasman fut le premier Européen à découvrir la Nouvelle-Zélande en 1642. Le navigateur britannique James Cook cartographia presque entièrement les îles en 1769-1770. À partir de 1788, des commerçants et des missionnaires s'installèrent dans la région. En 1840, le Traité de Waitangi fut signé entre la Couronne britannique et les chefs maoris, établissant la souveraineté britannique. La Nouvelle-Zélande est devenue un dominion en 1907 et a acquis une indépendance complète en 1947 avec l'adoption du Statut de Westminster.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Nouvelle-Z%C3%A9lande"
+    },
+    {
+      "id": "politique",
+      "title": "Système politique",
+      "expanded": false,
+      "content": "La Nouvelle-Zélande est une monarchie constitutionnelle avec un système parlementaire de gouvernement. Le monarque britannique est le chef d'État, représenté par un gouverneur général. Le pouvoir exécutif est exercé par le Cabinet, dirigé par le Premier ministre. Le Parlement est monocaméral, composé de la Chambre des représentants avec 120 membres élus pour un mandat de trois ans selon un système de représentation proportionnelle mixte.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Politique_en_Nouvelle-Z%C3%A9lande"
+    }
+  ],
+  "coalitions": [
+    { "id": "commonwealth", "title": "Commonwealth" },
+    { "id": "apec", "title": "APEC" },
+    { "id": "oecd", "title": "OCDE" },
+    { "id": "un", "title": "ONU" },
+    { "id": "fiveeyes", "title": "Five Eyes" }
+  ]
+} 

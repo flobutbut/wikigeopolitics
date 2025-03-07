@@ -1,0 +1,51 @@
+{
+  "id": "tonga",
+  "title": "Tonga",
+  "flag": "🇹🇴",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "Monarchie constitutionnelle"
+    },
+    {
+      "title": "Chef d'État",
+      "value": "Roi Tupou VI"
+    },
+    {
+      "title": "Premier ministre",
+      "value": "Siaosi Sovaleni"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "512 millions de dollars" },
+        { "key": "Population", "value": "105 780" },
+        { "key": "Revenus médiants", "value": "6 490 dollars" },
+        { "key": "Superficie", "value": "747 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "histoire",
+      "title": "Histoire",
+      "expanded": false,
+      "content": "Les Tonga ont été peuplées il y a environ 3 000 ans par des peuples austronésiens. Au XIIIe siècle, l'Empire Tu'i Tonga s'étendait sur une grande partie du Pacifique. Les premiers Européens à visiter les îles furent les Néerlandais Willem Schouten et Jacob Le Maire en 1616. Le navigateur britannique James Cook y séjourna en 1773 et 1777, donnant aux îles le nom d'îles des Amis. Contrairement à la plupart des nations du Pacifique, les Tonga n'ont jamais été formellement colonisées, bien qu'elles soient devenues un protectorat britannique en 1900. Le pays a retrouvé sa pleine indépendance en 1970. Les Tonga sont la seule monarchie du Pacifique et l'une des plus anciennes dynasties continues au monde.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Tonga"
+    },
+    {
+      "id": "politique",
+      "title": "Système politique",
+      "expanded": false,
+      "content": "Les Tonga sont une monarchie constitutionnelle où le roi est le chef d'État. Le Premier ministre, nommé par le roi sur recommandation de l'Assemblée législative, est le chef du gouvernement. L'Assemblée législative est composée de 26 membres : 17 élus au suffrage universel, 9 nobles élus par leurs pairs. Des réformes démocratiques importantes ont été mises en œuvre en 2010, donnant plus de pouvoir aux représentants élus. Malgré ces réformes, la monarchie et la noblesse conservent une influence considérable dans la société tongienne.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Politique_des_Tonga"
+    }
+  ],
+  "coalitions": [
+    { "id": "commonwealth", "title": "Commonwealth" },
+    { "id": "un", "title": "ONU" },
+    { "id": "acp", "title": "ACP" },
+    { "id": "pif", "title": "Forum des îles du Pacifique" }
+  ]
+} 

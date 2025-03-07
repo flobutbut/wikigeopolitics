@@ -1,89 +1,184 @@
-   {
-     "countries": [
-       {
-         "id": "france",
-         "title": "France",
-         "flag": "🇫🇷"
-       },
-       {
-         "id": "germany",
-         "title": "Allemagne",
-         "flag": "🇩🇪"
-       },
-       {
-         "id": "usa",
-         "title": "États-Unis",
-         "flag": "🇺🇸"
-       },
-       {
-         "id": "china",
-         "title": "Chine",
-         "flag": "🇨🇳"
-       },
-       {
-         "id": "japan",
-         "title": "Japon",
-         "flag": "🇯🇵"
-       },
-       {
-         "id": "russia",
-         "title": "Russie",
-         "flag": "🇷🇺"
-       },
-       {
-         "id": "india",
-         "title": "Inde",
-         "flag": "🇮🇳"
-       },
-       {
-         "id": "brazil",
-         "title": "Brésil",
-         "flag": "🇧🇷"
-       },
-       {
-         "id": "canada",
-         "title": "Canada",
-         "flag": "🇨🇦"
-       },
-       {
-         "id": "australia",
-         "title": "Australie",
-         "flag": "🇦🇺"
-       },
-       {
-         "id": "south-korea",
-         "title": "Corée du Sud",
-         "flag": "🇰🇷"
-       },
-       {
-         "id": "south-africa",
-         "title": "Afrique du Sud",
-         "flag": "🇿🇦"
-       },
-       {
-         "id": "saudi-arabia",
-         "title": "Arabie Saoudite",
-         "flag": "🇸🇦"
-       },
-       {
-         "id": "north-korea",
-         "title": "Corée du Nord",
-         "flag": "🇰🇵"
-       },
-       {
-         "id": "united-kingdom",
-         "title": "Royaume-Uni",
-         "flag": "🇬🇧"
-       },
-       {
-         "id": "iran",
-         "title": "Iran",
-         "flag": "🇮🇷"
-       },
-       {
-         "id": "thailand",
-         "title": "Thaïlande",
-         "flag": "🇹🇭"
-       }
-     ]
-   }
+{
+  "countries": [
+    {
+      "id": "france",
+      "title": "France",
+      "flag": "🇫🇷",
+      "continent": "europe"
+    },
+    {
+      "id": "germany",
+      "title": "Allemagne",
+      "flag": "🇩🇪",
+      "continent": "europe"
+    },
+    {
+      "id": "usa",
+      "title": "États-Unis",
+      "flag": "🇺🇸",
+      "continent": "northAmerica"
+    },
+    {
+      "id": "china",
+      "title": "Chine",
+      "flag": "🇨🇳",
+      "continent": "asia"
+    },
+    {
+      "id": "japan",
+      "title": "Japon",
+      "flag": "🇯🇵",
+      "continent": "asia"
+    },
+    {
+      "id": "russia",
+      "title": "Russie",
+      "flag": "🇷🇺",
+      "continent": "europe"
+    },
+    {
+      "id": "india",
+      "title": "Inde",
+      "flag": "🇮🇳",
+      "continent": "asia"
+    },
+    {
+      "id": "brazil",
+      "title": "Brésil",
+      "flag": "🇧🇷",
+      "continent": "southAmerica"
+    },
+    {
+      "id": "canada",
+      "title": "Canada",
+      "flag": "🇨🇦",
+      "continent": "northAmerica"
+    },
+    {
+      "id": "south-korea",
+      "title": "Corée du Sud",
+      "flag": "🇰🇷",
+      "continent": "asia"
+    },
+    {
+      "id": "south-africa",
+      "title": "Afrique du Sud",
+      "flag": "🇿🇦",
+      "continent": "africa"
+    },
+    {
+      "id": "saudi-arabia",
+      "title": "Arabie Saoudite",
+      "flag": "🇸🇦",
+      "continent": "asia"
+    },
+    {
+      "id": "north-korea",
+      "title": "Corée du Nord",
+      "flag": "🇰🇵",
+      "continent": "asia"
+    },
+    {
+      "id": "united-kingdom",
+      "title": "Royaume-Uni",
+      "flag": "🇬🇧",
+      "continent": "europe"
+    },
+    {
+      "id": "iran",
+      "title": "Iran",
+      "flag": "🇮🇷",
+      "continent": "asia"
+    },
+    {
+      "id": "thailand",
+      "title": "Thaïlande",
+      "flag": "🇹🇭",
+      "continent": "asia"
+    },
+    {
+      "id": "australia",
+      "title": "Australie",
+      "flag": "🇦🇺",
+      "continent": "oceania"
+    },
+    {
+      "id": "new_zealand",
+      "title": "Nouvelle-Zélande",
+      "flag": "🇳🇿",
+      "continent": "oceania"
+    },
+    {
+      "id": "papua_new_guinea",
+      "title": "Papouasie-Nouvelle-Guinée",
+      "flag": "🇵🇬",
+      "continent": "oceania"
+    },
+    {
+      "id": "fiji",
+      "title": "Fidji",
+      "flag": "🇫🇯",
+      "continent": "oceania"
+    },
+    {
+      "id": "solomon_islands",
+      "title": "Îles Salomon",
+      "flag": "🇸🇧",
+      "continent": "oceania"
+    },
+    {
+      "id": "vanuatu",
+      "title": "Vanuatu",
+      "flag": "🇻🇺",
+      "continent": "oceania"
+    },
+    {
+      "id": "samoa",
+      "title": "Samoa",
+      "flag": "🇼🇸",
+      "continent": "oceania"
+    },
+    {
+      "id": "kiribati",
+      "title": "Kiribati",
+      "flag": "🇰🇮",
+      "continent": "oceania"
+    },
+    {
+      "id": "tonga",
+      "title": "Tonga",
+      "flag": "🇹🇴",
+      "continent": "oceania"
+    },
+    {
+      "id": "tuvalu",
+      "title": "Tuvalu",
+      "flag": "🇹🇻",
+      "continent": "oceania"
+    },
+    {
+      "id": "micronesia",
+      "title": "Micronésie",
+      "flag": "🇫🇲",
+      "continent": "oceania"
+    },
+    {
+      "id": "marshall_islands",
+      "title": "Îles Marshall",
+      "flag": "🇲🇭",
+      "continent": "oceania"
+    },
+    {
+      "id": "palau",
+      "title": "Palau",
+      "flag": "🇵🇼",
+      "continent": "oceania"
+    },
+    {
+      "id": "nauru",
+      "title": "Nauru",
+      "flag": "🇳🇷",
+      "continent": "oceania"
+    }
+  ]
+}

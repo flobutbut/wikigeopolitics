@@ -171,7 +171,7 @@ onMounted(() => {
 .aside__section {
   margin-bottom: var(--spacing-lg);
   padding-left: var(--spacing-md);
-  padding-right: 0;
+  padding-right: var(--spacing-md);
 }
 
 .aside__menu {

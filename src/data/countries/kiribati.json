@@ -1,0 +1,47 @@
+{
+  "id": "kiribati",
+  "title": "Kiribati",
+  "flag": "🇰🇮",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "République présidentielle"
+    },
+    {
+      "title": "Président",
+      "value": "Taneti Maamau"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "227 millions de dollars" },
+        { "key": "Population", "value": "119 940" },
+        { "key": "Revenus médiants", "value": "2 220 dollars" },
+        { "key": "Superficie", "value": "811 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "histoire",
+      "title": "Histoire",
+      "expanded": false,
+      "content": "Kiribati a été peuplé par des migrants austronésiens il y a environ 3 000 ans. Le premier contact européen date de 1606 avec l'explorateur espagnol Pedro Fernandes de Queirós. Au XIXe siècle, les îles furent visitées par des baleiniers et des commerçants. En 1892, les îles Gilbert (partie nord de Kiribati) devinrent un protectorat britannique, puis une colonie en 1916 avec les îles Ellice (aujourd'hui Tuvalu). Kiribati a obtenu son indépendance le 12 juillet 1979. Le pays est confronté à des défis majeurs liés au changement climatique et à l'élévation du niveau de la mer, qui menacent son existence même.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Kiribati"
+    },
+    {
+      "id": "politique",
+      "title": "Système politique",
+      "expanded": false,
+      "content": "Kiribati est une république présidentielle où le président (Beretitenti) est à la fois chef d'État et chef de gouvernement. Il est élu au suffrage universel pour un maximum de trois mandats de quatre ans. Le Parlement (Maneaba ni Maungatabu) est monocaméral avec 46 membres élus pour quatre ans. Le système politique de Kiribati mêle démocratie moderne et traditions locales. Les décisions importantes sont souvent prises après consultation des unimane (anciens) dans les maneaba (maisons de réunion traditionnelles).",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Politique_des_Kiribati"
+    }
+  ],
+  "coalitions": [
+    { "id": "commonwealth", "title": "Commonwealth" },
+    { "id": "un", "title": "ONU" },
+    { "id": "acp", "title": "ACP" },
+    { "id": "pif", "title": "Forum des îles du Pacifique" }
+  ]
+} 

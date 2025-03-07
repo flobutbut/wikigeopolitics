@@ -1,0 +1,46 @@
+{
+  "id": "palau",
+  "title": "Palau",
+  "flag": "🇵🇼",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "République présidentielle"
+    },
+    {
+      "title": "Président",
+      "value": "Surangel Whipps Jr."
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "268 millions de dollars" },
+        { "key": "Population", "value": "18 024" },
+        { "key": "Revenus médiants", "value": "14 650 dollars" },
+        { "key": "Superficie", "value": "459 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "histoire",
+      "title": "Histoire",
+      "expanded": false,
+      "content": "Palau a été peuplé il y a environ 3 000 ans par des migrants d'Asie du Sud-Est. Les premiers Européens à visiter ces îles furent les Espagnols au XVIe siècle. En 1899, l'Espagne vendit Palau à l'Allemagne. Après la Première Guerre mondiale, le Japon reçut un mandat de la Société des Nations pour administrer les îles. Pendant la Seconde Guerre mondiale, Palau fut le théâtre de violents combats entre les forces américaines et japonaises. Après la guerre, les îles devinrent partie du Territoire sous tutelle des îles du Pacifique administré par les États-Unis. Palau a obtenu son indépendance le 1er octobre 1994, devenant ainsi la dernière partie du Territoire sous tutelle à accéder à l'indépendance. Le pays maintient un accord de libre association avec les États-Unis, qui assure sa défense et lui fournit une aide économique.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Palaos"
+    },
+    {
+      "id": "politique",
+      "title": "Système politique",
+      "expanded": false,
+      "content": "Palau est une république présidentielle où le président est à la fois chef d'État et chef de gouvernement, élu au suffrage universel pour un mandat de quatre ans. Le Parlement (Olbiil Era Kelulau) est bicaméral, composé du Sénat avec 13 membres et de la Chambre des délégués avec 16 membres, tous élus pour quatre ans. Le système politique de Palau combine démocratie moderne et structures traditionnelles. Le pays est divisé en 16 États, chacun avec son propre gouvernement et ses chefs traditionnels. Palau est connu pour ses politiques environnementales progressistes, notamment la création du premier sanctuaire de requins au monde en 2009.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Politique_des_Palaos"
+    }
+  ],
+  "coalitions": [
+    { "id": "un", "title": "ONU" },
+    { "id": "acp", "title": "ACP" },
+    { "id": "pif", "title": "Forum des îles du Pacifique" }
+  ]
+} 

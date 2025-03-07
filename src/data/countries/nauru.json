@@ -1,0 +1,47 @@
+{
+  "id": "nauru",
+  "title": "Nauru",
+  "flag": "🇳🇷",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "République parlementaire"
+    },
+    {
+      "title": "Président",
+      "value": "David Adeang"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "114 millions de dollars" },
+        { "key": "Population", "value": "10 834" },
+        { "key": "Revenus médiants", "value": "12 060 dollars" },
+        { "key": "Superficie", "value": "21 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "histoire",
+      "title": "Histoire",
+      "expanded": false,
+      "content": "Nauru a été peuplé par des Micronésiens et des Polynésiens il y a environ 3 000 ans. L'île fut découverte par le capitaine britannique John Fearn en 1798, qui la nomma Pleasant Island (Île Agréable). Au XIXe siècle, des commerçants et des missionnaires européens s'y installèrent. En 1888, l'île fut annexée par l'Allemagne. Après la Première Guerre mondiale, Nauru devint un mandat de la Société des Nations administré conjointement par l'Australie, la Nouvelle-Zélande et le Royaume-Uni. L'île est riche en phosphate, dont l'exploitation intensive a commencé au début du XXe siècle. Nauru a obtenu son indépendance le 31 janvier 1968. Dans les années 1970 et 1980, le pays connut une grande prospérité grâce aux revenus du phosphate, devenant brièvement le pays avec le PIB par habitant le plus élevé au monde. Cependant, l'épuisement des réserves de phosphate a conduit à une grave crise économique. Depuis 2001, Nauru accueille des centres de détention pour demandeurs d'asile pour le compte de l'Australie, une source importante de revenus mais aussi de controverses.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Nauru"
+    },
+    {
+      "id": "politique",
+      "title": "Système politique",
+      "expanded": false,
+      "content": "Nauru est une république parlementaire où le président est à la fois chef d'État et chef de gouvernement, élu par le Parlement parmi ses membres. Le Parlement est monocaméral avec 19 membres élus pour un mandat de trois ans. Il n'y a pas de partis politiques formels à Nauru ; les élections se font sur la base de la réputation personnelle et des liens familiaux. Le système politique de Nauru est caractérisé par une grande instabilité, avec de fréquents votes de défiance et des changements de gouvernement. Le pays est divisé en 14 districts administratifs regroupés en 8 circonscriptions électorales.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Politique_%C3%A0_Nauru"
+    }
+  ],
+  "coalitions": [
+    { "id": "commonwealth", "title": "Commonwealth" },
+    { "id": "un", "title": "ONU" },
+    { "id": "acp", "title": "ACP" },
+    { "id": "pif", "title": "Forum des îles du Pacifique" }
+  ]
+} 

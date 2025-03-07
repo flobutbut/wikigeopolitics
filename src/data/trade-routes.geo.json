@@ -1,0 +1,18 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Route commerciale Europe-Asie",
+        "volume": "Élevé",
+        "type": "Maritime"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [...]
+      }
+    },
+    // Autres routes...
+  ]
+}
