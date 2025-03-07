@@ -1,0 +1,608 @@
+{
+  "applicationStructure": {
+    "search": {
+      "enabled": true,
+      "placeholder": "Rechercher"
+    },
+    "mainNavigation": [
+      {
+        "id": "tous-les-pays",
+        "title": "Tous les pays",
+        "type": "mainCategory",
+        "toggleOptions": [
+          {
+            "id": "eaux-internationales",
+            "title": "Eaux internationales",
+            "enabled": false
+          },
+          {
+            "id": "fondieres-administratives",
+            "title": "Fondières administratives",
+            "enabled": true
+          },
+          {
+            "id": "frontieres-naturelles",
+            "title": "Frontières naturelles",
+            "enabled": true
+          }
+        ]
+      },
+      {
+        "id": "pays-du-monde",
+        "title": "Pays du monde",
+        "type": "mainCategory",
+        "items": [
+          {
+            "id": "pays-du-monde-list",
+            "title": "Pays du monde",
+            "hasSubmenu": true
+          }
+        ]
+      },
+      {
+        "id": "politique-et-regimes",
+        "title": "Politique et Régimes",
+        "type": "mainCategory",
+        "items": [
+          {
+            "id": "regime-des-etats",
+            "title": "Régime des états",
+            "hasSubmenu": true
+          },
+          {
+            "id": "relations-internationales",
+            "title": "Relations internationales",
+            "hasSubmenu": true
+          },
+          {
+            "id": "conflits-armes",
+            "title": "Conflits armés",
+            "hasSubmenu": true
+          }
+        ]
+      },
+      {
+        "id": "economie-et-ressources",
+        "title": "Économie et Ressources",
+        "type": "mainCategory",
+        "items": [
+          {
+            "id": "commerce-international",
+            "title": "Commerce international",
+            "hasSubmenu": true
+          },
+          {
+            "id": "exploitations-des-matieres-premieres",
+            "title": "Exploitations des matières premières",
+            "hasSubmenu": true
+          },
+          {
+            "id": "production-industriels",
+            "title": "Production industriels",
+            "hasSubmenu": true
+          },
+          {
+            "id": "transport-de-marchandise",
+            "title": "Transport de marchandise",
+            "hasSubmenu": true
+          }
+        ]
+      },
+      {
+        "id": "agriculture-et-environnement",
+        "title": "Agriculture et Environnement",
+        "type": "mainCategory",
+        "items": [
+          {
+            "id": "production-agricole",
+            "title": "Production agricole",
+            "hasSubmenu": true
+          },
+          {
+            "id": "gestion-des-ressources-naturelles",
+            "title": "Gestion des ressources naturelles et...",
+            "hasSubmenu": true
+          }
+        ]
+      },
+      {
+        "id": "technologie-et-innovation",
+        "title": "Technologie et Innovation",
+        "type": "mainCategory",
+        "items": [
+          {
+            "id": "technologies-de-linformation",
+            "title": "Technologies de l'information et de l...",
+            "hasSubmenu": true
+          },
+          {
+            "id": "spatial",
+            "title": "Spatial",
+            "hasSubmenu": true
+          }
+        ]
+      },
+      {
+        "id": "societe-et-demographie",
+        "title": "Société et Démographie",
+        "type": "mainCategory",
+        "items": [
+          {
+            "id": "demographie",
+            "title": "Démographie",
+            "hasSubmenu": true
+          },
+          {
+            "id": "migrations-des-populations",
+            "title": "Migrations des populations",
+            "hasSubmenu": true
+          },
+          {
+            "id": "tourisme",
+            "title": "Tourisme",
+            "hasSubmenu": true
+          }
+        ]
+      }
+    ],
+    "countryList": [
+      {
+        "id": "afghanistan",
+        "title": "Afghanistan",
+        "flag": "🇦🇫"
+      },
+      {
+        "id": "afrique-du-sud",
+        "title": "Afrique du sud",
+        "flag": "🇿🇦"
+      },
+      {
+        "id": "albanie",
+        "title": "Albanie",
+        "flag": "🇦🇱"
+      },
+      {
+        "id": "algerie",
+        "title": "Algérie",
+        "flag": "🇩🇿"
+      },
+      {
+        "id": "allemagne",
+        "title": "Allemagne",
+        "flag": "🇩🇪"
+      },
+      {
+        "id": "andorre",
+        "title": "Andorre",
+        "flag": "🇦🇩"
+      },
+      {
+        "id": "angola",
+        "title": "Angola",
+        "flag": "🇦🇴"
+      },
+      {
+        "id": "antigua-et-barbuda",
+        "title": "Antigua et Barbuda",
+        "flag": "🇦🇬"
+      },
+      {
+        "id": "arabie-saoudite",
+        "title": "Arabie Saoudite",
+        "flag": "🇸🇦"
+      },
+      {
+        "id": "argentine",
+        "title": "Argentine",
+        "flag": "🇦🇷"
+      },
+      {
+        "id": "armenie",
+        "title": "Arménie",
+        "flag": "🇦🇲"
+      },
+      {
+        "id": "australie",
+        "title": "Australie",
+        "flag": "🇦🇺"
+      },
+      {
+        "id": "autriche",
+        "title": "Autriche",
+        "flag": "🇦🇹"
+      },
+      {
+        "id": "azerbaidjan",
+        "title": "Azerbaïdjan",
+        "flag": "🇦🇿"
+      },
+      {
+        "id": "bahamas",
+        "title": "Bahamas",
+        "flag": "🇧🇸"
+      },
+      {
+        "id": "bahrein",
+        "title": "Bahreïn",
+        "flag": "🇧🇭"
+      },
+      {
+        "id": "bangladesh",
+        "title": "Bangladesh",
+        "flag": "🇧🇩"
+      },
+      {
+        "id": "barbade",
+        "title": "Barbade",
+        "flag": "🇧🇧"
+      },
+      {
+        "id": "belgique",
+        "title": "Belgique",
+        "flag": "🇧🇪"
+      },
+      {
+        "id": "belize",
+        "title": "Belize",
+        "flag": "🇧🇿"
+      },
+      {
+        "id": "benin",
+        "title": "Bénin",
+        "flag": "🇧🇯"
+      },
+      {
+        "id": "bhoutan",
+        "title": "Bhoutan",
+        "flag": "🇧🇹"
+      },
+      {
+        "id": "bielorussie",
+        "title": "Biélorussie",
+        "flag": "🇧🇾"
+      },
+      {
+        "id": "birmanie",
+        "title": "Birmanie",
+        "flag": "🇲🇲"
+      },
+      {
+        "id": "bolivie",
+        "title": "Bolivie",
+        "flag": "🇧🇴"
+      },
+      {
+        "id": "bosnie-herzegovine",
+        "title": "Bosnie Herzégovine",
+        "flag": "🇧🇦"
+      },
+      {
+        "id": "botswana",
+        "title": "Botswana",
+        "flag": "🇧🇼"
+      }
+    ],
+    "subPages": {
+      "relations-internationales": {
+        "title": "Relations internationales",
+        "searchEnabled": true,
+        "hasReturnButton": true,
+        "items": [
+          {
+            "id": "alliances-militaires",
+            "title": "Alliances militaires"
+          },
+          {
+            "id": "accords-de-libres-echanges",
+            "title": "Accords de libres échanges"
+          },
+          {
+            "id": "sanctions-internationales",
+            "title": "Sanctions internationales"
+          }
+        ]
+      },
+      "accords-de-libre-echanges": {
+        "title": "Accords de libre échanges",
+        "searchEnabled": true,
+        "hasReturnButton": true,
+        "organizations": [
+          { "id": "alena", "title": "Alena" },
+          { "id": "aleac", "title": "Aleac" },
+          { "id": "cacm", "title": "CACM" },
+          { "id": "caricom", "title": "Caricom" },
+          { "id": "aladi", "title": "Aladi" },
+          { "id": "can", "title": "CAN" },
+          { "id": "mercosur", "title": "Mercosur" },
+          { "id": "salvador-honduras-taiwan", "title": "Salvador-Honduras-Taïwan" },
+          { "id": "aele", "title": "AELE" },
+          { "id": "union-europeenne", "title": "Union Européenne" },
+          { "id": "eee", "title": "EEE" },
+          { "id": "uemoa", "title": "Uemoa" },
+          { "id": "cedeao", "title": "Cedeao" },
+          { "id": "cemac", "title": "Cemac" },
+          { "id": "cae", "title": "CAE" },
+          { "id": "cdaa", "title": "CDAA" },
+          { "id": "comesa", "title": "Comesa" },
+          { "id": "panarabe", "title": "Panarabe" },
+          { "id": "ccg", "title": "CCG" },
+          { "id": "oce", "title": "OCE" },
+          { "id": "safta", "title": "Safta" },
+          { "id": "asacr", "title": "Asacr" },
+          { "id": "sacu", "title": "SACU" }
+        ]
+      },
+      "conflits-armes": {
+        "title": "Conflits armés",
+        "searchEnabled": true,
+        "hasReturnButton": true,
+        "items": [
+          {
+            "id": "position-des-groupes-armes",
+            "title": "Position des groupes armés"
+          },
+          {
+            "id": "position-des-groupes-terroristes",
+            "title": "Position des groupes terroristes"
+          }
+        ]
+      },
+      "regime-des-etats": {
+        "title": "Régime des états",
+        "searchEnabled": true,
+        "hasReturnButton": true,
+        "items": [
+          {
+            "id": "republiques",
+            "title": "Républiques"
+          },
+          {
+            "id": "monarchies",
+            "title": "Monarchies"
+          },
+          {
+            "id": "federations",
+            "title": "Fédérations"
+          },
+          {
+            "id": "etats-unitaires",
+            "title": "États unitaires"
+          }
+        ]
+      },
+      "commerce-international": {
+        "title": "Commerce international",
+        "searchEnabled": true,
+        "hasReturnButton": true,
+        "items": [
+          {
+            "id": "exportations",
+            "title": "Exportations"
+          },
+          {
+            "id": "importations",
+            "title": "Importations"
+          },
+          {
+            "id": "balance-commerciale",
+            "title": "Balance commerciale"
+          },
+          {
+            "id": "partenaires-commerciaux",
+            "title": "Partenaires commerciaux"
+          }
+        ]
+      },
+      "exploitations-des-matieres-premieres": {
+        "title": "Exploitations des matières premières",
+        "searchEnabled": true,
+        "hasReturnButton": true,
+        "items": [
+          {
+            "id": "ressources-minieres",
+            "title": "Ressources minières"
+          },
+          {
+            "id": "ressources-energetiques",
+            "title": "Ressources énergétiques"
+          },
+          {
+            "id": "ressources-forestieres",
+            "title": "Ressources forestières"
+          }
+        ]
+      },
+      "production-industriels": {
+        "title": "Production industriels",
+        "searchEnabled": true,
+        "hasReturnButton": true,
+        "items": [
+          {
+            "id": "industries-lourdes",
+            "title": "Industries lourdes"
+          },
+          {
+            "id": "industries-legeres",
+            "title": "Industries légères"
+          },
+          {
+            "id": "haute-technologie",
+            "title": "Haute technologie"
+          }
+        ]
+      },
+      "transport-de-marchandise": {
+        "title": "Transport de marchandise",
+        "searchEnabled": true,
+        "hasReturnButton": true,
+        "items": [
+          {
+            "id": "transport-maritime",
+            "title": "Transport maritime"
+          },
+          {
+            "id": "transport-aerien",
+            "title": "Transport aérien"
+          },
+          {
+            "id": "transport-ferroviaire",
+            "title": "Transport ferroviaire"
+          },
+          {
+            "id": "transport-routier",
+            "title": "Transport routier"
+          }
+        ]
+      },
+      "production-agricole": {
+        "title": "Production agricole",
+        "searchEnabled": true,
+        "hasReturnButton": true,
+        "items": [
+          {
+            "id": "cultures-vivrieres",
+            "title": "Cultures vivrières"
+          },
+          {
+            "id": "cultures-commerciales",
+            "title": "Cultures commerciales"
+          },
+          {
+            "id": "elevage",
+            "title": "Élevage"
+          },
+          {
+            "id": "peche",
+            "title": "Pêche"
+          }
+        ]
+      },
+      "gestion-des-ressources-naturelles": {
+        "title": "Gestion des ressources naturelles",
+        "searchEnabled": true,
+        "hasReturnButton": true,
+        "items": [
+          {
+            "id": "ressources-en-eau",
+            "title": "Ressources en eau"
+          },
+          {
+            "id": "biodiversite",
+            "title": "Biodiversité"
+          },
+          {
+            "id": "forets",
+            "title": "Forêts"
+          },
+          {
+            "id": "sols",
+            "title": "Sols"
+          }
+        ]
+      },
+      "technologies-de-linformation": {
+        "title": "Technologies de l'information",
+        "searchEnabled": true,
+        "hasReturnButton": true,
+        "items": [
+          {
+            "id": "infrastructure-numerique",
+            "title": "Infrastructure numérique"
+          },
+          {
+            "id": "innovation-technologique",
+            "title": "Innovation technologique"
+          },
+          {
+            "id": "cybersecurite",
+            "title": "Cybersécurité"
+          }
+        ]
+      },
+      "spatial": {
+        "title": "Spatial",
+        "searchEnabled": true,
+        "hasReturnButton": true,
+        "items": [
+          {
+            "id": "programmes-spatiaux",
+            "title": "Programmes spatiaux"
+          },
+          {
+            "id": "satellites",
+            "title": "Satellites"
+          },
+          {
+            "id": "cooperation-spatiale",
+            "title": "Coopération spatiale"
+          }
+        ]
+      },
+      "demographie": {
+        "title": "Démographie",
+        "searchEnabled": true,
+        "hasReturnButton": true,
+        "items": [
+          {
+            "id": "population",
+            "title": "Population"
+          },
+          {
+            "id": "croissance-demographique",
+            "title": "Croissance démographique"
+          },
+          {
+            "id": "structure-par-age",
+            "title": "Structure par âge"
+          },
+          {
+            "id": "urbanisation",
+            "title": "Urbanisation"
+          }
+        ]
+      },
+      "migrations-des-populations": {
+        "title": "Migrations des populations",
+        "searchEnabled": true,
+        "hasReturnButton": true,
+        "items": [
+          {
+            "id": "emigration",
+            "title": "Émigration"
+          },
+          {
+            "id": "immigration",
+            "title": "Immigration"
+          },
+          {
+            "id": "refugies",
+            "title": "Réfugiés"
+          },
+          {
+            "id": "deplaces-internes",
+            "title": "Déplacés internes"
+          }
+        ]
+      },
+      "tourisme": {
+        "title": "Tourisme",
+        "searchEnabled": true,
+        "hasReturnButton": true,
+        "items": [
+          {
+            "id": "destinations-touristiques",
+            "title": "Destinations touristiques"
+          },
+          {
+            "id": "flux-touristiques",
+            "title": "Flux touristiques"
+          },
+          {
+            "id": "impact-economique",
+            "title": "Impact économique"
+          }
+        ]
+      }
+    }
+  }
+}
