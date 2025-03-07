@@ -1,0 +1,48 @@
+{
+  "id": "usa",
+  "title": "États-Unis",
+  "flag": "🇺🇸",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "République fédérale constitutionnelle"
+    },
+    {
+      "title": "Président",
+      "value": "Joe Biden"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "23 000 milliards de dollars" },
+        { "key": "Population", "value": "331 449 281" },
+        { "key": "Revenus médiants", "value": "68 703 dollars" },
+        { "key": "Superficie", "value": "9 833 517 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "histoire",
+      "title": "Histoire",
+      "expanded": false,
+      "content": "Les États-Unis d'Amérique sont nés de treize colonies britanniques établies sur la côte est. Après la Déclaration d'indépendance en 1776 et la guerre d'indépendance, les États-Unis sont devenus une nation indépendante. Au fil des siècles, le pays s'est étendu vers l'ouest, a traversé une guerre civile (1861-1865), et est devenu une superpuissance mondiale après la Seconde Guerre mondiale.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://wikipedia.org"
+    },
+    {
+      "id": "politique",
+      "title": "Système politique",
+      "expanded": false,
+      "content": "Les États-Unis ont un système politique fédéral avec une séparation des pouvoirs entre l'exécutif (président), le législatif (Congrès) et le judiciaire (Cour suprême). Le pays est composé de 50 États, chacun ayant son propre gouvernement et une certaine autonomie législative.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://wikipedia.org"
+    }
+  ],
+  "coalitions": [
+    { "id": "unesco", "title": "UNESCO" },
+    { "id": "otan", "title": "OTAN" },
+    { "id": "g7", "title": "G7" },
+    { "id": "g20", "title": "G20" },
+    { "id": "apec", "title": "APEC" }
+  ]
+} 

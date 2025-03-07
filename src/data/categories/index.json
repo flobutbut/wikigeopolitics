@@ -1,0 +1,31 @@
+{
+  "subPages": {
+    "regimes-politiques": {
+      "title": "Régimes politiques",
+      "searchEnabled": true,
+      "hasReturnButton": true,
+      "items": [
+        {
+          "id": "republique",
+          "title": "République"
+        },
+        {
+          "id": "monarchie",
+          "title": "Monarchie"
+        },
+        {
+          "id": "democratie",
+          "title": "Démocratie"
+        },
+        {
+          "id": "autocratie",
+          "title": "Autocratie"
+        },
+        {
+          "id": "dictature",
+          "title": "Dictature"
+        }
+      ]
+    }
+  }
+} 

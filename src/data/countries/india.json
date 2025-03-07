@@ -1,0 +1,43 @@
+{
+  "id": "india",
+  "title": "Inde",
+  "flag": "🇮🇳",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "République fédérale parlementaire"
+    },
+    {
+      "title": "Président",
+      "value": "Droupadi Murmu"
+    },
+    {
+      "title": "Premier ministre",
+      "value": "Narendra Modi"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "3 534 milliards de dollars" },
+        { "key": "Population", "value": "1 408 000 000" },
+        { "key": "Revenus médiants", "value": "2 020 dollars" },
+        { "key": "Superficie", "value": "3 287 263 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "histoire",
+      "title": "Histoire",
+      "expanded": false,
+      "content": "L'Inde possède l'une des plus anciennes civilisations du monde, avec une histoire remontant à plus de 5 000 ans. Après des siècles sous domination britannique, l'Inde a obtenu son indépendance en 1947. Aujourd'hui, c'est la plus grande démocratie du monde et une puissance économique émergente.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://wikipedia.org"
+    }
+  ],
+  "coalitions": [
+    { "id": "onu", "title": "ONU" },
+    { "id": "g20", "title": "G20" },
+    { "id": "brics", "title": "BRICS" },
+    { "id": "commonwealth", "title": "Commonwealth" }
+  ]
+} 

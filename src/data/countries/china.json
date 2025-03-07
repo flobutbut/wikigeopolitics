@@ -1,0 +1,40 @@
+{
+  "id": "china",
+  "title": "Chine",
+  "flag": "🇨🇳",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "République populaire à parti unique"
+    },
+    {
+      "title": "Président",
+      "value": "Xi Jinping"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "17 700 milliards de dollars" },
+        { "key": "Population", "value": "1 411 778 724" },
+        { "key": "Revenus médiants", "value": "10 410 dollars" },
+        { "key": "Superficie", "value": "9 596 961 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "histoire",
+      "title": "Histoire",
+      "expanded": false,
+      "content": "La Chine possède l'une des plus anciennes civilisations continues du monde, avec une histoire remontant à plus de 5 000 ans. Après la chute de la dernière dynastie impériale en 1912, la Chine a connu une période de troubles civils et de guerre. La République populaire de Chine a été fondée en 1949 par le Parti communiste chinois dirigé par Mao Zedong. Depuis les réformes économiques de 1978, la Chine a connu une croissance économique rapide et est devenue la deuxième économie mondiale.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://wikipedia.org"
+    }
+  ],
+  "coalitions": [
+    { "id": "onu", "title": "ONU" },
+    { "id": "g20", "title": "G20" },
+    { "id": "brics", "title": "BRICS" },
+    { "id": "apec", "title": "APEC" },
+    { "id": "ocs", "title": "OCS" }
+  ]
+} 

@@ -1,0 +1,44 @@
+{
+  "id": "saudi-arabia",
+  "title": "Arabie Saoudite",
+  "flag": "🇸🇦",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "Monarchie absolue islamique"
+    },
+    {
+      "title": "Roi",
+      "value": "Salmane ben Abdelaziz Al Saoud"
+    },
+    {
+      "title": "Prince héritier",
+      "value": "Mohammed ben Salmane"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "833 milliards de dollars" },
+        { "key": "Population", "value": "35 013 414" },
+        { "key": "Revenus médiants", "value": "21 540 dollars" },
+        { "key": "Superficie", "value": "2 149 690 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "politique",
+      "title": "Système politique",
+      "expanded": false,
+      "content": "L'Arabie saoudite est une monarchie absolue où le roi est à la fois chef d'État et chef de gouvernement. Le pays est gouverné selon la loi islamique (charia). Il n'y a pas de constitution formelle, mais plutôt un document appelé 'Loi fondamentale' qui définit les principes de gouvernance. Les partis politiques sont interdits et il n'y a pas d'élections nationales.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://wikipedia.org"
+    }
+  ],
+  "coalitions": [
+    { "id": "onu", "title": "ONU" },
+    { "id": "g20", "title": "G20" },
+    { "id": "opep", "title": "OPEP" },
+    { "id": "ccg", "title": "Conseil de coopération du Golfe" },
+    { "id": "ligue-arabe", "title": "Ligue arabe" }
+  ]
+} 

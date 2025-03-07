@@ -10,6 +10,7 @@ interface AppData {
   mainNavigation: any[];
   countryList: any[];
   subPages: Record<string, any>;
+  detailPages: Record<string, any>;
 }
 
 interface CurrentView {
@@ -20,6 +21,7 @@ interface CurrentView {
   hasReturnButton: boolean;
   items: any[];
   organizations: any[] | null;
+  previousView?: { type: string; id: string };
 }
 
 // Définir le store avec Pinia
@@ -31,7 +33,8 @@ export const useAsideStore = defineStore('aside', {
       search: { enabled: true, placeholder: "Rechercher" },
       mainNavigation: [],
       countryList: [],
-      subPages: {}
+      subPages: {},
+      detailPages: {}
     } as AppData,
     currentView: {
       type: 'main',
@@ -40,8 +43,18 @@ export const useAsideStore = defineStore('aside', {
       searchEnabled: true,
       hasReturnButton: false,
       items: [],
-      organizations: null
-    } as CurrentView
+      organizations: null,
+      previousView: undefined
+    } as CurrentView,
+    currentDetailData: {
+      id: '',
+      title: '',
+      sections: [],
+      collapsibleSections: [],
+      coalitions: []
+    },
+    // Ajouter un cache pour les données chargées
+    dataCache: {} as Record<string, any>
   }),
 
   // Getters (équivalent aux computed)
@@ -111,20 +124,116 @@ export const useAsideStore = defineStore('aside', {
 
   // Actions (méthodes)
   actions: {
-    // Initialiser les données
-    initializeData() {
-      this.appData = menuData.applicationStructure
-      console.log('App data loaded:', this.appData)
+    // Initialiser les données de base
+    async initializeData() {
+      try {
+        // Charger la structure de l'application
+        const appStructure = await import('@data/app-structure.json')
+        
+        // Charger la navigation principale
+        const mainNavigation = await import('@data/main-navigation.json')
+        
+        // Charger la liste des pays (version légère)
+        const countryList = await import('@data/countries/index.json')
+        
+        // Assembler les données
+        this.appData = {
+          search: appStructure.search,
+          mainNavigation: mainNavigation.categories,
+          countryList: countryList.countries,
+          subPages: {},
+          detailPages: {}
+        }
+        
+        console.log('App data loaded')
+      } catch (error) {
+        console.error('Error loading app data:', error)
+      }
     },
     
-    // Navigation vers un sous-menu
-    navigateToSubmenu(id: string) {
+    // Charger les données d'une sous-page à la demande
+    async loadSubPageData(id: string) {
+      // Vérifier si les données sont déjà en cache
+      if (this.dataCache[`subpage-${id}`]) {
+        this.appData.subPages[id] = this.dataCache[`subpage-${id}`]
+        return
+      }
+      
+      try {
+        // Déterminer le fichier à charger en fonction de l'ID
+        let dataModule
+        
+        if (id.startsWith('relations-')) {
+          dataModule = await import('@data/categories/politics.json')
+          this.appData.subPages[id] = dataModule.subPages[id]
+        } else if (id.startsWith('commerce-')) {
+          dataModule = await import('@data/categories/economy.json')
+          this.appData.subPages[id] = dataModule.subPages[id]
+        } else {
+          // Essayer de charger directement un fichier correspondant à l'ID
+          try {
+            dataModule = await import(`@data/categories/${id}.json`)
+            this.appData.subPages[id] = dataModule.default
+          } catch {
+            console.warn(`No specific file found for ${id}, using fallback`)
+            // Fallback: charger toutes les catégories
+            const allCategories = await import('@data/categories/index.json')
+            this.appData.subPages[id] = allCategories.subPages[id] || { title: id, items: [] }
+          }
+        }
+        
+        // Mettre en cache les données
+        this.dataCache[`subpage-${id}`] = this.appData.subPages[id]
+        
+      } catch (error) {
+        console.error(`Error loading subpage data for ${id}:`, error)
+        // Créer une page par défaut en cas d'erreur
+        this.appData.subPages[id] = { title: id, items: [] }
+      }
+    },
+    
+    // Charger les données d'un pays à la demande
+    async loadCountryData(id: string) {
+      // Vérifier si les données sont déjà en cache
+      if (this.dataCache[`country-${id}`]) {
+        this.currentDetailData = this.dataCache[`country-${id}`]
+        return
+      }
+      
+      try {
+        // Charger les données du pays
+        const countryData = await import(`@data/countries/${id}.json`)
+        this.currentDetailData = countryData.default
+        
+        // Mettre en cache les données
+        this.dataCache[`country-${id}`] = this.currentDetailData
+        
+      } catch (error) {
+        console.error(`Error loading country data for ${id}:`, error)
+        // Créer des données par défaut en cas d'erreur
+        this.currentDetailData = {
+          id: id,
+          title: id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' '),
+          sections: [],
+          collapsibleSections: [],
+          coalitions: []
+        }
+      }
+    },
+    
+    // Navigation vers un sous-menu (mise à jour)
+    async navigateToSubmenu(id: string) {
       console.log('Navigating to submenu:', id)
       
       // Vérifier si c'est la liste des pays
       if (id === 'pays-du-monde-list') {
         this.navigateToCountryList()
         return
+      }
+      
+      // Charger les données de la sous-page si nécessaire
+      if (!this.appData.subPages[id]) {
+        await this.loadSubPageData(id)
       }
       
       // Chercher le sous-menu dans les subPages
@@ -179,10 +288,28 @@ export const useAsideStore = defineStore('aside', {
       // Logique pour naviguer vers un détail spécifique
     },
     
-    // Sélection d'un pays
-    selectCountry(id: string) {
+    // Sélection d'un pays (mise à jour)
+    async selectCountry(id: string) {
       console.log('Country selected:', id)
-      // Logique pour sélectionner un pays
+      
+      // Charger les données du pays
+      await this.loadCountryData(id)
+      
+      // Stocker la vue précédente pour pouvoir y revenir
+      this.currentView.previousView = {
+        type: this.currentView.type,
+        id: this.currentView.id
+      }
+      
+      // Changer la vue actuelle
+      this.currentView.type = 'detail'
+      this.currentView.id = id
+      this.currentView.title = this.currentDetailData.title
+      this.currentView.searchEnabled = false
+      this.currentView.hasReturnButton = true
+      
+      // Réinitialiser la recherche
+      this.searchQuery = ''
     },
     
     // Sélection d'une organisation
@@ -199,6 +326,22 @@ export const useAsideStore = defineStore('aside', {
     handleToggleOption(option: { id: string, enabled: boolean }) {
       console.log('Option toggled:', option.id, option.enabled)
       // Logique pour gérer le changement d'état d'une option
+    },
+    
+    // Retour à la vue précédente
+    returnToPreviousView() {
+      if (this.currentView.previousView) {
+        if (this.currentView.previousView.type === 'main') {
+          this.returnToMainView()
+        } else if (this.currentView.previousView.type === 'submenu') {
+          this.navigateToSubmenu(this.currentView.previousView.id)
+        } else if (this.currentView.previousView.type === 'countryList') {
+          this.navigateToCountryList()
+        }
+      } else {
+        // Par défaut, retour à la vue principale
+        this.returnToMainView()
+      }
     }
   }
 }) 

@@ -58,7 +58,7 @@ export default defineComponent({
 
 <style scoped>
 .search {
-  padding: var(--spacing-md);
+  padding: var(--spacing-md) 0 var(--spacing-md) var(--spacing-md);
 }
 
 .search__wrapper {

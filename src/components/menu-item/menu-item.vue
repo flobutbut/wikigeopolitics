@@ -24,9 +24,7 @@
           class="menu-item__chevron"
           :class="{ 'menu-item__chevron--expanded': isExpanded }"
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+          <ChevronIcon direction="right" :size="12" />
         </span>
       </a>
       
@@ -42,9 +40,14 @@
 
 <script lang="ts">
 import { defineComponent, ref, computed } from 'vue'
+import ChevronIcon from '@/components/icons/ChevronIcon.vue'
 
 export default defineComponent({
   name: 'MenuItem',
+
+  components: {
+    ChevronIcon
+  },
 
   props: {
     title: {

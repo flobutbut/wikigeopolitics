@@ -1,0 +1,60 @@
+{
+  "subPages": {
+    "commerce-international": {
+      "title": "Commerce international",
+      "searchEnabled": true,
+      "hasReturnButton": true,
+      "items": [
+        {
+          "id": "import-export",
+          "title": "Import-Export"
+        },
+        {
+          "id": "balance-commerciale",
+          "title": "Balance commerciale"
+        }
+      ],
+      "organizations": [
+        {
+          "id": "omc",
+          "title": "OMC"
+        },
+        {
+          "id": "ocde",
+          "title": "OCDE"
+        },
+        {
+          "id": "g20",
+          "title": "G20"
+        },
+        {
+          "id": "g7",
+          "title": "G7"
+        }
+      ]
+    },
+    "ressources-naturelles": {
+      "title": "Ressources naturelles",
+      "searchEnabled": true,
+      "hasReturnButton": true,
+      "items": [
+        {
+          "id": "petrole",
+          "title": "Pétrole"
+        },
+        {
+          "id": "gaz-naturel",
+          "title": "Gaz naturel"
+        },
+        {
+          "id": "mineraux",
+          "title": "Minéraux"
+        },
+        {
+          "id": "eau",
+          "title": "Eau"
+        }
+      ]
+    }
+  }
+} 

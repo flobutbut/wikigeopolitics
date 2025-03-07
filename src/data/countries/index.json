@@ -1,0 +1,89 @@
+   {
+     "countries": [
+       {
+         "id": "france",
+         "title": "France",
+         "flag": "🇫🇷"
+       },
+       {
+         "id": "germany",
+         "title": "Allemagne",
+         "flag": "🇩🇪"
+       },
+       {
+         "id": "usa",
+         "title": "États-Unis",
+         "flag": "🇺🇸"
+       },
+       {
+         "id": "china",
+         "title": "Chine",
+         "flag": "🇨🇳"
+       },
+       {
+         "id": "japan",
+         "title": "Japon",
+         "flag": "🇯🇵"
+       },
+       {
+         "id": "russia",
+         "title": "Russie",
+         "flag": "🇷🇺"
+       },
+       {
+         "id": "india",
+         "title": "Inde",
+         "flag": "🇮🇳"
+       },
+       {
+         "id": "brazil",
+         "title": "Brésil",
+         "flag": "🇧🇷"
+       },
+       {
+         "id": "canada",
+         "title": "Canada",
+         "flag": "🇨🇦"
+       },
+       {
+         "id": "australia",
+         "title": "Australie",
+         "flag": "🇦🇺"
+       },
+       {
+         "id": "south-korea",
+         "title": "Corée du Sud",
+         "flag": "🇰🇷"
+       },
+       {
+         "id": "south-africa",
+         "title": "Afrique du Sud",
+         "flag": "🇿🇦"
+       },
+       {
+         "id": "saudi-arabia",
+         "title": "Arabie Saoudite",
+         "flag": "🇸🇦"
+       },
+       {
+         "id": "north-korea",
+         "title": "Corée du Nord",
+         "flag": "🇰🇵"
+       },
+       {
+         "id": "united-kingdom",
+         "title": "Royaume-Uni",
+         "flag": "🇬🇧"
+       },
+       {
+         "id": "iran",
+         "title": "Iran",
+         "flag": "🇮🇷"
+       },
+       {
+         "id": "thailand",
+         "title": "Thaïlande",
+         "flag": "🇹🇭"
+       }
+     ]
+   }

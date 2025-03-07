@@ -1,10 +1,8 @@
 <template>
   <div class="aside__section">
-    <div v-if="currentView.hasReturnButton" class="return-button" @click="returnToMainView">
-      <span class="return-icon">←</span> Retour
-    </div>
+    <ReturnButton v-if="currentView.hasReturnButton" @click="returnToMainView" />
     
-    <h2 class="aside__section-title">{{ currentView.title }}</h2>
+    <SectionTitle>{{ currentView.title }}</SectionTitle>
     
     <ul class="aside__menu">
       <MenuItem
@@ -33,12 +31,16 @@
 import { defineComponent, computed } from 'vue'
 import MenuItem from '@components/menu-item/menu-item.vue'
 import { useAsideStore } from '@/stores/asideStore'
+import SectionTitle from '@/components/section-title/SectionTitle.vue'
+import ReturnButton from '@/components/return-button/ReturnButton.vue'
 
 export default defineComponent({
   name: 'AsideSubmenuView',
   
   components: {
-    MenuItem
+    MenuItem,
+    SectionTitle,
+    ReturnButton
   },
   
   setup() {
@@ -74,15 +76,8 @@ export default defineComponent({
 <style scoped>
 .aside__section {
   margin-bottom: var(--spacing-lg);
-  padding-left: var(--spacing-sm);
-  padding-right: var(--spacing-sm);
-}
-
-.aside__section-title {
-  font-size: var(--font-size-sm);
-  color: var(--text-dark);
-  margin-bottom: var(--spacing-sm);
-  padding-left: var(--spacing-sm);
+  padding-left: var(--spacing-md);
+  padding-right: 0;
 }
 
 .aside__menu {
@@ -91,31 +86,16 @@ export default defineComponent({
   margin: 0;
 }
 
-.return-button {
-  display: flex;
-  align-items: center;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  margin-bottom: var(--spacing-sm);
-  color: var(--primary-color);
-  cursor: pointer;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-}
-
-.return-icon {
-  margin-right: var(--spacing-xs);
-}
-
 /* Styles pour la liste des organisations */
 .organizations-list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--spacing-xs);
-  padding: var(--spacing-xs);
+  padding: 0;
 }
 
 .organization-item {
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: var(--spacing-xs);
   background-color: var(--surface-dimmed);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-xs);

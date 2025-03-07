@@ -1,0 +1,42 @@
+{
+  "id": "iran",
+  "title": "Iran",
+  "flag": "🇮🇷",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "République islamique théocratique"
+    },
+    {
+      "title": "Guide suprême",
+      "value": "Ali Khamenei"
+    },
+    {
+      "title": "Président",
+      "value": "Masoud Pezeshkian"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "1 973 milliards de dollars" },
+        { "key": "Population", "value": "85 028 759" },
+        { "key": "Revenus médiants", "value": "3 740 dollars" },
+        { "key": "Superficie", "value": "1 648 195 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "politique",
+      "title": "Système politique",
+      "expanded": false,
+      "content": "L'Iran est une république islamique où le pouvoir ultime est détenu par le Guide suprême, un chef religieux qui supervise toutes les branches du gouvernement. Le président est élu au suffrage universel, mais les candidats doivent être approuvés par le Conseil des gardiens, un organe composé de juristes islamiques et de clercs.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://wikipedia.org"
+    }
+  ],
+  "coalitions": [
+    { "id": "onu", "title": "ONU" },
+    { "id": "opep", "title": "OPEP" },
+    { "id": "oci", "title": "Organisation de la coopération islamique" }
+  ]
+} 

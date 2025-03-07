@@ -1,0 +1,44 @@
+{
+  "id": "germany",
+  "title": "Allemagne",
+  "flag": "🇩🇪",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "République fédérale parlementaire"
+    },
+    {
+      "title": "Président fédéral",
+      "value": "Frank-Walter Steinmeier"
+    },
+    {
+      "title": "Chancelier fédéral",
+      "value": "Olaf Scholz"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "3 570 milliards d'euros" },
+        { "key": "Population", "value": "83 190 556" },
+        { "key": "Revenus médiants", "value": "Data" },
+        { "key": "Superficie", "value": "357 588 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "histoire",
+      "title": "Histoire",
+      "expanded": false,
+      "content": "L'Allemagne moderne a été formée en 1871 suite à l'unification des États allemands sous la direction de la Prusse. Après la Seconde Guerre mondiale, l'Allemagne a été divisée en deux États distincts : la République fédérale d'Allemagne (Allemagne de l'Ouest) et la République démocratique allemande (Allemagne de l'Est). La réunification a eu lieu le 3 octobre 1990.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://wikipedia.org"
+    }
+  ],
+  "coalitions": [
+    { "id": "unesco", "title": "UNESCO" },
+    { "id": "ocde", "title": "OCDE" },
+    { "id": "g7", "title": "G7" },
+    { "id": "g20", "title": "G20" },
+    { "id": "eu", "title": "Union Européenne" }
+  ]
+} 

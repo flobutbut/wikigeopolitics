@@ -1,0 +1,42 @@
+{
+  "id": "thailand",
+  "title": "Thaïlande",
+  "flag": "🇹🇭",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "Monarchie constitutionnelle"
+    },
+    {
+      "title": "Roi",
+      "value": "Maha Vajiralongkorn (Rama X)"
+    },
+    {
+      "title": "Premier ministre",
+      "value": "Srettha Thavisin"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "522 milliards de dollars" },
+        { "key": "Population", "value": "69 950 850" },
+        { "key": "Revenus médiants", "value": "7 260 dollars" },
+        { "key": "Superficie", "value": "513 120 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "politique",
+      "title": "Système politique",
+      "expanded": false,
+      "content": "La Thaïlande est une monarchie constitutionnelle où le roi est vénéré et protégé par des lois strictes de lèse-majesté. Le pays a connu de nombreux coups d'État militaires, le plus récent en 2014. Bien que des élections aient lieu, l'armée conserve une influence significative sur la politique.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://wikipedia.org"
+    }
+  ],
+  "coalitions": [
+    { "id": "onu", "title": "ONU" },
+    { "id": "asean", "title": "ASEAN" },
+    { "id": "apec", "title": "APEC" }
+  ]
+} 

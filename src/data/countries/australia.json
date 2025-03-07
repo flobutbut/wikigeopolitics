@@ -1,0 +1,44 @@
+{
+  "id": "australia",
+  "title": "Australie",
+  "flag": "🇦🇺",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "Monarchie constitutionnelle fédérale parlementaire"
+    },
+    {
+      "title": "Monarque",
+      "value": "Charles III"
+    },
+    {
+      "title": "Premier ministre",
+      "value": "Anthony Albanese"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "1 748 milliards de dollars" },
+        { "key": "Population", "value": "25 890 773" },
+        { "key": "Revenus médiants", "value": "53 190 dollars" },
+        { "key": "Superficie", "value": "7 692 024 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "histoire",
+      "title": "Histoire",
+      "expanded": false,
+      "content": "L'Australie était habitée par les Aborigènes depuis au moins 65 000 ans avant l'arrivée des Européens. Colonisée par les Britanniques à partir de 1788, l'Australie est devenue une fédération en 1901. Le pays a progressivement acquis son indépendance du Royaume-Uni tout en restant membre du Commonwealth.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://wikipedia.org"
+    }
+  ],
+  "coalitions": [
+    { "id": "onu", "title": "ONU" },
+    { "id": "g20", "title": "G20" },
+    { "id": "commonwealth", "title": "Commonwealth" },
+    { "id": "ocde", "title": "OCDE" },
+    { "id": "apec", "title": "APEC" }
+  ]
+} 

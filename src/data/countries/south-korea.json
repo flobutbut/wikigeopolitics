@@ -1,0 +1,43 @@
+{
+  "id": "south-korea",
+  "title": "Corée du Sud",
+  "flag": "🇰🇷",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "République présidentielle unitaire"
+    },
+    {
+      "title": "Président",
+      "value": "Yoon Suk-yeol"
+    },
+    {
+      "title": "Premier ministre",
+      "value": "Han Duck-soo"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "1 798 milliards de dollars" },
+        { "key": "Population", "value": "51 740 000" },
+        { "key": "Revenus médiants", "value": "31 490 dollars" },
+        { "key": "Superficie", "value": "100 210 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "histoire",
+      "title": "Histoire",
+      "expanded": false,
+      "content": "La Corée du Sud a été établie en 1948 après la division de la péninsule coréenne suite à la Seconde Guerre mondiale. Après la guerre de Corée (1950-1953), le pays a connu une transformation économique spectaculaire, passant d'un pays pauvre et agricole à une économie industrialisée et technologiquement avancée.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://wikipedia.org"
+    }
+  ],
+  "coalitions": [
+    { "id": "onu", "title": "ONU" },
+    { "id": "g20", "title": "G20" },
+    { "id": "ocde", "title": "OCDE" },
+    { "id": "apec", "title": "APEC" }
+  ]
+} 

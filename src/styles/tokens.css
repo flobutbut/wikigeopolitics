@@ -1,50 +1,91 @@
 :root {
 
-    /* COLORS */
+    /* COLORS - Palette de base */
+    --color-white: #fff;
+    --color-black: #000;
 
-    --White: #fff;
+    /* Palette de couleurs primaires */
+    --color-primary-400: #3D9CF7;
+    --color-primary-500: #0070F3;
+    --color-primary-600: #0070F3;
+    --color-primary-700: #0040AE;
 
-    --Primary_400:#3D9CF7;
-    --Primary_500:#0070F3;
-    --Primary_600:#0070F3;
-    --Primary_700:#0040AE;
+    /* Palette de couleurs secondaires */
+    --color-secondary-400: #EE7AFF;
+    --color-secondary-500: #DC4FFF;
+    --color-secondary-600: #BB48DB;
+    --color-secondary-700: #8527B7;
 
-    --Secondary_400:#EE7AFF;
-    --Secondary_500:#DC4FFF;
-    --Secondary_600:#BB48DB;
-    --Secondary_700:#8527B7;
-
-    --Neutral_100:#FAFBFD;
-    --Neutral_200:#F2F4F9;
-    --Neutral_300:#E6E9F0;
-    --Neutral_400:#D4D8E2;
-    --Neutral_500:#A4AEBC;
-    --Neutral_600:#757E8F;
-    --Neutral_700:#596173;
-    --Neutral_800:#40485D;
-    --Neutral_900:#1E2840;
+    /* Palette de couleurs neutres */
+    --color-neutral-100: #FAFBFD;
+    --color-neutral-200: #F2F4F9;
+    --color-neutral-300: #E6E9F0;
+    --color-neutral-400: #D4D8E2;
+    --color-neutral-500: #A4AEBC;
+    --color-neutral-600: #757E8F;
+    --color-neutral-700: #596173;
+    --color-neutral-800: #40485D;
+    --color-neutral-900: #1E2840;
 
     /* FONTS */
-
     --primary-font: 'inter', sans-serif;
     --line-height-regular: 20px;
     --font-weight-default: 400;
+    --font-weight-medium: 500;
+    --font-weight-bold: 700;
+    --font-size-xs: 11px;
+    --font-size-sm: 13px;
     --font-size-regular: 13px;
+    --font-size-md: 16px;
+    --font-size-lg: 18px;
+    --font-size-xl: 20px;
+    --font-size-xxl: 24px;
 
-    /* ... */
-
-    --background-color: #ffffff;
-    --background-color-light: #f5f5f5;
-    --text-color: #40485D;
-    --text-dark: #1A202C;
-    --text-muted: #8896AB;
-    --border-color: #E2E8F0;
-    --border-focus: #2E43FF;
-    --hover-color: #f5f5f5;
-    --active-color: #e6f7ff;
-    --active-text-color: #1890ff;
+    /* SEMANTIC TOKENS - Utilisation des couleurs de base */
+    
+    /* Couleurs principales */
+    --primary-color: var(--color-primary-500);
+    --primary-hover: var(--color-primary-400);
+    --primary-active: var(--color-primary-700);
+    
+    /* Couleurs de texte */
+    --text-dark: var(--color-neutral-900);
+    --text-color: var(--color-neutral-800);
+    --text-light: var(--color-neutral-600);
+    --text-muted: var(--color-neutral-500);
+    --text-on-primary: var(--color-white);
+    
+    /* Couleurs de surface */
+    --surface-color: var(--color-white);
+    --surface-light: var(--color-neutral-100);
+    --surface-dimmed: var(--color-neutral-200);
+    --surface-hover: var(--color-neutral-200);
+    
+    /* Couleurs de fond */
+    --background-color: var(--color-white);
+    --background-color-light: var(--color-neutral-100);
+    
+    /* Couleurs de bordure */
+    --border-color: var(--color-neutral-300);
+    --border-focus: var(--color-primary-500);
+    
+    /* Couleurs d'état */
+    --hover-color: var(--color-neutral-200);
+    --active-color: var(--color-primary-400);
+    --active-text-color: var(--color-primary-500);
+    
+    /* Couleurs d'état sémantiques */
+    --success-color: #10B981;
+    --warning-color: #F59E0B;
+    --error-color: #EF4444;
+    --info-color: #3B82F6;
+    
+    /* Ombres */
     --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    
     /* Dimensions */
     --aside-width: 320px;
     --header-height: 60px;
@@ -52,32 +93,6 @@
     /* Transitions */
     --transition-speed: 0.2s;
     --transition-function: ease-in-out;
-
-    /* Couleurs principales */
-    --primary-color: #2E43FF;
-    --primary-hover: #4F61FF; /* Version plus claire pour le hover */
-    --primary-active: #1A2EE6; /* Version plus foncée pour l'état actif */
-    
-    /* Couleurs de texte */
-    --text-dark: #1A202C;
-    --text-light: #6B7280;
-    --text-on-primary: #FFFFFF;
-    
-    /* Couleurs de surface */
-    --surface-color: #FFFFFF;
-    --surface-dimmed: #DDE4E9;
-    --surface-hover: #F5F7FA;
-    
-    /* Couleurs d'état */
-    --success-color: #10B981;
-    --warning-color: #F59E0B;
-    --error-color: #EF4444;
-    --info-color: #3B82F6;
-    
-    /* Ombres */
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
     
     /* Rayons de bordure */
     --radius-sm: 4px;
@@ -95,13 +110,18 @@
 
 /* Thème sombre (optionnel) */
 .dark-theme {
-    --background-color: #1a1a1a;
-    --background-color-light: #2c2c2c;
-    --text-color: #f0f0f0;
-    --text-muted: #a0a0a0;
-    --border-color: #444444;
-    --hover-color: #333333;
-    --active-color: #0066cc;
-    --active-text-color: #ffffff;
+    --background-color: var(--color-neutral-900);
+    --background-color-light: var(--color-neutral-800);
+    --text-color: var(--color-neutral-100);
+    --text-muted: var(--color-neutral-400);
+    --border-color: var(--color-neutral-700);
+    --hover-color: var(--color-neutral-800);
+    --active-color: var(--color-primary-700);
+    --active-text-color: var(--color-white);
     --shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    
+    --surface-color: var(--color-neutral-800);
+    --surface-light: var(--color-neutral-700);
+    --surface-dimmed: var(--color-neutral-700);
+    --surface-hover: var(--color-neutral-600);
 }

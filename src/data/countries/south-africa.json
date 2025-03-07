@@ -1,0 +1,40 @@
+{
+  "id": "south-africa",
+  "title": "Afrique du Sud",
+  "flag": "🇿🇦",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "République parlementaire"
+    },
+    {
+      "title": "Président",
+      "value": "Cyril Ramaphosa"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "419 milliards de dollars" },
+        { "key": "Population", "value": "60 604 992" },
+        { "key": "Revenus médiants", "value": "5 410 dollars" },
+        { "key": "Superficie", "value": "1 221 037 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "histoire",
+      "title": "Histoire",
+      "expanded": false,
+      "content": "L'Afrique du Sud a une histoire complexe marquée par la colonisation européenne et l'apartheid. Après des décennies de lutte contre la ségrégation raciale, le pays a connu une transition démocratique en 1994 avec l'élection de Nelson Mandela comme premier président noir. Aujourd'hui, c'est la deuxième économie d'Afrique.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://wikipedia.org"
+    }
+  ],
+  "coalitions": [
+    { "id": "onu", "title": "ONU" },
+    { "id": "g20", "title": "G20" },
+    { "id": "brics", "title": "BRICS" },
+    { "id": "commonwealth", "title": "Commonwealth" },
+    { "id": "ua", "title": "Union africaine" }
+  ]
+} 

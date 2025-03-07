@@ -1,0 +1,43 @@
+{
+  "id": "france",
+  "title": "France",
+  "flag": "🇫🇷",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "République unitaire semi-présidentielle"
+    },
+    {
+      "title": "Président de la République",
+      "value": "Emmanuel Macron"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "2 639 milliards d'euros" },
+        { "key": "Population", "value": "68 373 433" },
+        { "key": "Revenus médiants", "value": "Data" },
+        { "key": "Superficie", "value": "Data" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "definition",
+      "title": "Définition",
+      "expanded": true,
+      "content": "L'Organisation du traité de l'Atlantique Norda (en anglais : North Atlantic Treaty Organization) est l'organisation politico-militaire mise en place par les pays signataires du traité de l'Atlantique Nord afin de pouvoir remplir leurs obligations de sécurité et de défense collectives. Elle est le plus souvent désignée par son acronyme OTAN (en anglais : NATO) mais aussi fréquemment nommée l'Alliance atlantique ou l'Alliance nord-atlantique, plus rarement l'Alliance euro-atlantique ou l'Alliance transatlantique5, ou parfois, encore plus brièvement, l'Alliance.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://wikipedia.org"
+    }
+  ],
+  "coalitions": [
+    { "id": "unesco", "title": "UNESCO" },
+    { "id": "ocde", "title": "OCDE" },
+    { "id": "g7", "title": "G7" },
+    { "id": "g20", "title": "G20" }
+  ],
+  "search": {
+    "enabled": true,
+    "placeholder": "Rechercher"
+  }
+} 

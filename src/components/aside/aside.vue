@@ -1,5 +1,5 @@
 <template>
-  <aside class="aside">
+  <aside class="aside" v-scrollbar="{ stable: true, hover: true }">
     <Search 
       v-if="currentView.searchEnabled !== false"
       @search="handleSearch" 
@@ -9,7 +9,7 @@
     <!-- Vue principale -->
     <template v-if="currentView.type === 'main'">
       <div v-for="category in filteredNavigation" :key="category.id" class="aside__section">
-        <h2 class="aside__section-title">{{ category.title }}</h2>
+        <SectionTitle>{{ category.title }}</SectionTitle>
         
         <!-- Toggles pour les options (comme dans "Tous les pays") -->
         <div v-if="category.toggleOptions" class="aside__toggles">
@@ -47,7 +47,7 @@
           <span class="return-icon">←</span> Retour
         </div>
         
-        <h2 class="aside__section-title">{{ currentView.title }}</h2>
+        <SectionTitle>{{ currentView.title }}</SectionTitle>
         
         <ul class="aside__menu">
           <MenuItem
@@ -74,33 +74,23 @@
 
     <!-- Vue de liste de pays -->
     <template v-else-if="currentView.type === 'countryList'">
-      <div class="aside__section">
-        <div class="return-button" @click="returnToMainView">
-          <span class="return-icon">←</span> Retour
-        </div>
-        
-        <h2 class="aside__section-title">Pays du monde</h2>
-        
-        <ul class="country-list">
-          <li 
-            v-for="country in filteredCountries" 
-            :key="country.id"
-            class="country-item"
-            @click="selectCountry(country.id)"
-          >
-            <span class="country-flag">{{ country.flag }}</span>
-            <span class="country-name">{{ country.title }}</span>
-          </li>
-        </ul>
-      </div>
+      <AsideCountryListView />
+    </template>
+
+    <!-- Vue de détail (nouvelle) -->
+    <template v-else-if="currentView.type === 'detail'">
+      <AsideDetailView />
     </template>
   </aside>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import MenuItem from '@components/menu-item/menu-item.vue'
 import Search from '@components/search/search.vue'
+import SectionTitle from '@/components/section-title/SectionTitle.vue'
+import AsideDetailView from './AsideDetailView.vue'
+import AsideCountryListView from './AsideCountryListView.vue'
 import { useAsideStore } from '@/stores/asideStore'
 
 // Utiliser le store Pinia
@@ -117,9 +107,6 @@ const filteredItems = computed(() => asideStore.filteredItems)
 
 // Filtrer les organisations
 const filteredOrganizations = computed(() => asideStore.filteredOrganizations)
-
-// Filtrer les pays
-const filteredCountries = computed(() => asideStore.filteredCountries)
 
 // Vue actuelle
 const currentView = computed(() => asideStore.currentView)
@@ -139,11 +126,6 @@ const navigateToDetail = (id: string) => {
   asideStore.navigateToDetail(id)
 }
 
-// Sélection d'un pays
-const selectCountry = (id: string) => {
-  asideStore.selectCountry(id)
-}
-
 // Sélection d'une organisation
 const selectOrganization = (id: string) => {
   asideStore.selectOrganization(id)
@@ -157,6 +139,18 @@ const handleSearch = (query: string) => {
 const handleToggleOption = (option: { id: string, enabled: boolean }) => {
   asideStore.handleToggleOption(option)
 }
+
+// Assurer que la barre de défilement est toujours visible
+onMounted(() => {
+  // Forcer un rafraîchissement du composant pour s'assurer que la barre de défilement est correctement affichée
+  setTimeout(() => {
+    const asideElement = document.querySelector('.aside');
+    if (asideElement) {
+      asideElement.style.overflowY = 'auto';
+      asideElement.style.overflowY = 'scroll';
+    }
+  }, 100);
+})
 </script>
 
 <style scoped>
@@ -168,22 +162,16 @@ const handleToggleOption = (option: { id: string, enabled: boolean }) => {
   background-color: var(--surface-color);
   box-shadow: var(--shadow-sm);
   width: var(--aside-width);
-  overflow-y: auto;
+  /* overflow-y est géré par la directive */
   z-index: 1000;
-  padding: var(--spacing-sm);
+  padding: var(--spacing-sm) 0;
+  box-sizing: border-box;
 }
 
 .aside__section {
   margin-bottom: var(--spacing-lg);
-  padding-left: var(--spacing-sm);
-  padding-right: var(--spacing-sm);
-}
-
-.aside__section-title {
-  font-size: var(--font-size-sm);
-  color: var(--text-dark);
-  margin-bottom: var(--spacing-sm);
-  padding-left: var(--spacing-sm);
+  padding-left: var(--spacing-md);
+  padding-right: 0;
 }
 
 .aside__menu {
@@ -195,7 +183,7 @@ const handleToggleOption = (option: { id: string, enabled: boolean }) => {
 .return-button {
   display: flex;
   align-items: center;
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: var(--spacing-xs) 0;
   margin-bottom: var(--spacing-sm);
   color: var(--primary-color);
   cursor: pointer;
@@ -220,7 +208,7 @@ const handleToggleOption = (option: { id: string, enabled: boolean }) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: var(--spacing-xs) 0;
   cursor: pointer;
 }
 
@@ -262,45 +250,16 @@ const handleToggleOption = (option: { id: string, enabled: boolean }) => {
   transform: translateX(16px);
 }
 
-/* Styles pour la liste des pays */
-.country-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.country-item {
-  display: flex;
-  align-items: center;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  cursor: pointer;
-  transition: background-color var(--transition-speed) var(--transition-function);
-}
-
-.country-item:hover {
-  background-color: var(--surface-hover);
-}
-
-.country-flag {
-  margin-right: var(--spacing-sm);
-  font-size: var(--font-size-md);
-}
-
-.country-name {
-  font-size: var(--font-size-sm);
-  color: var(--text-color);
-}
-
 /* Styles pour la liste des organisations */
 .organizations-list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--spacing-xs);
-  padding: var(--spacing-xs);
+  padding: 0;
 }
 
 .organization-item {
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: var(--spacing-xs);
   background-color: var(--surface-dimmed);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-xs);

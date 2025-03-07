@@ -1,0 +1,58 @@
+/* Styles de base pour la barre de défilement personnalisée */
+.custom-scrollbar {
+  scrollbar-width: auto;
+  scrollbar-color: var(--text-muted) transparent;
+}
+
+/* Styles pour Webkit (Chrome, Safari, Edge) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  background-color: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background-color: transparent;
+  margin: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--text-muted);
+  border-radius: var(--radius-full);
+  border: 2px solid var(--background-color);
+}
+
+/* Variante fine */
+.custom-scrollbar--thin {
+  scrollbar-width: thin;
+}
+
+.custom-scrollbar--thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+/* Variante sombre */
+.custom-scrollbar--dark {
+  scrollbar-color: var(--color-neutral-600) transparent;
+}
+
+.custom-scrollbar--dark::-webkit-scrollbar-thumb {
+  background-color: var(--color-neutral-600);
+}
+
+/* Variante visible au survol */
+.custom-scrollbar--hover::-webkit-scrollbar-thumb {
+  background-color: transparent;
+}
+
+.custom-scrollbar--hover:hover::-webkit-scrollbar-thumb {
+  background-color: var(--text-muted);
+}
+
+.custom-scrollbar--hover.custom-scrollbar--dark:hover::-webkit-scrollbar-thumb {
+  background-color: var(--color-neutral-600);
+}
+
+/* Variante stable (espace réservé pour la barre de défilement) */
+.custom-scrollbar--stable {
+  /* La propriété overflow-y: scroll est appliquée directement via JavaScript */
+} 

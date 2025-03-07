@@ -1,0 +1,39 @@
+{
+  "id": "brazil",
+  "title": "Brésil",
+  "flag": "🇧🇷",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "République fédérale présidentielle"
+    },
+    {
+      "title": "Président",
+      "value": "Luiz Inácio Lula da Silva"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "1 833 milliards de dollars" },
+        { "key": "Population", "value": "214 300 000" },
+        { "key": "Revenus médiants", "value": "6 450 dollars" },
+        { "key": "Superficie", "value": "8 515 767 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "histoire",
+      "title": "Histoire",
+      "expanded": false,
+      "content": "Le Brésil a été colonisé par le Portugal à partir du XVIe siècle. Il a obtenu son indépendance en 1822 et est devenu une république en 1889. Après une période de dictature militaire (1964-1985), le pays a retrouvé la démocratie. Aujourd'hui, c'est la plus grande économie d'Amérique latine et un acteur important sur la scène internationale.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://wikipedia.org"
+    }
+  ],
+  "coalitions": [
+    { "id": "onu", "title": "ONU" },
+    { "id": "g20", "title": "G20" },
+    { "id": "brics", "title": "BRICS" },
+    { "id": "mercosur", "title": "MERCOSUR" }
+  ]
+} 

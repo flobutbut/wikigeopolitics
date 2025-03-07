@@ -1,0 +1,50 @@
+{
+  "subPages": {
+    "regimes-politiques": {
+      "title": "Régimes politiques",
+      "searchEnabled": true,
+      "hasReturnButton": true,
+      "items": [
+        {
+          "id": "republique",
+          "title": "République"
+        },
+        {
+          "id": "monarchie",
+          "title": "Monarchie"
+        },
+        {
+          "id": "democratie",
+          "title": "Démocratie"
+        },
+        {
+          "id": "autocratie",
+          "title": "Autocratie"
+        },
+        {
+          "id": "dictature",
+          "title": "Dictature"
+        }
+      ]
+    },
+    "relations-internationales": {
+      "title": "Relations internationales",
+      "searchEnabled": true,
+      "hasReturnButton": true,
+      "items": [
+        {
+          "id": "diplomatie",
+          "title": "Diplomatie"
+        },
+        {
+          "id": "alliances",
+          "title": "Alliances"
+        },
+        {
+          "id": "conflits",
+          "title": "Conflits"
+        }
+      ]
+    }
+  }
+} 

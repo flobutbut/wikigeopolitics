@@ -1,0 +1,44 @@
+{
+  "id": "russia",
+  "title": "Russie",
+  "flag": "🇷🇺",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "République fédérale semi-présidentielle"
+    },
+    {
+      "title": "Président",
+      "value": "Vladimir Poutine"
+    },
+    {
+      "title": "Premier ministre",
+      "value": "Mikhaïl Michoustine"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "1 829 milliards de dollars" },
+        { "key": "Population", "value": "146 171 015" },
+        { "key": "Revenus médiants", "value": "10 230 dollars" },
+        { "key": "Superficie", "value": "17 098 246 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "histoire",
+      "title": "Histoire",
+      "expanded": false,
+      "content": "La Russie a une histoire riche et complexe. Après la chute de l'Empire russe en 1917, l'Union soviétique a été formée et est devenue une superpuissance mondiale. Suite à la dissolution de l'URSS en 1991, la Fédération de Russie est devenue un État indépendant. Aujourd'hui, la Russie reste une puissance majeure avec une influence significative dans les affaires mondiales.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://wikipedia.org"
+    }
+  ],
+  "coalitions": [
+    { "id": "onu", "title": "ONU" },
+    { "id": "g20", "title": "G20" },
+    { "id": "brics", "title": "BRICS" },
+    { "id": "cei", "title": "CEI" },
+    { "id": "ocs", "title": "OCS" }
+  ]
+} 

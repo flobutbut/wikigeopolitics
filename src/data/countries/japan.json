@@ -1,0 +1,43 @@
+{
+  "id": "japan",
+  "title": "Japon",
+  "flag": "🇯🇵",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "Monarchie constitutionnelle parlementaire"
+    },
+    {
+      "title": "Empereur",
+      "value": "Naruhito"
+    },
+    {
+      "title": "Premier ministre",
+      "value": "Fumio Kishida"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "5 378 milliards de dollars" },
+        { "key": "Population", "value": "125 502 000" },
+        { "key": "Revenus médiants", "value": "38 500 dollars" },
+        { "key": "Superficie", "value": "377 975 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "histoire",
+      "title": "Histoire",
+      "expanded": false,
+      "content": "Le Japon a une histoire riche qui remonte à la préhistoire. Après des siècles d'isolement volontaire, le pays s'est ouvert au monde extérieur à la fin du 19e siècle et a rapidement modernisé son économie et sa société. Après la défaite lors de la Seconde Guerre mondiale, le Japon a connu une croissance économique spectaculaire, devenant l'une des principales puissances économiques mondiales.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://wikipedia.org"
+    }
+  ],
+  "coalitions": [
+    { "id": "g7", "title": "G7" },
+    { "id": "g20", "title": "G20" },
+    { "id": "apec", "title": "APEC" },
+    { "id": "ocde", "title": "OCDE" }
+  ]
+} 

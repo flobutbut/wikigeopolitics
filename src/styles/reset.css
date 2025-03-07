@@ -1,0 +1,8 @@
+/* Reset pour les titres utilisés dans les composants */
+h1.reset, h2.reset, h3.reset, h4.reset, h5.reset, h6.reset {
+  font-size: inherit;
+  font-weight: inherit;
+  margin: 0;
+  padding: 0;
+  line-height: normal;
+} 

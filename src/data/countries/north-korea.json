@@ -1,0 +1,36 @@
+{
+  "id": "north-korea",
+  "title": "Corée du Nord",
+  "flag": "🇰🇵",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "République socialiste à parti unique"
+    },
+    {
+      "title": "Dirigeant suprême",
+      "value": "Kim Jong-un"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "40 milliards de dollars (est.)" },
+        { "key": "Population", "value": "25 778 816" },
+        { "key": "Revenus médiants", "value": "Data non disponible" },
+        { "key": "Superficie", "value": "120 540 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "politique",
+      "title": "Système politique",
+      "expanded": false,
+      "content": "La Corée du Nord est officiellement une république socialiste, mais est considérée comme un régime totalitaire. Le pouvoir est concentré entre les mains du Dirigeant suprême, qui est également le chef du Parti du travail de Corée. Le pays fonctionne selon l'idéologie du Juche, qui prône l'autosuffisance politique, économique et militaire.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://wikipedia.org"
+    }
+  ],
+  "coalitions": [
+    { "id": "onu", "title": "ONU" }
+  ]
+} 

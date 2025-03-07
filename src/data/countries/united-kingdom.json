@@ -1,0 +1,45 @@
+{
+  "id": "united-kingdom",
+  "title": "Royaume-Uni",
+  "flag": "🇬🇧",
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "Monarchie constitutionnelle parlementaire"
+    },
+    {
+      "title": "Monarque",
+      "value": "Charles III"
+    },
+    {
+      "title": "Premier ministre",
+      "value": "Keir Starmer"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "3 131 milliards de dollars" },
+        { "key": "Population", "value": "67 081 000" },
+        { "key": "Revenus médiants", "value": "42 370 dollars" },
+        { "key": "Superficie", "value": "242 495 km²" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "politique",
+      "title": "Système politique",
+      "expanded": false,
+      "content": "Le Royaume-Uni est une monarchie constitutionnelle où le monarque est le chef d'État, mais avec un pouvoir limité. Le pouvoir exécutif est exercé par le Premier ministre et son cabinet. Le pays n'a pas de constitution écrite unique, mais plutôt un ensemble de lois, conventions et précédents judiciaires.",
+      "source": "Source Wikipedia",
+      "sourceUrl": "https://wikipedia.org"
+    }
+  ],
+  "coalitions": [
+    { "id": "onu", "title": "ONU" },
+    { "id": "g7", "title": "G7" },
+    { "id": "g20", "title": "G20" },
+    { "id": "otan", "title": "OTAN" },
+    { "id": "commonwealth", "title": "Commonwealth" },
+    { "id": "ocde", "title": "OCDE" }
+  ]
+} 
