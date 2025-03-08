@@ -1,0 +1,303 @@
+{
+  "id": "production-industrielle",
+  "title": "Production industrielle mondiale",
+  "sectors": [
+    {
+      "id": "automobile",
+      "name": "Industrie automobile",
+      "description": "Production et assemblage de véhicules terrestres motorisés.",
+      "globalProduction": {
+        "value": 80.1,
+        "unit": "millions de véhicules",
+        "year": 2021
+      },
+      "majorProducers": [
+        {
+          "country": "china",
+          "production": {
+            "value": 26.1,
+            "unit": "millions de véhicules",
+            "year": 2021,
+            "percentage": 32.5
+          }
+        },
+        {
+          "country": "usa",
+          "production": {
+            "value": 9.2,
+            "unit": "millions de véhicules",
+            "year": 2021,
+            "percentage": 11.5
+          }
+        },
+        {
+          "country": "japan",
+          "production": {
+            "value": 7.8,
+            "unit": "millions de véhicules",
+            "year": 2021,
+            "percentage": 9.8
+          }
+        }
+      ],
+      "majorCompanies": [
+        {
+          "name": "Toyota",
+          "country": "japan",
+          "production": {
+            "value": 10.5,
+            "unit": "millions de véhicules",
+            "year": 2021
+          }
+        },
+        {
+          "name": "Volkswagen Group",
+          "country": "germany",
+          "production": {
+            "value": 8.9,
+            "unit": "millions de véhicules",
+            "year": 2021
+          }
+        }
+      ],
+      "trends": [
+        "Électrification des véhicules",
+        "Autonomisation",
+        "Connectivité",
+        "Mobilité partagée"
+      ],
+      "supplyChain": {
+        "rawMaterials": ["acier", "aluminium", "plastique", "caoutchouc"],
+        "components": ["moteurs", "transmissions", "systèmes électroniques", "batteries"],
+        "geoJsonRef": "trade-routes.geo.json#Route-composants-automobiles"
+      },
+      "environmentalImpact": "Émissions de CO2, consommation de ressources, déchets industriels",
+      "relatedPolicies": [
+        {
+          "region": "Union Européenne",
+          "policy": "Interdiction des véhicules thermiques neufs d'ici 2035",
+          "impact": "Accélération de la transition vers l'électrique"
+        },
+        {
+          "region": "Chine",
+          "policy": "Quotas de véhicules électriques",
+          "impact": "Développement rapide de la filière électrique"
+        }
+      ]
+    },
+    {
+      "id": "electronique",
+      "name": "Électronique grand public",
+      "description": "Production d'appareils électroniques destinés au grand public.",
+      "categories": [
+        "Smartphones",
+        "Ordinateurs",
+        "Téléviseurs",
+        "Électroménager",
+        "Wearables"
+      ],
+      "majorProducers": [
+        {
+          "country": "china",
+          "value": "60% de la production mondiale"
+        },
+        {
+          "country": "vietnam",
+          "value": "10% de la production mondiale"
+        },
+        {
+          "country": "south-korea",
+          "value": "7% de la production mondiale"
+        }
+      ],
+      "majorCompanies": [
+        {
+          "name": "Samsung Electronics",
+          "country": "south-korea",
+          "revenue": {
+            "value": 200.6,
+            "unit": "milliards USD",
+            "year": 2021
+          }
+        },
+        {
+          "name": "Apple",
+          "country": "usa",
+          "revenue": {
+            "value": 365.8,
+            "unit": "milliards USD",
+            "year": 2021
+          }
+        }
+      ],
+      "trends": [
+        "Intelligence artificielle",
+        "Internet des objets",
+        "5G et connectivité avancée",
+        "Réalité augmentée et virtuelle"
+      ],
+      "supplyChain": {
+        "criticalComponents": ["semi-conducteurs", "batteries", "écrans"],
+        "criticalMaterials": ["terres-rares", "lithium", "cobalt", "silicium"],
+        "geoJsonRef": "trade-routes.geo.json#Route-composants-electroniques"
+      },
+      "geopoliticalIssues": [
+        {
+          "issue": "Tensions sino-américaines",
+          "impact": "Restrictions technologiques, relocalisation partielle des chaînes de production"
+        },
+        {
+          "issue": "Pénurie de semi-conducteurs",
+          "impact": "Perturbation des chaînes de production, investissements massifs dans de nouvelles usines"
+        }
+      ]
+    },
+    {
+      "id": "aeronautique",
+      "name": "Industrie aéronautique",
+      "description": "Conception et fabrication d'aéronefs civils et militaires.",
+      "majorProducers": [
+        {
+          "country": "usa",
+          "companies": ["Boeing", "Lockheed Martin", "General Dynamics"]
+        },
+        {
+          "country": "eu",
+          "companies": ["Airbus", "Dassault", "Leonardo"]
+        }
+      ],
+      "marketSegments": [
+        {
+          "name": "Aviation commerciale",
+          "dominantPlayers": ["Airbus", "Boeing"],
+          "trends": ["Efficacité énergétique", "Utilisation de matériaux composites"]
+        },
+        {
+          "name": "Aviation militaire",
+          "dominantPlayers": ["Lockheed Martin", "Boeing", "BAE Systems"],
+          "trends": ["Avions furtifs", "Drones", "Systèmes autonomes"]
+        },
+        {
+          "name": "Aviation d'affaires",
+          "dominantPlayers": ["Gulfstream", "Bombardier", "Dassault"],
+          "trends": ["Confort amélioré", "Autonomie accrue"]
+        }
+      ],
+      "supplyChain": {
+        "tiers": [
+          {
+            "level": 1,
+            "description": "Grands sous-systèmes (moteurs, avionique)",
+            "examples": ["Rolls-Royce", "GE Aviation", "Safran"]
+          },
+          {
+            "level": 2,
+            "description": "Composants spécialisés",
+            "examples": ["Systèmes hydrauliques", "Trains d'atterrissage"]
+          }
+        ]
+      },
+      "geopoliticalSignificance": "Secteur stratégique lié à la défense nationale, fort soutien étatique"
+    },
+    {
+      "id": "pharmaceutique",
+      "name": "Industrie pharmaceutique",
+      "description": "Recherche, développement et production de médicaments et vaccins.",
+      "globalMarket": {
+        "value": 1.42,
+        "unit": "billions USD",
+        "year": 2021,
+        "growth": "5.5% annuel"
+      },
+      "majorProducers": [
+        {
+          "country": "usa",
+          "marketShare": "46%",
+          "companies": ["Pfizer", "Johnson & Johnson", "Merck"]
+        },
+        {
+          "country": "switzerland",
+          "marketShare": "10%",
+          "companies": ["Roche", "Novartis"]
+        },
+        {
+          "country": "germany",
+          "marketShare": "7%",
+          "companies": ["Bayer", "Boehringer Ingelheim"]
+        }
+      ],
+      "researchHubs": [
+        {
+          "region": "Boston/Cambridge (USA)",
+          "specialization": "Biotechnologies"
+        },
+        {
+          "region": "Bâle (Suisse)",
+          "specialization": "Industrie pharmaceutique traditionnelle"
+        }
+      ],
+      "geopoliticalIssues": [
+        {
+          "issue": "Accès aux médicaments dans les pays en développement",
+          "description": "Tensions autour des brevets et licences"
+        },
+        {
+          "issue": "Dépendance aux principes actifs produits en Asie",
+          "description": "80% des principes actifs pharmaceutiques proviennent de Chine et d'Inde"
+        }
+      ],
+      "emergingTrends": [
+        "Médecine personnalisée",
+        "Thérapies géniques",
+        "Immunothérapies",
+        "Intelligence artificielle dans la découverte de médicaments"
+      ]
+    }
+  ],
+  "industrialRegions": [
+    {
+      "id": "east-asia",
+      "name": "Asie de l'Est",
+      "countries": ["china", "japan", "south-korea", "taiwan"],
+      "specialization": ["Électronique", "Automobile", "Construction navale"],
+      "advantages": ["Main-d'œuvre qualifiée", "Infrastructures développées", "Écosystème industriel complet"]
+    },
+    {
+      "id": "north-america",
+      "name": "Amérique du Nord",
+      "countries": ["usa", "canada", "mexico"],
+      "specialization": ["Aéronautique", "Automobile", "Technologies avancées"],
+      "advantages": ["Innovation", "Capital-risque", "Marché intérieur important"]
+    },
+    {
+      "id": "western-europe",
+      "name": "Europe occidentale",
+      "countries": ["germany", "france", "italy", "uk"],
+      "specialization": ["Automobile haut de gamme", "Aéronautique", "Pharmaceutique"],
+      "advantages": ["Savoir-faire", "Qualité", "Infrastructure de recherche"]
+    }
+  ],
+  "filters": [
+    {
+      "id": "sector",
+      "name": "Secteur industriel",
+      "type": "select",
+      "options": ["Automobile", "Électronique", "Aéronautique", "Pharmaceutique"],
+      "property": "name"
+    },
+    {
+      "id": "region",
+      "name": "Région industrielle",
+      "type": "select",
+      "options": ["Asie de l'Est", "Amérique du Nord", "Europe occidentale"],
+      "property": "industrialRegions.name"
+    },
+    {
+      "id": "country",
+      "name": "Pays producteur",
+      "type": "select",
+      "options": ["Tous les pays"],
+      "property": "majorProducers.country"
+    }
+  ]
+}

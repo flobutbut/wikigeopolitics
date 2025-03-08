@@ -1,0 +1,143 @@
+{
+  "id": "country-id",
+  "title": "Nom du pays",
+  "flag": "🏳️",
+  "generalInfo": {
+    "capitale": "Nom de la capitale",
+    "langue": "Langue officielle",
+    "monnaie": "Devise nationale"
+  },
+  "sections": [
+    {
+      "title": "Forme de l'État",
+      "value": "Type de gouvernement"
+    },
+    {
+      "title": "Chef d'État",
+      "value": "Nom du chef d'État"
+    },
+    {
+      "title": "Chef de gouvernement",
+      "value": "Nom du chef de gouvernement"
+    },
+    {
+      "keyValues": [
+        { "key": "PIB", "value": "Valeur en dollars" },
+        { "key": "Population", "value": "Nombre d'habitants" },
+        { "key": "Revenus médians", "value": "Valeur en dollars" },
+        { "key": "Superficie", "value": "Valeur en km²" },
+        { "key": "IDH", "value": "Indice de développement humain" },
+        { "key": "Espérance de vie", "value": "Âge moyen" },
+        { "key": "Taux d'alphabétisation", "value": "Pourcentage" }
+      ]
+    }
+  ],
+  "collapsibleSections": [
+    {
+      "id": "histoire",
+      "title": "Histoire",
+      "expanded": false,
+      "content": "Résumé historique du pays",
+      "source": "Source de l'information",
+      "sourceUrl": "URL de la source"
+    },
+    {
+      "id": "politique",
+      "title": "Système politique",
+      "expanded": false,
+      "content": "Description du système politique",
+      "source": "Source de l'information",
+      "sourceUrl": "URL de la source"
+    },
+    {
+      "id": "economie",
+      "title": "Économie",
+      "expanded": false,
+      "content": "Description de l'économie du pays",
+      "source": "Source de l'information",
+      "sourceUrl": "URL de la source"
+    },
+    {
+      "id": "ressources",
+      "title": "Ressources naturelles",
+      "expanded": false,
+      "content": "Description des ressources naturelles",
+      "source": "Source de l'information",
+      "sourceUrl": "URL de la source"
+    },
+    {
+      "id": "agriculture",
+      "title": "Agriculture",
+      "expanded": false,
+      "content": "Description du secteur agricole",
+      "source": "Source de l'information",
+      "sourceUrl": "URL de la source"
+    },
+    {
+      "id": "technologie",
+      "title": "Technologie et Innovation",
+      "expanded": false,
+      "content": "Description du secteur technologique",
+      "source": "Source de l'information",
+      "sourceUrl": "URL de la source"
+    },
+    {
+      "id": "demographie",
+      "title": "Société et Démographie",
+      "expanded": false,
+      "content": "Description démographique",
+      "source": "Source de l'information",
+      "sourceUrl": "URL de la source"
+    }
+  ],
+  "coalitions": [
+    { "id": "org1", "title": "Organisation internationale 1" },
+    { "id": "org2", "title": "Organisation internationale 2" }
+  ],
+  "relationsList": [
+    {
+      "type": "alliance",
+      "countries": ["id-pays-1", "id-pays-2"],
+      "description": "Description de l'alliance"
+    },
+    {
+      "type": "conflict",
+      "countries": ["id-pays-3"],
+      "description": "Description du conflit"
+    },
+    {
+      "type": "trade",
+      "countries": ["id-pays-4", "id-pays-5"],
+      "description": "Description des relations commerciales"
+    }
+  ],
+  "keyIndustries": [
+    {
+      "id": "industry1",
+      "name": "Nom de l'industrie",
+      "significance": "Importance pour le pays",
+      "companies": ["Entreprise 1", "Entreprise 2"]
+    }
+  ],
+  "naturalResources": [
+    {
+      "id": "resource1",
+      "name": "Nom de la ressource",
+      "abundance": "Niveau d'abondance",
+      "locations": ["Région 1", "Région 2"]
+    }
+  ],
+  "tourismData": {
+    "annualVisitors": "Nombre annuel de visiteurs",
+    "majorAttractions": ["Attraction 1", "Attraction 2"],
+    "economicImpact": "Impact économique du tourisme"
+  },
+  "geographicFeatures": {
+    "coastline": "Longueur du littoral",
+    "borders": [
+      { "country": "id-pays-frontalier", "length": "Longueur de la frontière" }
+    ],
+    "terrain": ["Type de terrain 1", "Type de terrain 2"],
+    "climate": ["Type de climat 1", "Type de climat 2"]
+  }
+}

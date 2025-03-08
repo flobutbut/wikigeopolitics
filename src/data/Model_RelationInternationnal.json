@@ -1,0 +1,76 @@
+{
+  "id": "relations-internationales",
+  "title": "Relations internationales",
+  "categories": [
+    {
+      "id": "alliances-militaires",
+      "title": "Alliances militaires",
+      "items": [
+        {
+          "id": "otan",
+          "name": "OTAN",
+          "fullName": "Organisation du Traité de l'Atlantique Nord",
+          "established": "1949-04-04",
+          "members": ["usa", "france", "uk", "germany", "italy"],
+          "description": "Alliance militaire intergouvernementale qui constitue un système de défense collective.",
+          "headquarters": "Bruxelles, Belgique",
+          "keyEvents": [
+            {
+              "date": "1949-04-04",
+              "description": "Création de l'OTAN"
+            },
+            {
+              "date": "1955-05-09",
+              "description": "Entrée de l'Allemagne de l'Ouest dans l'OTAN"
+            }
+            // Autres événements...
+          ]
+        },
+        // Autres alliances militaires...
+      ]
+    },
+    {
+      "id": "accords-libre-echange",
+      "title": "Accords de libre-échange",
+      "items": [
+        {
+          "id": "usmca",
+          "name": "ACEUM",
+          "fullName": "Accord Canada–États-Unis–Mexique",
+          "established": "2020-07-01",
+          "members": ["usa", "canada", "mexico"],
+          "description": "Accord de libre-échange entre le Canada, les États-Unis et le Mexique.",
+          "keyProvisions": [
+            "Élimination des barrières tarifaires",
+            "Protection de la propriété intellectuelle",
+            "Règles d'origine pour l'industrie automobile"
+          ],
+          "predecessors": ["nafta"]
+        },
+        // Autres accords de libre-échange...
+      ]
+    },
+    {
+      "id": "sanctions-internationales",
+      "title": "Sanctions internationales",
+      "items": [
+        {
+          "id": "sanctions-country1",
+          "targetCountry": "country1",
+          "imposingEntities": ["usa", "eu", "un"],
+          "startDate": "2022-02-24",
+          "endDate": null,
+          "description": "Sanctions économiques suite à...",
+          "measures": [
+            "Gel des avoirs",
+            "Restrictions commerciales",
+            "Interdictions de voyage"
+          ],
+          "impact": "Description de l'impact des sanctions..."
+        },
+        // Autres sanctions...
+      ]
+    },
+    // Autres catégories de relations internationales...
+  ]
+}

@@ -1,0 +1,408 @@
+{
+  "id": "production-agricole",
+  "title": "Production agricole mondiale",
+  "products": [
+    {
+      "id": "ble",
+      "name": "Blé",
+      "category": "Céréales",
+      "description": "Céréale la plus cultivée au monde, base de l'alimentation de nombreuses populations.",
+      "globalProduction": {
+        "value": 776,
+        "unit": "millions de tonnes",
+        "year": 2021
+      },
+      "majorProducers": [
+        {
+          "country": "china",
+          "production": {
+            "value": 136.9,
+            "unit": "millions de tonnes",
+            "year": 2021,
+            "percentage": 17.6
+          }
+        },
+        {
+          "country": "india",
+          "production": {
+            "value": 109.5,
+            "unit": "millions de tonnes",
+            "year": 2021,
+            "percentage": 14.1
+          }
+        },
+        {
+          "country": "russia",
+          "production": {
+            "value": 85.9,
+            "unit": "millions de tonnes",
+            "year": 2021,
+            "percentage": 11.1
+          }
+        }
+      ],
+      "majorExporters": [
+        {
+          "country": "russia",
+          "exports": {
+            "value": 33,
+            "unit": "millions de tonnes",
+            "year": 2021,
+            "percentage": 20
+          }
+        },
+        {
+          "country": "usa",
+          "exports": {
+            "value": 26.1,
+            "unit": "millions de tonnes",
+            "year": 2021,
+            "percentage": 15.8
+          }
+        }
+      ],
+      "majorImporters": [
+        {
+          "country": "egypt",
+          "imports": {
+            "value": 12.5,
+            "unit": "millions de tonnes",
+            "year": 2021
+          }
+        },
+        {
+          "country": "indonesia",
+          "imports": {
+            "value": 10.3,
+            "unit": "millions de tonnes",
+            "year": 2021
+          }
+        }
+      ],
+      "tradeRoutes": [
+        {
+          "from": "russia",
+          "to": "egypt",
+          "volume": "Élevé",
+          "geoJsonRef": "trade-routes.geo.json#Route-blé-Russie-Égypte"
+        },
+        {
+          "from": "usa",
+          "to": "mexico",
+          "volume": "Moyen",
+          "geoJsonRef": "trade-routes.geo.json#Route-blé-USA-Mexique"
+        }
+      ],
+      "geopoliticalIssues": [
+        {
+          "issue": "Dépendance alimentaire",
+          "description": "Nombreux pays du Moyen-Orient et d'Afrique du Nord dépendants des importations",
+          "affectedCountries": ["egypt", "algeria", "morocco"]
+        },
+        {
+          "issue": "Arme alimentaire",
+          "description": "Utilisation des exportations comme levier géopolitique",
+          "examples": ["Restrictions d'exportations lors de crises"]
+        }
+      ],
+      "environmentalImpact": "Consommation d'eau importante, utilisation de pesticides et fertilisants",
+      "climateVulnerability": "Sensible aux sécheresses et aux variations de température"
+    },
+    {
+      "id": "riz",
+      "name": "Riz",
+      "category": "Céréales",
+      "description": "Aliment de base pour plus de la moitié de la population mondiale.",
+      "globalProduction": {
+        "value": 520,
+        "unit": "millions de tonnes",
+        "year": 2021
+      },
+      "majorProducers": [
+        {
+          "country": "china",
+          "production": {
+            "value": 212.8,
+            "unit": "millions de tonnes",
+            "year": 2021,
+            "percentage": 40.9
+          }
+        },
+        {
+          "country": "india",
+          "production": {
+            "value": 178.3,
+            "unit": "millions de tonnes",
+            "year": 2021,
+            "percentage": 34.3
+          }
+        }
+      ],
+      "majorExporters": [
+        {
+          "country": "india",
+          "exports": {
+            "value": 21.5,
+            "unit": "millions de tonnes",
+            "year": 2021,
+            "percentage": 40.6
+          }
+        },
+        {
+          "country": "thailand",
+          "exports": {
+            "value": 6.1,
+            "unit": "millions de tonnes",
+            "year": 2021,
+            "percentage": 11.5
+          }
+        }
+      ],
+      "environmentalImpact": "Forte consommation d'eau, émissions de méthane des rizières",
+      "culturalSignificance": "Valeur culturelle fondamentale en Asie, cérémonies et traditions liées à la culture du riz"
+    },
+    {
+      "id": "mais",
+      "name": "Maïs",
+      "category": "Céréales",
+      "description": "Céréale la plus produite au monde, utilisée pour l'alimentation humaine, animale et les biocarburants.",
+      "globalProduction": {
+        "value": 1162,
+        "unit": "millions de tonnes",
+        "year": 2021
+      },
+      "majorProducers": [
+        {
+          "country": "usa",
+          "production": {
+            "value": 383.9,
+            "unit": "millions de tonnes",
+            "year": 2021,
+            "percentage": 33.0
+          }
+        },
+        {
+          "country": "china",
+          "production": {
+            "value": 272.6,
+            "unit": "millions de tonnes",
+            "year": 2021,
+            "percentage": 23.5
+          }
+        }
+      ],
+      "uses": [
+        {
+          "purpose": "Alimentation animale",
+          "percentage": 67
+        },
+        {
+          "purpose": "Biocarburants (éthanol)",
+          "percentage": 19
+        },
+        {
+          "purpose": "Alimentation humaine",
+          "percentage": 10
+        },
+        {
+          "purpose": "Industrie (amidon, etc.)",
+          "percentage": 4
+        }
+      ],
+      "geopoliticalIssues": [
+        {
+          "issue": "Concurrence entre alimentation et biocarburants",
+          "description": "Tensions sur l'utilisation des terres et impact sur les prix alimentaires",
+          "regions": ["americas", "europe"]
+        }
+      ]
+    },
+    {
+      "id": "soja",
+      "name": "Soja",
+      "category": "Oléagineux",
+      "description": "Source majeure de protéines végétales, principalement utilisée pour l'alimentation animale.",
+      "globalProduction": {
+        "value": 353,
+        "unit": "millions de tonnes",
+        "year": 2021
+      },
+      "majorProducers": [
+        {
+          "country": "brazil",
+          "production": {
+            "value": 135.9,
+            "unit": "millions de tonnes",
+            "year": 2021,
+            "percentage": 38.5
+          }
+        },
+        {
+          "country": "usa",
+          "production": {
+            "value": 120.7,
+            "unit": "millions de tonnes",
+            "year": 2021,
+            "percentage": 34.2
+          }
+        }
+      ],
+      "majorImporters": [
+        {
+          "country": "china",
+          "imports": {
+            "value": 100.3,
+            "unit": "millions de tonnes",
+            "year": 2021,
+            "percentage": 60
+          }
+        }
+      ],
+      "environmentalImpact": "Déforestation en Amazonie et dans le Cerrado brésilien, utilisation intensive de pesticides",
+      "tradeIssues": [
+        {
+          "issue": "Dépendance chinoise au soja américain et brésilien",
+          "description": "Vulnérabilité stratégique pour l'élevage chinois",
+          "geopoliticalSignificance": "Levier dans les négociations commerciales USA-Chine"
+        }
+      ]
+    },
+    {
+      "id": "cafe",
+      "name": "Café",
+      "category": "Cultures tropicales",
+      "description": "Deuxième marchandise la plus échangée au monde après le pétrole.",
+      "globalProduction": {
+        "value": 10.6,
+        "unit": "millions de tonnes",
+        "year": 2021
+      },
+      "varieties": [
+        {
+          "name": "Arabica",
+          "percentage": 60,
+          "characteristics": "Plus aromatique, moins caféiné",
+          "origins": ["ethiopia", "colombia", "brazil"]
+        },
+        {
+          "name": "Robusta",
+          "percentage": 40,
+          "characteristics": "Plus amer, plus caféiné, plus résistant aux maladies",
+          "origins": ["vietnam", "brazil", "indonesia"]
+        }
+      ],
+      "majorProducers": [
+        {
+          "country": "brazil",
+          "production": {
+            "value": 3.7,
+            "unit": "millions de tonnes",
+            "year": 2021,
+            "percentage": 34.9
+          }
+        },
+        {
+          "country": "vietnam",
+          "production": {
+            "value": 1.8,
+            "unit": "millions de tonnes",
+            "year": 2021,
+            "percentage": 17.0
+          }
+        }
+      ],
+      "economicImpact": "Source principale de revenus pour 25 millions de petits producteurs",
+      "climateVulnerability": "Très sensible au changement climatique, zones de production en recul"
+    }
+  ],
+  "agriculturalModels": [
+    {
+      "id": "intensive",
+      "name": "Agriculture intensive",
+      "characteristics": [
+        "Mécanisation",
+        "Utilisation d'intrants chimiques",
+        "Irrigation",
+        "Rendements élevés",
+        "Peu de main-d'œuvre"
+      ],
+      "regions": ["north-america", "europe", "australia"],
+      "environmentalImpact": "Pollution des sols et des eaux, érosion des sols, perte de biodiversité",
+      "economicEfficiency": "Productivité élevée, coûts de production réduits"
+    },
+    {
+      "id": "subsistence",
+      "name": "Agriculture de subsistance",
+      "characteristics": [
+        "Petites exploitations",
+        "Production destinée à l'autoconsommation",
+        "Faible mécanisation",
+        "Main-d'œuvre familiale"
+      ],
+      "regions": ["africa", "parts-of-asia", "parts-of-latin-america"],
+      "challenges": "Vulnérabilité aux aléas climatiques, difficultés d'accès au marché, faibles rendements"
+    },
+    {
+      "id": "organic",
+      "name": "Agriculture biologique",
+      "characteristics": [
+        "Sans pesticides ni engrais chimiques",
+        "Pratiques durables",
+        "Respect des écosystèmes"
+      ],
+      "growth": {
+        "value": "72.3 millions d'hectares",
+        "percentage": "1.5% des terres agricoles mondiales",
+        "trend": "En croissance de 2.9% par an"
+      },
+      "leadingCountries": ["australia", "argentina", "france"]
+    }
+  ],
+  "landUseConflicts": [
+    {
+      "id": "food-vs-biofuel",
+      "name": "Alimentation vs. Biocarburants",
+      "description": "Concurrence pour les terres agricoles entre production alimentaire et biocarburants",
+      "affectedProducts": ["mais", "canne-a-sucre", "huile-de-palme"],
+      "hotspots": ["usa", "brazil", "indonesia"]
+    },
+    {
+      "id": "urbanization",
+      "name": "Urbanisation",
+      "description": "Conversion de terres agricoles en zones urbaines et industrielles",
+      "hotspots": ["china", "india", "usa"],
+      "impact": "Perte de terres arables, souvent les plus fertiles (situées près des villes)"
+    },
+    {
+      "id": "land-grabbing",
+      "name": "Accaparement des terres",
+      "description": "Acquisition à grande échelle de terres agricoles par des entités étrangères",
+      "investors": ["china", "gulf-states", "western-investors"],
+      "targetRegions": ["africa", "southeast-asia", "latin-america"],
+      "geopoliticalIssues": "Souveraineté alimentaire, droits des populations locales"
+    }
+  ],
+  "filters": [
+    {
+      "id": "product",
+      "name": "Produit agricole",
+      "type": "select",
+      "options": ["Blé", "Riz", "Maïs", "Soja", "Café"],
+      "property": "name"
+    },
+    {
+      "id": "category",
+      "name": "Catégorie",
+      "type": "select",
+      "options": ["Céréales", "Oléagineux", "Cultures tropicales"],
+      "property": "category"
+    },
+    {
+      "id": "country",
+      "name": "Pays producteur",
+      "type": "select",
+      "options": ["Tous les pays"],
+      "property": "majorProducers.country"
+    }
+  ]
+}

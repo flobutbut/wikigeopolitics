@@ -1,0 +1,335 @@
+{
+    "id": "transport-marchandises",
+    "title": "Transport mondial de marchandises",
+    "modes": [
+      {
+        "id": "maritime",
+        "name": "Transport maritime",
+        "description": "Principal mode de transport pour le commerce international.",
+        "statistics": {
+          "volume": {
+            "value": 11.1,
+            "unit": "milliards de tonnes",
+            "year": 2021
+          },
+          "percentage": "90% du commerce mondial en volume",
+          "growth": "3.4% annuel moyen (2010-2020)"
+        },
+        "vesselTypes": [
+          {
+            "type": "Porte-conteneurs",
+            "description": "Transport de marchandises en conteneurs standardisés",
+            "capacity": "Jusqu'à 24 000 EVP (Équivalent Vingt Pieds)",
+            "examples": ["Ever Alot", "MSC Gülsün"]
+          },
+          {
+            "type": "Vraquiers",
+            "description": "Transport de marchandises en vrac (céréales, minerais)",
+            "capacity": "Jusqu'à 400 000 tonnes pour les plus grands"
+          },
+          {
+            "type": "Pétroliers",
+            "description": "Transport de pétrole brut et produits raffinés",
+            "capacity": "Jusqu'à 550 000 tonnes pour les ULCC (Ultra Large Crude Carrier)"
+          },
+          {
+            "type": "Méthaniers",
+            "description": "Transport de gaz naturel liquéfié (GNL)",
+            "capacity": "De 125 000 à 266 000 m³"
+          }
+        ],
+        "majorRoutes": [
+          {
+            "id": "trans-pacific",
+            "name": "Route transpacifique",
+            "endpoints": ["Asie de l'Est", "Amérique du Nord"],
+            "volume": "Environ 25 millions d'EVP par an",
+            "goods": ["Produits manufacturés", "Électronique", "Textiles"],
+            "geoJsonRef": "trade-routes.geo.json#Route-transpacifique"
+          },
+          {
+            "id": "asia-europe",
+            "name": "Route Asie-Europe",
+            "endpoints": ["Asie de l'Est", "Europe du Nord"],
+            "volume": "Environ 22 millions d'EVP par an",
+            "goods": ["Biens de consommation", "Électronique", "Machines"],
+            "geoJsonRef": "trade-routes.geo.json#Route-Asie-Europe"
+          },
+          {
+            "id": "trans-atlantic",
+            "name": "Route transatlantique",
+            "endpoints": ["Europe", "Amérique du Nord"],
+            "volume": "Environ 7 millions d'EVP par an",
+            "goods": ["Produits manufacturés", "Véhicules", "Produits chimiques"],
+            "geoJsonRef": "trade-routes.geo.json#Route-transatlantique"
+          }
+        ],
+        "chokepoints": [
+          {
+            "id": "suez-canal",
+            "name": "Canal de Suez",
+            "location": "Égypte",
+            "significance": "Passage entre la mer Méditerranée et la mer Rouge, évitant le contournement de l'Afrique",
+            "traffic": {
+              "value": 19000,
+              "unit": "navires par an",
+              "year": 2021
+            },
+            "vulnerabilities": ["Instabilité régionale", "Blocages accidentels (Ever Given en 2021)"],
+            "geopolitics": "Contrôlé par l'Égypte, vital pour le commerce Europe-Asie",
+            "geoJsonRef": "trade-routes.geo.json#Suez-Canal"
+          },
+          {
+            "id": "malacca-strait",
+            "name": "Détroit de Malacca",
+            "location": "Entre Malaisie, Singapour et Indonésie",
+            "significance": "Principal passage maritime entre l'océan Indien et l'océan Pacifique",
+            "traffic": {
+              "value": 90000,
+              "unit": "navires par an",
+              "year": 2021
+            },
+            "vulnerabilities": ["Piraterie", "Terrorisme", "Accidents maritimes"],
+            "geopolitics": "Vital pour la Chine et le Japon, surveillance par Singapour et Malaisie",
+            "geoJsonRef": "trade-routes.geo.json#Malacca-Strait"
+          },
+          {
+            "id": "hormuz-strait",
+            "name": "Détroit d'Ormuz",
+            "location": "Entre Iran et Oman",
+            "significance": "Principal point de passage du pétrole du Moyen-Orient",
+            "traffic": {
+              "value": "21 millions de barils de pétrole par jour",
+              "percentage": "21% de la consommation mondiale de pétrole"
+            },
+            "vulnerabilities": ["Tensions géopolitiques avec l'Iran", "Menaces de fermeture"],
+            "geopolitics": "Tensions entre Iran et pays du Golfe, présence militaire américaine",
+            "geoJsonRef": "trade-routes.geo.json#Hormuz-Strait"
+          }
+        ],
+        "majorPorts": [
+          {
+            "id": "shanghai",
+            "name": "Port de Shanghai",
+            "country": "china",
+            "volume": {
+              "value": 47.03,
+              "unit": "millions d'EVP",
+              "year": 2021
+            },
+            "specialization": "Port polyvalent, porte-conteneurs"
+          },
+          {
+            "id": "singapore",
+            "name": "Port de Singapour",
+            "country": "singapore",
+            "volume": {
+              "value": 37.5,
+              "unit": "millions d'EVP",
+              "year": 2021
+            },
+            "specialization": "Hub de transbordement, pétrole"
+          },
+          {
+            "id": "rotterdam",
+            "name": "Port de Rotterdam",
+            "country": "netherlands",
+            "volume": {
+              "value": 15.3,
+              "unit": "millions d'EVP",
+              "year": 2021
+            },
+            "specialization": "Plus grand port européen, pétrole, conteneurs, vrac"
+          }
+        ]
+      },
+      {
+        "id": "ferroviaire",
+        "name": "Transport ferroviaire",
+        "description": "Transport terrestre longue distance par voie ferrée.",
+        "advantages": ["Efficacité énergétique", "Grande capacité", "Fiabilité"],
+        "majorRoutes": [
+          {
+            "id": "silk-road-railway",
+            "name": "Nouvelle route de la soie ferroviaire",
+            "endpoints": ["Chine", "Europe"],
+            "length": "Environ 12 000 km",
+            "travelTime": "12-14 jours (vs. 30-45 jours par voie maritime)",
+            "countries": ["china", "kazakhstan", "russia", "belarus", "poland", "germany"],
+            "significance": "Alternative au transport maritime, initiative chinoise Belt and Road",
+            "geoJsonRef": "trade-routes.geo.json#Route-ferroviaire-Chine-Europe"
+          },
+          {
+            "id": "trans-siberian",
+            "name": "Transsibérien",
+            "endpoints": ["Moscou", "Vladivostok"],
+            "length": "9 289 km",
+            "significance": "Plus longue ligne ferroviaire au monde, relie la Russie européenne à l'Extrême-Orient",
+            "geoJsonRef": "trade-routes.geo.json#Transsibérien"
+          },
+          {
+            "id": "north-america-rail",
+            "name": "Réseau ferroviaire nord-américain",
+            "countries": ["usa", "canada", "mexico"],
+            "operators": ["Union Pacific", "BNSF", "Canadian National", "Kansas City Southern"],
+            "significance": "Infrastructure essentielle pour le transport de marchandises dans l'ACÉUM",
+            "geoJsonRef": "trade-routes.geo.json#Réseau-ferroviaire-Amérique-Nord"
+          }
+        ],
+        "challenges": [
+          "Différences d'écartement des rails entre pays",
+          "Infrastructures vieillissantes dans certaines régions",
+          "Concurrence avec le transport routier"
+        ]
+      },
+      {
+        "id": "aerien",
+        "name": "Transport aérien",
+        "description": "Transport rapide de marchandises à haute valeur ajoutée ou périssables.",
+        "statistics": {
+          "volume": {
+            "value": 61.3,
+            "unit": "millions de tonnes",
+            "year": 2021
+          },
+          "percentage": "Moins de 1% du volume mondial, mais 35% de la valeur"
+        },
+        "advantages": [
+          "Rapidité",
+          "Fiabilité",
+          "Sécurité",
+          "Couverture mondiale"
+        ],
+        "typicalCargo": [
+          "Produits pharmaceutiques",
+          "Électronique de haute valeur",
+          "Pièces de rechange urgentes",
+          "Produits périssables (fleurs, fruits exotiques)",
+          "E-commerce premium"
+        ],
+        "majorHubs": [
+          {
+            "id": "hkg",
+            "name": "Aéroport international de Hong Kong",
+            "country": "china",
+            "volume": {
+              "value": 5.0,
+              "unit": "millions de tonnes",
+              "year": 2021
+            }
+          },
+          {
+            "id": "mem",
+            "name": "Aéroport international de Memphis",
+            "country": "usa",
+            "volume": {
+              "value": 4.5,
+              "unit": "millions de tonnes",
+              "year": 2021
+            },
+            "note": "Hub principal de FedEx"
+          }
+        ],
+        "majorCompanies": [
+          {
+            "name": "FedEx",
+            "country": "usa",
+            "fleetSize": "Environ 680 avions"
+          },
+          {
+            "name": "DHL",
+            "country": "germany",
+            "fleetSize": "Environ 250 avions"
+          },
+          {
+            "name": "UPS",
+            "country": "usa",
+            "fleetSize": "Environ 580 avions"
+          }
+        ],
+        "trends": [
+          "Automatisation des entrepôts et des processus de tri",
+          "Intégration de drones pour les livraisons du dernier kilomètre",
+          "Développement du commerce électronique transfrontalier"
+        ]
+      },
+      {
+        "id": "routier",
+        "name": "Transport routier",
+        "description": "Transport flexible et indispensable pour les livraisons locales et régionales.",
+        "advantages": [
+          "Flexibilité",
+          "Capillarité (accès au dernier kilomètre)",
+          "Rapidité pour les moyennes distances"
+        ],
+        "disadvantages": [
+          "Impact environnemental",
+          "Congestion routière",
+          "Coût plus élevé pour les longues distances"
+        ],
+        "majorCorridors": [
+          {
+            "id": "european-corridors",
+            "name": "Corridors routiers européens",
+            "description": "Réseau transeuropéen de transport (RTE-T)",
+            "significance": "Infrastructure stratégique pour le marché unique européen"
+          },
+          {
+            "id": "nafta-corridors",
+            "name": "Corridors ACÉUM/ALÉNA",
+            "description": "Axes routiers reliant les États-Unis, le Canada et le Mexique",
+            "significance": "Essentiel pour l'intégration économique nord-américaine"
+          }
+        ],
+        "innovations": [
+          "Électrification des poids lourds",
+          "Convois automatisés (platooning)",
+          "Véhicules autonomes"
+        ]
+      }
+    ],
+    "supplyChainChallenges": [
+      {
+        "id": "disruptions",
+        "name": "Perturbations de la chaîne d'approvisionnement",
+        "examples": [
+          {
+            "event": "Pandémie de COVID-19",
+            "impact": "Fermetures d'usines, congestion portuaire, pénurie de conteneurs",
+            "consequences": "Pénuries mondiales, inflation des prix du fret"
+          },
+          {
+            "event": "Blocage du canal de Suez (Ever Given, 2021)",
+            "impact": "Interruption de 6 jours d'un axe vital",
+            "consequences": "Retards de livraison, coûts estimés à 9,6 milliards USD par jour"
+          }
+        ]
+      },
+      {
+        "id": "resilience",
+        "name": "Résilience des chaînes d'approvisionnement",
+        "strategies": [
+          "Diversification des fournisseurs",
+          "Relocalisation partielle (nearshoring)",
+          "Stocks tampons stratégiques",
+          "Digitalisation et visibilité accrue"
+        ]
+      }
+    ],
+    "filters": [
+      {
+        "id": "mode",
+        "name": "Mode de transport",
+        "type": "select",
+        "options": ["Maritime", "Ferroviaire", "Aérien", "Routier"],
+        "property": "name"
+      },
+      {
+        "id": "region",
+        "name": "Région",
+        "type": "select",
+        "options": ["Asie", "Europe", "Amérique du Nord", "Amérique du Sud", "Afrique", "Océanie"],
+        "property": "majorRoutes.endpoints"
+      }
+    ]
+  }

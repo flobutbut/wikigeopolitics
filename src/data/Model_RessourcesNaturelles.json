@@ -1,0 +1,351 @@
+{
+  "id": "ressources-naturelles",
+  "title": "Ressources naturelles",
+  "resources": [
+    {
+      "id": "petrole",
+      "name": "Pétrole",
+      "category": "Hydrocarbures",
+      "description": "Ressource fossile liquide utilisée principalement comme source d'énergie.",
+      "globalReserves": {
+        "value": 1733.9,
+        "unit": "milliards de barils",
+        "year": 2019
+      },
+      "majorProducers": [
+        {
+          "country": "usa",
+          "production": {
+            "value": 18.6,
+            "unit": "millions de barils par jour",
+            "year": 2022
+          }
+        },
+        {
+          "country": "russia",
+          "production": {
+            "value": 10.9,
+            "unit": "millions de barils par jour",
+            "year": 2022
+          }
+        },
+        {
+          "country": "saudi-arabia",
+          "production": {
+            "value": 10.8,
+            "unit": "millions de barils par jour",
+            "year": 2022
+          }
+        }
+      ],
+      "mainUses": [
+        "Carburants",
+        "Production électrique",
+        "Industrie pétrochimique"
+      ],
+      "environmentalImpact": "Émissions de CO2, risques de marées noires, pollution atmosphérique",
+      "geopoliticalSignificance": "Ressource stratégique au cœur de nombreux conflits et alliances internationales",
+      "priceEvolution": [
+        {
+          "year": 2018,
+          "price": 71.34,
+          "unit": "USD par baril"
+        },
+        {
+          "year": 2019,
+          "price": 64.36,
+          "unit": "USD par baril"
+        },
+        {
+          "year": 2020,
+          "price": 41.96,
+          "unit": "USD par baril"
+        },
+        {
+          "year": 2021,
+          "price": 70.68,
+          "unit": "USD par baril"
+        },
+        {
+          "year": 2022,
+          "price": 94.53,
+          "unit": "USD par baril"
+        }
+      ],
+      "tradeRoutes": [
+        {
+          "from": "middle-east",
+          "to": "asia",
+          "volume": "Élevé",
+          "geoJsonRef": "trade-routes.geo.json#Route-commerciale-Moyen-Orient-Asie"
+        },
+        {
+          "from": "russia",
+          "to": "europe",
+          "volume": "Élevé",
+          "geoJsonRef": "trade-routes.geo.json#Route-commerciale-Russie-Europe"
+        }
+      ],
+      "relatedConflicts": [
+        {
+          "id": "golfe-persique",
+          "description": "Tensions liées au contrôle des ressources pétrolières"
+        }
+      ]
+    },
+    {
+      "id": "gaz-naturel",
+      "name": "Gaz naturel",
+      "category": "Hydrocarbures",
+      "description": "Combustible fossile gazeux utilisé pour la production d'énergie et le chauffage.",
+      "globalReserves": {
+        "value": 7257,
+        "unit": "trillions de pieds cubes",
+        "year": 2019
+      },
+      "majorProducers": [
+        {
+          "country": "usa",
+          "production": {
+            "value": 914.6,
+            "unit": "milliards de mètres cubes",
+            "year": 2021
+          }
+        },
+        {
+          "country": "russia",
+          "production": {
+            "value": 701.7,
+            "unit": "milliards de mètres cubes",
+            "year": 2021
+          }
+        }
+      ],
+      "mainUses": [
+        "Production électrique",
+        "Chauffage",
+        "Industrie chimique"
+      ],
+      "environmentalImpact": "Émissions de CO2 (moindres que le pétrole), fuites de méthane",
+      "geopoliticalSignificance": "Infrastructure de transport (gazoducs) créant des dépendances entre pays",
+      "priceEvolution": [
+        {
+          "year": 2020,
+          "price": 2.13,
+          "unit": "USD par million de BTU"
+        },
+        {
+          "year": 2021,
+          "price": 3.89,
+          "unit": "USD par million de BTU"
+        },
+        {
+          "year": 2022,
+          "price": 6.45,
+          "unit": "USD par million de BTU"
+        }
+      ],
+      "tradeRoutes": [
+        {
+          "from": "russia",
+          "to": "europe",
+          "volume": "Élevé",
+          "geoJsonRef": "trade-routes.geo.json#Gazoduc-Russie-Europe"
+        }
+      ]
+    },
+    {
+      "id": "fer",
+      "name": "Minerai de fer",
+      "category": "Métaux",
+      "description": "Minerai utilisé principalement pour la production d'acier.",
+      "globalReserves": {
+        "value": 170,
+        "unit": "milliards de tonnes",
+        "year": 2019
+      },
+      "majorProducers": [
+        {
+          "country": "australia",
+          "production": {
+            "value": 900,
+            "unit": "millions de tonnes",
+            "year": 2021
+          }
+        },
+        {
+          "country": "brazil",
+          "production": {
+            "value": 400,
+            "unit": "millions de tonnes",
+            "year": 2021
+          }
+        }
+      ],
+      "mainUses": [
+        "Acier",
+        "Construction",
+        "Automobile",
+        "Infrastructures"
+      ],
+      "environmentalImpact": "Déforestation, pollution des eaux, émissions de CO2 lors du traitement",
+      "geopoliticalSignificance": "Ressource essentielle pour l'industrialisation et les infrastructures",
+      "priceEvolution": [
+        {
+          "year": 2020,
+          "price": 108.9,
+          "unit": "USD par tonne"
+        },
+        {
+          "year": 2021,
+          "price": 161.7,
+          "unit": "USD par tonne"
+        },
+        {
+          "year": 2022,
+          "price": 120.1,
+          "unit": "USD par tonne"
+        }
+      ]
+    },
+    {
+      "id": "eau-douce",
+      "name": "Eau douce",
+      "category": "Ressources hydriques",
+      "description": "Ressource essentielle à la vie humaine, l'agriculture et l'industrie.",
+      "globalReserves": {
+        "value": 35,
+        "unit": "millions de km³",
+        "note": "Dont seulement 0.3% facilement accessible"
+      },
+      "majorProducers": [
+        {
+          "country": "brazil",
+          "reserves": {
+            "value": 8233,
+            "unit": "km³ par an",
+            "percentage": 12.4
+          }
+        },
+        {
+          "country": "russia",
+          "reserves": {
+            "value": 4508,
+            "unit": "km³ par an",
+            "percentage": 6.8
+          }
+        }
+      ],
+      "mainUses": [
+        "Agriculture (70%)",
+        "Industrie (20%)",
+        "Usage domestique (10%)"
+      ],
+      "environmentalImpact": "Surexploitation des nappes phréatiques, assèchement des cours d'eau",
+      "geopoliticalSignificance": "Source de tensions transfrontalières, particulièrement dans les régions arides",
+      "waterStressRegions": [
+        {
+          "region": "Moyen-Orient",
+          "countries": ["egypt", "israel", "jordan", "syria"],
+          "description": "Tensions autour du Jourdain et du Nil"
+        },
+        {
+          "region": "Asie centrale",
+          "countries": ["kazakhstan", "uzbekistan", "turkmenistan"],
+          "description": "Conflits sur la gestion des fleuves Amou-Daria et Syr-Daria"
+        }
+      ]
+    },
+    {
+      "id": "terres-rares",
+      "name": "Terres rares",
+      "category": "Métaux",
+      "description": "Groupe de 17 éléments métalliques essentiels aux technologies modernes.",
+      "globalReserves": {
+        "value": 120,
+        "unit": "millions de tonnes",
+        "year": 2020
+      },
+      "majorProducers": [
+        {
+          "country": "china",
+          "production": {
+            "value": 140000,
+            "unit": "tonnes",
+            "year": 2020,
+            "percentage": 58.3
+          }
+        },
+        {
+          "country": "usa",
+          "production": {
+            "value": 38000,
+            "unit": "tonnes",
+            "year": 2020,
+            "percentage": 15.8
+          }
+        }
+      ],
+      "mainUses": [
+        "Aimants permanents",
+        "Batteries",
+        "Écrans LCD",
+        "Énergies renouvelables",
+        "Défense"
+      ],
+      "environmentalImpact": "Extraction chimique polluante, consommation d'eau importante",
+      "geopoliticalSignificance": "Concentration de la production en Chine, enjeu de souveraineté technologique",
+      "strategicImportance": "Ressources critiques pour la transition énergétique et les technologies numériques"
+    }
+  ],
+  "resourceCategories": [
+    {
+      "id": "hydrocarbures",
+      "name": "Hydrocarbures",
+      "resources": ["petrole", "gaz-naturel", "charbon"]
+    },
+    {
+      "id": "metaux",
+      "name": "Métaux",
+      "resources": ["fer", "cuivre", "aluminium", "terres-rares", "lithium"]
+    },
+    {
+      "id": "ressources-hydriques",
+      "name": "Ressources hydriques",
+      "resources": ["eau-douce"]
+    },
+    {
+      "id": "ressources-forestieres",
+      "name": "Ressources forestières",
+      "resources": ["bois", "pate-a-papier"]
+    },
+    {
+      "id": "ressources-alimentaires",
+      "name": "Ressources alimentaires",
+      "resources": ["ble", "riz", "mais", "soja"]
+    }
+  ],
+  "filters": [
+    {
+      "id": "category",
+      "name": "Catégorie",
+      "type": "select",
+      "options": ["Hydrocarbures", "Métaux", "Ressources hydriques", "Ressources forestières", "Ressources alimentaires"],
+      "property": "category"
+    },
+    {
+      "id": "geopolitical",
+      "name": "Importance géopolitique",
+      "type": "select",
+      "options": ["Élevée", "Moyenne", "Faible"],
+      "property": "geopoliticalSignificance"
+    },
+    {
+      "id": "producer",
+      "name": "Pays producteur",
+      "type": "select",
+      "options": ["Tous les pays"],
+      "property": "majorProducers.country"
+    }
+  ]
+}
