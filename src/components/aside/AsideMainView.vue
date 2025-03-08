@@ -33,7 +33,7 @@
 
 <script lang="ts">
 import { defineComponent, computed } from 'vue'
-import MenuItem from '@components/menu-item/menu-item.vue'
+import MenuItem from '@components/common/MenuItem.vue'
 import { useAsideStore } from '@/stores/asideStore'
 
 export default defineComponent({

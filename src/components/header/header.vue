@@ -18,7 +18,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import Button from '@components/button/button.vue'
+import Button from '@components/common/Button.vue'
 
 export default defineComponent({
   name: 'HeaderNav',

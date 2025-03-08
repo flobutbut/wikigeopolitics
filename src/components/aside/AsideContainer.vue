@@ -14,7 +14,7 @@
 
 <script lang="ts">
 import { defineComponent, computed } from 'vue'
-import Search from '@components/search/search.vue'
+import Search from '@components/common/Search.vue'
 import AsideMainView from './AsideMainView.vue'
 import AsideSubmenuView from './AsideSubmenuView.vue'
 import AsideCountryListView from './AsideCountryListView.vue'

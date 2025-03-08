@@ -53,8 +53,8 @@
 import { defineComponent, computed, ref } from 'vue'
 import { useAsideStore } from '@/stores/asideStore'
 import CollapsibleSection from './CollapsibleSection.vue'
-import SectionTitle from '@/components/section-title/SectionTitle.vue'
-import ReturnButton from '@/components/return-button/ReturnButton.vue'
+import SectionTitle from '@/components/common/SectionTitle.vue'
+import ReturnButton from '@/components/navigation/ReturnButton.vue'
 
 export default defineComponent({
   name: 'AsideDetailView',

@@ -29,10 +29,10 @@
 
 <script lang="ts">
 import { defineComponent, computed } from 'vue'
-import MenuItem from '@components/menu-item/menu-item.vue'
+import MenuItem from '@components/common/MenuItem.vue'
 import { useAsideStore } from '@/stores/asideStore'
-import SectionTitle from '@/components/section-title/SectionTitle.vue'
-import ReturnButton from '@/components/return-button/ReturnButton.vue'
+import SectionTitle from '@/components/common/SectionTitle.vue'
+import ReturnButton from '@/components/navigation/ReturnButton.vue'
 
 export default defineComponent({
   name: 'AsideSubmenuView',

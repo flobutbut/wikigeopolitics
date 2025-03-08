@@ -40,7 +40,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, computed } from 'vue'
-import ChevronIcon from '@/components/icons/ChevronIcon.vue'
+import ChevronIcon from '@/components/common/icons/ChevronIcon.vue'
 
 export default defineComponent({
   name: 'MenuItem',

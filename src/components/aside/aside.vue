@@ -86,9 +86,9 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
-import MenuItem from '@components/menu-item/menu-item.vue'
-import Search from '@components/search/search.vue'
-import SectionTitle from '@/components/section-title/SectionTitle.vue'
+import MenuItem from '@components/common/MenuItem.vue'
+import Search from '@components/common/Search.vue'
+import SectionTitle from '@/components/common/SectionTitle.vue'
 import AsideDetailView from './AsideDetailView.vue'
 import AsideCountryListView from './AsideCountryListView.vue'
 import { useAsideStore } from '@/stores/asideStore'

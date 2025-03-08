@@ -128,10 +128,10 @@ export const useAsideStore = defineStore('aside', {
     async initializeData() {
       try {
         // Charger la structure de l'application
-        const appStructure = await import('@data/app-structure.json')
+        const appStructure = await import('@data/app/app-structure.json')
         
         // Charger la navigation principale
-        const mainNavigation = await import('@data/main-navigation.json')
+        const mainNavigation = await import('@data/app/main-navigation.json')
         
         // Charger la liste des pays (version légère)
         const countryList = await import('@data/countries/index.json')

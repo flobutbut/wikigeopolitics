@@ -100,9 +100,9 @@
 <script lang="ts">
 import { defineComponent, computed } from 'vue'
 import { useAsideStore } from '@/stores/asideStore'
-import CountryItem from '@/components/country-item/CountryItem.vue'
-import SectionTitle from '@/components/section-title/SectionTitle.vue'
-import ReturnButton from '@/components/return-button/ReturnButton.vue'
+import CountryItem from '@/components/country/CountryItem.vue'
+import SectionTitle from '@/components/common/SectionTitle.vue'
+import ReturnButton from '@/components/navigation/ReturnButton.vue'
 
 export default defineComponent({
   name: 'AsideCountryListView',
