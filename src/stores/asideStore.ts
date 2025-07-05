@@ -292,24 +292,11 @@ export const useAsideStore = defineStore('aside', {
     async selectCountry(id: string) {
       console.log('Country selected:', id)
       
-      // Charger les données du pays
+      // Charger les données du pays pour le panneau flottant
       await this.loadCountryData(id)
       
-      // Stocker la vue précédente pour pouvoir y revenir
-      this.currentView.previousView = {
-        type: this.currentView.type,
-        id: this.currentView.id
-      }
-      
-      // Changer la vue actuelle
-      this.currentView.type = 'detail'
-      this.currentView.id = id
-      this.currentView.title = this.currentDetailData.title
-      this.currentView.searchEnabled = false
-      this.currentView.hasReturnButton = true
-      
-      // Réinitialiser la recherche
-      this.searchQuery = ''
+      // NE PAS changer la vue actuelle - l'utilisateur reste sur la vue active
+      // Les données sont disponibles dans currentDetailData pour le panneau flottant
     },
     
     // Sélection d'une organisation

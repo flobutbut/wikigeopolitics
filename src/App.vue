@@ -15,6 +15,9 @@
           @map-ready="handleMapReady"
           @country-selected="handleCountrySelected"
         />
+        
+        <!-- Panneau flottant de détails -->
+        <FloatingDetailPanel />
       </main>
     </div>
   </div>
@@ -25,6 +28,7 @@ import { defineComponent, ref } from 'vue'
 import AsideNav from '@components/aside/aside.vue'
 import MapComponent from '@components/map/map.vue'
 import HeaderNav from '@components/header/header.vue'
+import FloatingDetailPanel from '@components/panels/FloatingDetailPanel.vue'
 import type { LatLng } from 'leaflet'
 import { useCountrySelectionStore } from '@/stores/countrySelectionStore'
 
@@ -33,7 +37,8 @@ export default defineComponent({
   components: {
     AsideNav,
     MapComponent,
-    HeaderNav
+    HeaderNav,
+    FloatingDetailPanel
   },
   
   setup() {

@@ -7,6 +7,7 @@ import { defineComponent, ref, onMounted, onUnmounted, watch } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useCountrySelectionStore } from '@/stores/countrySelectionStore'
+import { useAsideStore } from '@/stores/asideStore'
 
 export default defineComponent({
   name: 'MapComponent',
@@ -30,8 +31,9 @@ export default defineComponent({
     let countryMarkers: L.Marker[] = []
     let selectedMarker: L.Marker | null = null
     
-    // Utiliser le store de sélection de pays
+    // Utiliser les stores
     const countryStore = useCountrySelectionStore()
+    const asideStore = useAsideStore()
     
     onMounted(() => {
       if (!mapContainer.value) return
@@ -57,6 +59,8 @@ export default defineComponent({
         // Essayer de sélectionner un pays par les coordonnées
         const selectedCountry = countryStore.selectCountryByCoordinates(e.latlng.lat, e.latlng.lng)
         if (selectedCountry) {
+          // Charger les données du pays dans le store aside
+          asideStore.selectCountry(selectedCountry.id)
           emit('country-selected', selectedCountry)
           updateSelectedMarker()
         }
@@ -91,13 +95,12 @@ export default defineComponent({
           })
         }).addTo(map!)
         
-        // Ajouter un popup avec le nom du pays
-        marker.bindPopup(`<b>${country.name}</b><br>Cliquez pour sélectionner`)
-        
         // Gérer le clic sur le marqueur
         marker.on('click', () => {
           const selectedCountry = countryStore.selectCountry(country.id)
           if (selectedCountry) {
+            // Charger les données du pays dans le store aside
+            asideStore.selectCountry(country.id)
             emit('country-selected', selectedCountry)
             updateSelectedMarker()
           }

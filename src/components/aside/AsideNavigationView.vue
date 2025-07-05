@@ -175,7 +175,7 @@ export default defineComponent({
       // Sélectionner le pays dans le store de sélection
       countryStore.selectCountry(id)
       
-      // Naviguer vers la vue détail du pays
+      // Charger les données du pays pour le panneau flottant
       asideStore.selectCountry(id)
     }
     
