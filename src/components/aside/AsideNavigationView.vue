@@ -1,53 +1,56 @@
 <template>
-  <div class="aside__section">
-    <ReturnButton @click="returnToPreviousView" />
-    
-    <SectionTitle>{{ currentView.title }}</SectionTitle>
-    
-    <!-- Vue de sous-menu standard -->
-    <template v-if="currentView.type === 'submenu'">
-      <ul class="aside__menu">
-        <MenuItem
-          v-for="item in filteredItems"
-          :key="item.id"
-          :title="item.title"
-          @click="navigateToDetail(item.id)"
-        />
-      </ul>
+  <div class="aside__navigation-view">
+    <div class="aside__section">
+      <ReturnButton @click="returnToPreviousView" />
       
-      <!-- Affichage spécial pour les organisations -->
-      <div v-if="currentView.organizations" class="organizations-list">
-        <div 
-          v-for="org in filteredOrganizations" 
-          :key="org.id"
-          class="organization-item"
-          @click="selectOrganization(org.id)"
-        >
-          {{ org.title }}
-        </div>
-      </div>
-    </template>
-    
-    <!-- Vue de liste de pays -->
-    <template v-if="currentView.type === 'countryList'">
-      <div v-for="continent in ['europe', 'asia', 'africa', 'northAmerica', 'southAmerica', 'oceania', 'other']" 
-           :key="continent" 
-           class="continent-section"
-           v-show="continents[continent] && continents[continent].length > 0">
-        <SectionTitle size="small">{{ getContinentLabel(continent) }}</SectionTitle>
-        <ul class="country-list">
-          <li 
-            v-for="country in continents[continent]" 
-            :key="country.id"
-            class="country-item"
-            @click="selectCountry(country.id)"
-          >
-            <span class="country-flag">{{ country.flag }}</span>
-            <span class="country-name">{{ country.title }}</span>
-          </li>
+      <SectionTitle level="1" size="large">{{ currentView.title }}</SectionTitle>
+      
+      <!-- Vue de sous-menu standard -->
+      <template v-if="currentView.type === 'submenu'">
+        <ul class="aside__menu">
+          <MenuItem
+            v-for="item in filteredItems"
+            :key="item.id"
+            :title="item.title"
+            @click="navigateToDetail(item.id)"
+          />
         </ul>
-      </div>
-    </template>
+        
+        <!-- Affichage spécial pour les organisations -->
+        <div v-if="currentView.organizations" class="organizations-list">
+          <div 
+            v-for="org in filteredOrganizations" 
+            :key="org.id"
+            class="organization-item"
+            @click="selectOrganization(org.id)"
+          >
+            {{ org.title }}
+          </div>
+        </div>
+      </template>
+      
+      <!-- Vue de liste de pays -->
+      <template v-if="currentView.type === 'countryList'">
+        <div v-for="continent in ['europe', 'asia', 'africa', 'northAmerica', 'southAmerica', 'oceania', 'other']" 
+             :key="continent" 
+             class="continent-section"
+             v-show="continents[continent] && continents[continent].length > 0">
+          <SectionTitle level="2" size="default">{{ getContinentLabel(continent) }}</SectionTitle>
+          <ul class="aside__menu">
+            <MenuItem
+              v-for="country in continents[continent]" 
+              :key="country.id"
+              :title="country.title"
+              @click="selectCountry(country.id)"
+            >
+              <template #prepend>
+                <span class="country-flag">{{ country.flag }}</span>
+              </template>
+            </MenuItem>
+          </ul>
+        </div>
+      </template>
+    </div>
   </div>
 </template>
 
@@ -57,6 +60,7 @@ import MenuItem from '@/components/common/MenuItem.vue'
 import SectionTitle from '@/components/common/SectionTitle.vue'
 import ReturnButton from '@/components/navigation/ReturnButton.vue'
 import { useAsideStore } from '@/stores/asideStore'
+import { useCountrySelectionStore } from '@/stores/countrySelectionStore'
 
 export default defineComponent({
   name: 'AsideNavigationView',
@@ -69,6 +73,7 @@ export default defineComponent({
   
   setup() {
     const asideStore = useAsideStore()
+    const countryStore = useCountrySelectionStore()
     
     // Vue actuelle
     const currentView = computed(() => asideStore.currentView)
@@ -167,6 +172,10 @@ export default defineComponent({
     
     // Sélection d'un pays
     const selectCountry = (id) => {
+      // Sélectionner le pays dans le store de sélection
+      countryStore.selectCountry(id)
+      
+      // Naviguer vers la vue détail du pays
       asideStore.selectCountry(id)
     }
     
@@ -191,10 +200,8 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.aside__section {
-  margin-bottom: var(--spacing-lg);
-  padding-left: var(--spacing-md);
-  padding-right: var(--spacing-md);
+.aside__navigation-view {
+  /* Supprimer les paddings spécifiques */
 }
 
 .aside__menu {

@@ -2,7 +2,10 @@
   <li class="menu-item" :class="{ 'menu-item--active': isActive }">
     <template v-if="isLayer">
       <label class="menu-item__layer">
-        <span class="menu-item__title">{{ title }}</span>
+        <span class="menu-item__title">
+          <slot name="prepend"></slot>
+          {{ title }}
+        </span>
         <input 
           type="checkbox" 
           v-model="isChecked"
@@ -18,7 +21,10 @@
         class="menu-item__link"
         @click="handleClick"
       >
-        <span class="menu-item__title">{{ title }}</span>
+        <span class="menu-item__title">
+          <slot name="prepend"></slot>
+          {{ title }}
+        </span>
         <span 
           v-if="hasChildren" 
           class="menu-item__chevron"

@@ -10,8 +10,10 @@
       <!-- Contenu principal à droite -->
       <main class="main-content">
         <MapComponent 
+          ref="mapComponent"
           @map-click="handleMapClick"
           @map-ready="handleMapReady"
+          @country-selected="handleCountrySelected"
         />
       </main>
     </div>
@@ -24,6 +26,7 @@ import AsideNav from '@components/aside/aside.vue'
 import MapComponent from '@components/map/map.vue'
 import HeaderNav from '@components/header/header.vue'
 import type { LatLng } from 'leaflet'
+import { useCountrySelectionStore } from '@/stores/countrySelectionStore'
 
 export default defineComponent({
   name: 'App',
@@ -35,6 +38,10 @@ export default defineComponent({
   
   setup() {
     const mapInstance = ref(null)
+    const mapComponent = ref(null)
+    
+    // Utiliser le store de sélection de pays
+    const countryStore = useCountrySelectionStore()
     
     const handleMapClick = (latlng: LatLng) => {
       console.log(`Carte cliquée à: ${latlng.lat}, ${latlng.lng}`)
@@ -45,9 +52,16 @@ export default defineComponent({
       console.log('Carte initialisée et prête')
     }
     
+    const handleCountrySelected = (country: any) => {
+      console.log(`Pays sélectionné depuis la carte: ${country.name}`)
+    }
+    
     return {
+      mapInstance,
+      mapComponent,
       handleMapClick,
-      handleMapReady
+      handleMapReady,
+      handleCountrySelected
     }
   }
 })

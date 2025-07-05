@@ -3,6 +3,15 @@
     <div class="logo">
       <img src="@assets/brand/logoWG.svg" alt="Logo WikiGeopolitics">
     </div>
+    
+    <!-- Barre de recherche centrée -->
+    <div class="search-container">
+      <Search 
+        v-if="currentView.searchEnabled !== false"
+        @search="handleSearch" 
+      />
+    </div>
+    
     <nav>
       <ul class="flex items-center gap-md">
         <li>
@@ -17,17 +26,33 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, computed } from 'vue'
 import Button from '@components/common/Button.vue'
+import Search from '@components/common/Search.vue'
+import { useAsideStore } from '@/stores/asideStore'
 
 export default defineComponent({
   name: 'HeaderNav',
   
   components: {
-    Button
+    Button,
+    Search
   },
   
   setup() {
+    const asideStore = useAsideStore()
+    
+    // Computed pour le placeholder de recherche
+    const searchPlaceholder = computed(() => asideStore.searchPlaceholder)
+    
+    // Vue actuelle
+    const currentView = computed(() => asideStore.currentView)
+    
+    // Gestion de la recherche
+    const handleSearch = (query: string) => {
+      asideStore.setSearchQuery(query)
+    }
+    
     const handleContribute = () => {
       console.log('Contribuer clicked')
       // Logique pour rediriger vers la page de contribution
@@ -39,6 +64,9 @@ export default defineComponent({
     }
     
     return {
+      currentView,
+      searchPlaceholder,
+      handleSearch,
       handleContribute,
       handleLogin
     }
@@ -64,6 +92,14 @@ export default defineComponent({
 
 .logo img {
   height: 40px;
+}
+
+.search-container {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px; /* Ajustez selon vos besoins */
+  max-width: 40%;
 }
 
 .header nav ul {

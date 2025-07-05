@@ -1,27 +1,24 @@
 <template>
   <aside class="aside" v-scrollbar="{ stable: true, hover: true }">
-    <Search 
-      v-if="currentView.searchEnabled !== false"
-      @search="handleSearch" 
-      :placeholder="searchPlaceholder"
-    />
-
-    <!-- Vue principale (niveau 0) -->
-    <AsideMainView v-if="currentView.type === 'main'" />
+    <!-- La barre de recherche a été déplacée vers le header -->
     
-    <!-- Vue intermédiaire (niveaux 1 à n) -->
-    <AsideNavigationView 
-      v-else-if="['submenu', 'countryList'].includes(currentView.type)" 
-    />
-    
-    <!-- Vue détail (fiche finale) -->
-    <AsideDetailView v-else-if="currentView.type === 'detail'" />
+    <div class="aside__content">
+      <!-- Vue principale (niveau 0) -->
+      <AsideMainView v-if="currentView.type === 'main'" />
+      
+      <!-- Vue intermédiaire (niveaux 1 à n) -->
+      <AsideNavigationView 
+        v-else-if="['submenu', 'countryList'].includes(currentView.type)" 
+      />
+      
+      <!-- Vue détail (fiche finale) -->
+      <AsideDetailView v-else-if="currentView.type === 'detail'" />
+    </div>
   </aside>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
-import Search from '@components/common/Search.vue'
 import AsideMainView from './AsideMainView.vue'
 import AsideNavigationView from './AsideNavigationView.vue'
 import AsideDetailView from './AsideDetailView.vue'
@@ -30,22 +27,14 @@ import { useAsideStore } from '@/stores/asideStore'
 // Utiliser le store Pinia
 const asideStore = useAsideStore()
 
-// Computed pour le placeholder de recherche
-const searchPlaceholder = computed(() => asideStore.searchPlaceholder)
-
 // Vue actuelle
 const currentView = computed(() => asideStore.currentView)
-
-// Gestion de la recherche
-const handleSearch = (query: string) => {
-  asideStore.setSearchQuery(query)
-}
 
 // Assurer que la barre de défilement est toujours visible
 onMounted(() => {
   // Forcer un rafraîchissement du composant pour s'assurer que la barre de défilement est correctement affichée
   setTimeout(() => {
-    const asideElement = document.querySelector('.aside');
+    const asideElement = document.querySelector('.aside') as HTMLElement;
     if (asideElement) {
       asideElement.style.overflowY = 'auto';
       asideElement.style.overflowY = 'scroll';
@@ -65,7 +54,18 @@ onMounted(() => {
   width: var(--aside-width);
   /* overflow-y est géré par la directive */
   z-index: 1000;
-  padding: var(--spacing-sm) 0;
   box-sizing: border-box;
+}
+
+.aside__content {
+  padding-top: var(--spacing-xl);
+  padding-right: var(--spacing-sm);
+  padding-bottom: var(--spacing-sm);
+  padding-left: var(--spacing-md);
+}
+
+/* Style global pour les sections dans l'aside */
+:deep(.aside__section) {
+  margin-bottom: var(--spacing-lg);
 }
 </style> 

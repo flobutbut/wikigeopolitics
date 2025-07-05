@@ -29,7 +29,7 @@ export default defineComponent({
   props: {
     placeholder: {
       type: String,
-      default: 'Rechercher...'
+      default: 'Rechercher ...'
     }
   },
 

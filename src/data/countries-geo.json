@@ -1,0 +1,365 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "france",
+        "name": "France",
+        "flag": "🇫🇷"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [2.2137, 46.2276]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "germany",
+        "name": "Allemagne",
+        "flag": "🇩🇪"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [10.4515, 51.1657]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "usa",
+        "name": "États-Unis",
+        "flag": "🇺🇸"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-95.7129, 37.0902]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "china",
+        "name": "Chine",
+        "flag": "🇨🇳"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [104.1954, 35.8617]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "japan",
+        "name": "Japon",
+        "flag": "🇯🇵"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [138.2529, 36.2048]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "russia",
+        "name": "Russie",
+        "flag": "🇷🇺"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [105.3188, 61.5240]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "india",
+        "name": "Inde",
+        "flag": "🇮🇳"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [78.9629, 20.5937]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "brazil",
+        "name": "Brésil",
+        "flag": "🇧🇷"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-51.9253, -14.2350]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "canada",
+        "name": "Canada",
+        "flag": "🇨🇦"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-106.3468, 56.1304]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "south-korea",
+        "name": "Corée du Sud",
+        "flag": "🇰🇷"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [127.7669, 35.9078]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "south-africa",
+        "name": "Afrique du Sud",
+        "flag": "🇿🇦"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [24.9916, -30.5595]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "saudi-arabia",
+        "name": "Arabie Saoudite",
+        "flag": "🇸🇦"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [45.0792, 23.8859]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "north-korea",
+        "name": "Corée du Nord",
+        "flag": "🇰🇵"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [127.5101, 40.3399]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "united-kingdom",
+        "name": "Royaume-Uni",
+        "flag": "🇬🇧"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-3.4360, 55.3781]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "iran",
+        "name": "Iran",
+        "flag": "🇮🇷"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [53.6880, 32.4279]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "thailand",
+        "name": "Thaïlande",
+        "flag": "🇹🇭"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [100.9925, 15.8700]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "australia",
+        "name": "Australie",
+        "flag": "🇦🇺"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [133.7751, -25.2744]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "new_zealand",
+        "name": "Nouvelle-Zélande",
+        "flag": "🇳🇿"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [174.8860, -40.9006]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "papua_new_guinea",
+        "name": "Papouasie-Nouvelle-Guinée",
+        "flag": "🇵🇬"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [143.9555, -6.3150]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "fiji",
+        "name": "Fidji",
+        "flag": "🇫🇯"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [178.0650, -17.7134]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "solomon_islands",
+        "name": "Îles Salomon",
+        "flag": "🇸🇧"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [160.1564, -9.6457]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vanuatu",
+        "name": "Vanuatu",
+        "flag": "🇻🇺"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [166.9592, -15.3767]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "samoa",
+        "name": "Samoa",
+        "flag": "🇼🇸"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-172.1046, -13.7590]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "kiribati",
+        "name": "Kiribati",
+        "flag": "🇰🇮"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-157.3633, 1.3382]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "tonga",
+        "name": "Tonga",
+        "flag": "🇹🇴"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-175.1982, -21.1790]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "tuvalu",
+        "name": "Tuvalu",
+        "flag": "🇹🇻"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [177.6493, -7.1095]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "micronesia",
+        "name": "Micronésie",
+        "flag": "🇫🇲"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [158.2150, 7.4256]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "marshall_islands",
+        "name": "Îles Marshall",
+        "flag": "🇲🇭"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [168.7340, 7.1315]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "palau",
+        "name": "Palau",
+        "flag": "🇵🇼"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [134.5825, 7.5150]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "nauru",
+        "name": "Nauru",
+        "flag": "🇳🇷"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [166.9315, -0.5228]
+      }
+    }
+  ]
+} 

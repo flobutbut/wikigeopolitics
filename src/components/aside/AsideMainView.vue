@@ -1,33 +1,35 @@
 <template>
-  <div v-for="category in filteredNavigation" :key="category.id" class="aside__section">
-    <h2 class="aside__section-title">{{ category.title }}</h2>
-    
-    <!-- Toggles pour les options (comme dans "Tous les pays") -->
-    <div v-if="category.toggleOptions" class="aside__toggles">
-      <div v-for="option in category.toggleOptions" :key="option.id" class="toggle-item">
-        <label class="switch-label">
-          <span class="toggle-title">{{ option.title }}</span>
-          <input 
-            type="checkbox" 
-            v-model="option.enabled"
-            @change="handleToggleOption(option)"
-            class="switch-input"
-          >
-          <span class="switch-slider"></span>
-        </label>
+  <div class="aside__main-view">
+    <div v-for="category in filteredNavigation" :key="category.id" class="aside__section">
+      <h2 class="aside__section-title">{{ category.title }}</h2>
+      
+      <!-- Toggles pour les options (comme dans "Tous les pays") -->
+      <div v-if="category.toggleOptions" class="aside__toggles">
+        <div v-for="option in category.toggleOptions" :key="option.id" class="toggle-item">
+          <label class="switch-label">
+            <span class="toggle-title">{{ option.title }}</span>
+            <input 
+              type="checkbox" 
+              v-model="option.enabled"
+              @change="handleToggleOption(option)"
+              class="switch-input"
+            >
+            <span class="switch-slider"></span>
+          </label>
+        </div>
       </div>
+      
+      <!-- Éléments de menu standard -->
+      <ul v-if="category.items" class="aside__menu">
+        <MenuItem
+          v-for="item in category.items"
+          :key="item.id"
+          :title="item.title"
+          :has-children="item.hasSubmenu"
+          @click="navigateToSubmenu(item.id)"
+        />
+      </ul>
     </div>
-    
-    <!-- Éléments de menu standard -->
-    <ul v-if="category.items" class="aside__menu">
-      <MenuItem
-        v-for="item in category.items"
-        :key="item.id"
-        :title="item.title"
-        :has-children="item.hasSubmenu"
-        @click="navigateToSubmenu(item.id)"
-      />
-    </ul>
   </div>
 </template>
 
@@ -70,10 +72,12 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.aside__main-view {
+  /* Supprimer les paddings spécifiques */
+}
+
 .aside__section {
   margin-bottom: var(--spacing-lg);
-  padding-left: var(--spacing-sm);
-  padding-right: var(--spacing-sm);
 }
 
 .aside__section-title {
