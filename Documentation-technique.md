@@ -130,4 +130,48 @@
 1. **Amélioration de l'UX** : Tooltips informatifs
 2. **Optimisation** : Lazy loading des marqueurs
 3. **Accessibilité** : Support clavier et lecteur d'écran
-4. **Tests** : Couverture de tests complète 
+4. **Tests** : Couverture de tests complète
+
+## Accès à la base de données PostgreSQL (lecture/écriture)
+
+### Connexion (db.ts)
+- Utilise le package `pg` et un pool de connexions.
+- Configuration centralisée (variables d'environnement ou valeurs par défaut).
+- Fonction utilitaire `query<T>(sql, params)` pour exécuter des requêtes typées.
+
+### Service de lecture (readService.ts)
+- Exemples :
+  - `getAllCountries()` : retourne la liste des pays (id, nom, drapeau, continent)
+  - `getCountryById(id)` : retourne un pays par son id
+- Utilise la fonction générique `query`.
+- Peut être étendu à toutes les entités (organization, conflict, etc.)
+
+### Service d'écriture (writeService.ts)
+- Exemples :
+  - `addCountry(country)` : ajoute un pays
+  - `updateCountry(country)` : met à jour un pays
+- Utilise la fonction générique `query`.
+- Peut être étendu à toutes les entités.
+
+### Exemple d'utilisation
+```typescript
+import { getAllCountries, getCountryById } from '@/services/readService';
+import { addCountry, updateCountry } from '@/services/writeService';
+
+// Lecture
+const countries = await getAllCountries();
+const france = await getCountryById('france');
+
+// Écriture
+await addCountry({ id: 'test', title: 'Test', flag: 'test.svg', continent: 'Europe' });
+await updateCountry({ id: 'test', title: 'Test modifié', flag: 'test.svg', continent: 'Europe' });
+```
+
+### Sécurité
+- Les requêtes sont paramétrées (anti-injection SQL)
+- Les accès en écriture sont séparés (pas de delete par défaut)
+
+### Extension
+- Ajouter des méthodes pour chaque entité (organization, conflict, etc.)
+- Ajouter des transactions si besoin
+- Ajouter la gestion fine des erreurs 

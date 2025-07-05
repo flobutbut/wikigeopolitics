@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgis/postgis:15-3.4
+    container_name: wikigeopolitics-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: wikigeopolitics
+      POSTGRES_USER: wikigeo_user
+      POSTGRES_PASSWORD: wikigeo_password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+      - ./database/backups:/backups
+    networks:
+      - wikigeopolitics-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: wikigeopolitics-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@wikigeopolitics.com
+      PGADMIN_DEFAULT_PASSWORD: admin_password
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - wikigeopolitics-network
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  wikigeopolitics-network:
+    driver: bridge 
