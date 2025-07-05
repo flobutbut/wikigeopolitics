@@ -28,6 +28,7 @@ WikiGeopolitics est une application web interactive permettant d'explorer les do
 
 ## Fonctionnalités
 - **Carte interactive mondiale** avec visualisation des données par pays
+- **Sélection de pays** avec highlight visuel sur la carte
 - **Navigation intuitive** par pays et par région
 - **Chronologie dynamique** des événements géopolitiques majeurs
 - **Recherche avancée** par mots-clés, régions, périodes et thématiques
@@ -113,12 +114,15 @@ src/
 
 Une fois l'application lancée, vous pouvez :
 
-1. Naviguer sur la carte en utilisant la souris (zoom avec la molette)
-2. Cliquer sur un pays pour afficher ses informations détaillées
-3. Utiliser la barre de recherche pour trouver rapidement un pays ou un événement
-4. Filtrer les données par année, par région ou par type d'événement
-5. Basculer entre les différentes visualisations (carte, graphiques, tableaux)
-6. Changer le thème via le bouton en haut à droite
+1. **Sélectionner un pays** :
+   - Cliquer sur un marqueur de pays sur la carte
+   - Ou naviguer vers la liste des pays dans l'aside
+2. Naviguer sur la carte en utilisant la souris (zoom avec la molette)
+3. Cliquer sur un pays pour afficher ses informations détaillées
+4. Utiliser la barre de recherche pour trouver rapidement un pays ou un événement
+5. Filtrer les données par année, par région ou par type d'événement
+6. Basculer entre les différentes visualisations (carte, graphiques, tableaux)
+7. Changer le thème via le bouton en haut à droite
 
 ## Architecture
 
