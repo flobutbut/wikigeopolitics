@@ -1,9 +1,9 @@
 # Documentation Technique - WikiGeopolitics
 
 ## Version
-- **Version actuelle** : 2.0.0
+- **Version actuelle** : 2.1.0
 - **Dernière mise à jour** : 22 mars 2025
-- **Fonctionnalité ajoutée** : Sélection de pays avec highlight sur la carte
+- **Fonctionnalité ajoutée** : Base de données complète avec 82 pays et données détaillées
 
 ## Architecture Technique
 
@@ -13,6 +13,7 @@
 - **Bundler** : Vite
 - **Gestion d'état** : Pinia
 - **Cartographie** : Leaflet.js
+- **Base de données** : PostgreSQL avec PostGIS
 - **Package manager** : Yarn
 
 ### Structure des Données
@@ -132,28 +133,48 @@
 3. **Accessibilité** : Support clavier et lecteur d'écran
 4. **Tests** : Couverture de tests complète
 
-## Accès à la base de données PostgreSQL (lecture/écriture)
+## Base de Données PostgreSQL
 
-### Connexion (db.ts)
+### Configuration
+- **Base de données** : PostgreSQL 15 avec PostGIS
+- **Conteneur Docker** : `wikigeopolitics-db` sur le port 5433
+- **Interface d'administration** : PgAdmin sur le port 5050
+- **Données** : 82 pays avec informations détaillées
+
+### Structure des Données
+- **Table principale** : `country` (82 pays)
+- **Tables de données détaillées** :
+  - `political_regime` : Régimes politiques
+  - `agricultural_production` : Production agricole
+  - `technology_development` : Développement technologique
+  - `demographic_society` : Données démographiques
+  - `armed_conflicts` : Conflits armés
+  - `natural_resources` : Ressources naturelles
+  - `industrial_production` : Production industrielle
+  - `transport_merchandise` : Transport de marchandises
+
+### Accès à la base de données (lecture/écriture)
+
+#### Connexion (db.ts)
 - Utilise le package `pg` et un pool de connexions.
 - Configuration centralisée (variables d'environnement ou valeurs par défaut).
 - Fonction utilitaire `query<T>(sql, params)` pour exécuter des requêtes typées.
 
-### Service de lecture (readService.ts)
+#### Service de lecture (readService.ts)
 - Exemples :
   - `getAllCountries()` : retourne la liste des pays (id, nom, drapeau, continent)
   - `getCountryById(id)` : retourne un pays par son id
 - Utilise la fonction générique `query`.
 - Peut être étendu à toutes les entités (organization, conflict, etc.)
 
-### Service d'écriture (writeService.ts)
+#### Service d'écriture (writeService.ts)
 - Exemples :
   - `addCountry(country)` : ajoute un pays
   - `updateCountry(country)` : met à jour un pays
 - Utilise la fonction générique `query`.
 - Peut être étendu à toutes les entités.
 
-### Exemple d'utilisation
+#### Exemple d'utilisation
 ```typescript
 import { getAllCountries, getCountryById } from '@/services/readService';
 import { addCountry, updateCountry } from '@/services/writeService';
@@ -167,11 +188,43 @@ await addCountry({ id: 'test', title: 'Test', flag: 'test.svg', continent: 'Euro
 await updateCountry({ id: 'test', title: 'Test modifié', flag: 'test.svg', continent: 'Europe' });
 ```
 
-### Sécurité
+#### Sécurité
 - Les requêtes sont paramétrées (anti-injection SQL)
 - Les accès en écriture sont séparés (pas de delete par défaut)
 
-### Extension
+#### Extension
 - Ajouter des méthodes pour chaque entité (organization, conflict, etc.)
 - Ajouter des transactions si besoin
-- Ajouter la gestion fine des erreurs 
+- Ajouter la gestion fine des erreurs
+
+### Identifiants de Connexion
+- **Host** : localhost
+- **Port** : 5433
+- **Base de données** : wikigeopolitics
+- **Utilisateur** : wikigeo_user
+- **Mot de passe** : wikigeo_password
+
+### PgAdmin
+- **URL** : http://localhost:5050
+- **Email** : admin@wikigeopolitics.com
+- **Mot de passe** : admin_password
+
+## Initialisation simplifiée de la base de données
+
+Pour initialiser ou réinitialiser la base PostgreSQL avec toutes les données (structure + contenu), il suffit d'utiliser le script suivant :
+
+```sh
+sh database/init/init-db-from-backup.sh
+```
+
+Ce script :
+- Copie le backup SQL complet dans le conteneur Docker
+- Supprime la base si elle existe
+- Recrée la base
+- Restaure toutes les données et la structure depuis le backup SQL
+
+**Le fichier de backup** :
+- `database/backup/wikigeopolitics_complete_backup.sql`
+- Généré avec `pg_dump` depuis la base de référence
+
+> Il n'est donc plus nécessaire d'exécuter tous les scripts d'insertion un par un. Un seul script et un seul fichier suffisent pour une initialisation complète et rapide. 

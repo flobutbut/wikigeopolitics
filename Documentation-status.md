@@ -2,7 +2,7 @@
 
 ## État Général
 - **Statut** : ✅ En développement actif
-- **Version** : 2.0.0
+- **Version** : 2.1.0
 - **Dernière mise à jour** : 22 mars 2025
 - **Branche principale** : main
 
@@ -18,6 +18,7 @@
 - [x] **Vues détaillées** : Fiches pays avec sections collapsibles
 - [x] **Gestion d'état** : Store Pinia pour la sélection
 - [x] **Données géographiques** : Coordonnées des pays
+- [x] **Base de données** : PostgreSQL avec 82 pays et données détaillées
 
 ### 🚧 Fonctionnalités en Cours
 - [ ] **Données complètes** : Chargement de toutes les fiches pays
@@ -42,18 +43,20 @@
 - ✅ **Stores** : Pinia pour la gestion d'état
 
 ### Données
-- ✅ **Pays** : 32 pays avec coordonnées géographiques
+- ✅ **Pays** : 82 pays avec coordonnées géographiques
 - ✅ **Continents** : Organisation par région
 - ✅ **Fiches détaillées** : Données structurées par pays
 - ✅ **Navigation** : Structure de menu hiérarchique
+- ✅ **Base de données** : PostgreSQL avec tables détaillées
 
 ## Performance
 
 ### Métriques Actuelles
 - **Temps de chargement** : < 3 secondes
 - **Taille du bundle** : ~2MB (développement)
-- **Marqueurs de carte** : 32 pays affichés
+- **Marqueurs de carte** : 82 pays affichés
 - **Réactivité** : Interface fluide
+- **Base de données** : 82 pays avec données détaillées
 
 ### Optimisations Réalisées
 - ✅ **Lazy loading** : Données chargées à la demande
@@ -132,8 +135,9 @@
 
 ## Métriques de Progression
 
-- **Fonctionnalités** : 70% complètes
+- **Fonctionnalités** : 80% complètes
 - **Tests** : 20% couverts
-- **Documentation** : 80% complète
+- **Documentation** : 85% complète
 - **Performance** : 85% optimisée
-- **UX** : 75% finalisée 
+- **UX** : 75% finalisée
+- **Base de données** : 90% complète 
