@@ -5,39 +5,54 @@
       <button @click="closePanel" class="close-button">×</button>
     </div>
     
-    <div class="panel-content">
-      <!-- Sections principales -->
-      <DetailSection
-        v-for="(section, index) in selectedCountry.sections"
-        :key="index"
-        :title="section.title"
-        :value="section.value"
-        :keyValues="section.keyValues"
-      />
-      
-      <!-- Sections collapsibles -->
-      <CollapsibleSection 
-        v-for="section in selectedCountry.collapsibleSections" 
-        :key="section.id"
-        :title="section.title"
-        :content="section.content"
-        :source="section.source"
-        :sourceUrl="section.sourceUrl"
-        :expanded="section.expanded"
-        :sectionId="section.id"
-        @toggle="toggleSection"
-      />
-      
-      <!-- Coalitions diplomatiques -->
-      <div v-if="selectedCountry.coalitions && selectedCountry.coalitions.length > 0" class="coalitions-section">
-        <SectionTitle level="4" size="small">Coalitions diplomatiques</SectionTitle>
-        <div class="coalitions-list">
-          <div v-for="coalition in selectedCountry.coalitions" :key="coalition.id" class="coalition-item">
-            {{ coalition.title }}
+    <TabNavigation 
+      :tabs="tabs" 
+      :default-tab="'details'"
+      @tab-change="handleTabChange"
+    >
+      <template #default="{ activeTab }">
+        <!-- Vue Détails -->
+        <div v-if="activeTab === 'details'" class="details-view">
+          <!-- Sections principales -->
+          <DetailSection
+            v-for="(section, index) in selectedCountry.sections"
+            :key="index"
+            :title="section.title"
+            :value="section.value"
+            :keyValues="section.keyValues"
+          />
+          
+          <!-- Sections collapsibles -->
+          <CollapsibleSection 
+            v-for="section in selectedCountry.collapsibleSections" 
+            :key="section.id"
+            :title="section.title"
+            :content="section.content"
+            :source="section.source"
+            :sourceUrl="section.sourceUrl"
+            :expanded="section.expanded"
+            :sectionId="section.id"
+            @toggle="toggleSection"
+          />
+          
+          <!-- Coalitions diplomatiques -->
+          <div v-if="selectedCountry.coalitions && selectedCountry.coalitions.length > 0" class="coalitions-section">
+            <SectionTitle level="4" size="small">Coalitions diplomatiques</SectionTitle>
+            <div class="coalitions-list">
+              <div v-for="coalition in selectedCountry.coalitions" :key="coalition.id" class="coalition-item">
+                {{ coalition.title }}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+        
+        <!-- Vue Actualités -->
+        <NewsView 
+          v-if="activeTab === 'news'" 
+          :country-id="selectedCountry.id"
+        />
+      </template>
+    </TabNavigation>
   </div>
 </template>
 
@@ -47,6 +62,8 @@ import { useAsideStore } from '@/stores/asideStore'
 import DetailSection from '@/components/aside/DetailSection.vue'
 import CollapsibleSection from '@/components/aside/CollapsibleSection.vue'
 import SectionTitle from '@/components/common/SectionTitle.vue'
+import TabNavigation from '@/components/common/TabNavigation.vue'
+import NewsView from '@/components/panels/NewsView.vue'
 
 export default defineComponent({
   name: 'FloatingDetailPanel',
@@ -54,7 +71,9 @@ export default defineComponent({
   components: {
     DetailSection,
     CollapsibleSection,
-    SectionTitle
+    SectionTitle,
+    TabNavigation,
+    NewsView
   },
   
   setup() {
@@ -64,6 +83,16 @@ export default defineComponent({
       console.log('FloatingDetailPanel - selectedCountry:', asideStore.currentDetailData)
       return asideStore.currentDetailData
     })
+    
+    // Configuration des onglets
+    const tabs = [
+      { id: 'details', label: 'Détails' },
+      { id: 'news', label: 'Actualités' }
+    ]
+    
+    const handleTabChange = (tabId: string) => {
+      console.log('Tab changed to:', tabId)
+    }
     
     const toggleSection = (sectionId: string, expanded: boolean) => {
       // Toggle l'état d'expansion de la section
@@ -86,6 +115,8 @@ export default defineComponent({
     
     return {
       selectedCountry,
+      tabs,
+      handleTabChange,
       toggleSection,
       closePanel
     }
@@ -146,17 +177,13 @@ export default defineComponent({
   color: var(--text-dark);
 }
 
-.panel-content {
+.details-view {
   padding: var(--spacing-md);
 }
-
-
 
 .coalitions-section {
   margin-top: var(--spacing-md);
 }
-
-
 
 .coalitions-list {
   display: flex;
