@@ -4,7 +4,7 @@ set -e
 DB=wikigeopolitics
 USER=wikigeo_user
 CONTAINER=wikigeopolitics-db
-BACKUP_PATH=/backup/wikigeopolitics_complete_backup.sql
+BACKUP_PATH=/backups/wikigeopolitics_complete_backup.sql
 
 # Copie le backup dans le conteneur (si besoin)
 docker cp database/backup/wikigeopolitics_complete_backup.sql $CONTAINER:$BACKUP_PATH

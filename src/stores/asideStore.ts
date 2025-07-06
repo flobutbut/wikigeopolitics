@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import menuData from '@data/menu.json'
+import { getAllCountries, getNavigationData, getCategoryData } from '@/services/readService'
 
 // Définir les interfaces pour le typage
 interface AppData {
@@ -21,7 +21,14 @@ interface CurrentView {
   hasReturnButton: boolean;
   items: any[];
   organizations: any[] | null;
-  previousView?: { type: string; id: string };
+  previousView?: CurrentView;
+}
+
+interface CollapsibleSection {
+  id: string;
+  title: string;
+  expanded: boolean;
+  content: string;
 }
 
 // Définir le store avec Pinia
@@ -50,11 +57,14 @@ export const useAsideStore = defineStore('aside', {
       id: '',
       title: '',
       sections: [],
-      collapsibleSections: [],
+      collapsibleSections: [] as CollapsibleSection[],
       coalitions: []
     },
     // Ajouter un cache pour les données chargées
-    dataCache: {} as Record<string, any>
+    dataCache: {} as Record<string, any>,
+    // État de chargement
+    isLoading: false,
+    error: null as string | null
   }),
 
   // Getters (équivalent aux computed)
@@ -74,12 +84,12 @@ export const useAsideStore = defineStore('aside', {
         if (category.title.toLowerCase().includes(query)) return true
         
         // Vérifier les options de toggle
-        if (category.toggleOptions && category.toggleOptions.some(opt => 
+        if (category.toggleOptions && category.toggleOptions.some((opt: any) => 
           opt.title.toLowerCase().includes(query)
         )) return true
         
         // Vérifier les éléments
-        if (category.items && category.items.some(item => 
+        if (category.items && category.items.some((item: any) => 
           item.title.toLowerCase().includes(query)
         )) return true
         
@@ -93,8 +103,9 @@ export const useAsideStore = defineStore('aside', {
       if (!state.searchQuery) return state.currentView.items
       
       const query = state.searchQuery.toLowerCase()
-      return state.currentView.items.filter(item => 
-        item.title.toLowerCase().includes(query)
+      return state.currentView.items.filter((item: any) => 
+        item.title?.toLowerCase().includes(query) || 
+        item.name?.toLowerCase().includes(query)
       )
     },
     
@@ -115,7 +126,7 @@ export const useAsideStore = defineStore('aside', {
       if (!state.searchQuery) return state.appData.countryList
       
       const query = state.searchQuery.toLowerCase()
-      return state.appData.countryList.filter(country => 
+      return state.appData.countryList.filter((country: any) => 
         country.title.toLowerCase().includes(query) || 
         country.flag.includes(query)
       )
@@ -124,34 +135,37 @@ export const useAsideStore = defineStore('aside', {
 
   // Actions (méthodes)
   actions: {
-    // Initialiser les données de base
+    // Initialiser les données de base depuis la base de données
     async initializeData() {
       try {
-        // Charger la structure de l'application
-        const appStructure = await import('@data/app/app-structure.json')
+        this.isLoading = true
+        this.error = null
         
-        // Charger la navigation principale
-        const mainNavigation = await import('@data/app/main-navigation.json')
-        
-        // Charger la liste des pays (version légère)
-        const countryList = await import('@data/countries/index.json')
+        // Charger les données depuis la base de données
+        const [countries, navigationData] = await Promise.all([
+          getAllCountries(),
+          getNavigationData()
+        ])
         
         // Assembler les données
         this.appData = {
-          search: appStructure.search,
-          mainNavigation: mainNavigation.categories,
-          countryList: countryList.countries,
+          search: { enabled: true, placeholder: "Rechercher" },
+          mainNavigation: navigationData.categories || [],
+          countryList: countries || [],
           subPages: {},
           detailPages: {}
         }
         
-        console.log('App data loaded')
+        console.log('App data loaded from database')
       } catch (error) {
-        console.error('Error loading app data:', error)
+        console.error('Error loading app data from database:', error)
+        this.error = 'Impossible de charger les données depuis la base de données'
+      } finally {
+        this.isLoading = false
       }
     },
     
-    // Charger les données d'une sous-page à la demande
+    // Charger les données d'une sous-page à la demande depuis la base de données
     async loadSubPageData(id: string) {
       // Vérifier si les données sont déjà en cache
       if (this.dataCache[`subpage-${id}`]) {
@@ -160,25 +174,21 @@ export const useAsideStore = defineStore('aside', {
       }
       
       try {
-        // Déterminer le fichier à charger en fonction de l'ID
-        let dataModule
+        this.isLoading = true
         
-        if (id.startsWith('relations-')) {
-          dataModule = await import('@data/categories/politics.json')
-          this.appData.subPages[id] = dataModule.subPages[id]
-        } else if (id.startsWith('commerce-')) {
-          dataModule = await import('@data/categories/economy.json')
-          this.appData.subPages[id] = dataModule.subPages[id]
+        // Charger les données depuis la base de données
+        const categoryData = await getCategoryData(id)
+        
+        if (categoryData) {
+          this.appData.subPages[id] = {
+            title: categoryData.category.nom,
+            items: categoryData.data || []
+          }
         } else {
-          // Essayer de charger directement un fichier correspondant à l'ID
-          try {
-            dataModule = await import(`@data/categories/${id}.json`)
-            this.appData.subPages[id] = dataModule.default
-          } catch {
-            console.warn(`No specific file found for ${id}, using fallback`)
-            // Fallback: charger toutes les catégories
-            const allCategories = await import('@data/categories/index.json')
-            this.appData.subPages[id] = allCategories.subPages[id] || { title: id, items: [] }
+          // Fallback si la catégorie n'existe pas
+          this.appData.subPages[id] = { 
+            title: id, 
+            items: [] 
           }
         }
         
@@ -186,13 +196,15 @@ export const useAsideStore = defineStore('aside', {
         this.dataCache[`subpage-${id}`] = this.appData.subPages[id]
         
       } catch (error) {
-        console.error(`Error loading subpage data for ${id}:`, error)
+        console.error(`Error loading subpage data for ${id} from database:`, error)
         // Créer une page par défaut en cas d'erreur
         this.appData.subPages[id] = { title: id, items: [] }
+      } finally {
+        this.isLoading = false
       }
     },
     
-    // Charger les données d'un pays à la demande
+    // Charger les données d'un pays à la demande depuis la base de données
     async loadCountryData(id: string) {
       // Vérifier si les données sont déjà en cache
       if (this.dataCache[`country-${id}`]) {
@@ -201,15 +213,61 @@ export const useAsideStore = defineStore('aside', {
       }
       
       try {
-        // Charger les données du pays
-        const countryData = await import(`@data/countries/${id}.json`)
-        this.currentDetailData = countryData.default
+        this.isLoading = true
+        
+        // Charger les données du pays depuis la base de données
+        const { getCountryDetails } = await import('@/services/readService')
+        const countryData = await getCountryDetails(id)
+        
+        if (countryData) {
+          this.currentDetailData = {
+            id: countryData.id,
+            title: countryData.title,
+            sections: countryData.sections || [],
+            collapsibleSections: [
+              {
+                id: 'histoire',
+                title: 'Histoire',
+                expanded: false,
+                content: countryData.histoire?.content || 'Aucune information disponible'
+              },
+              {
+                id: 'politique',
+                title: 'Système politique',
+                expanded: false,
+                content: countryData.politique?.content || 'Aucune information disponible'
+              },
+              {
+                id: 'economie',
+                title: 'Économie',
+                expanded: false,
+                content: countryData.economie?.content || 'Aucune information disponible'
+              },
+              {
+                id: 'demographie',
+                title: 'Société et Démographie',
+                expanded: false,
+                content: countryData.demographie?.content || 'Aucune information disponible'
+              }
+            ] as CollapsibleSection[],
+            coalitions: countryData.politicalRegime?.organizations || []
+          }
+        } else {
+          // Créer des données par défaut si le pays n'existe pas
+          this.currentDetailData = {
+            id: id,
+            title: id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' '),
+            sections: [],
+            collapsibleSections: [],
+            coalitions: []
+          }
+        }
         
         // Mettre en cache les données
         this.dataCache[`country-${id}`] = this.currentDetailData
         
       } catch (error) {
-        console.error(`Error loading country data for ${id}:`, error)
+        console.error(`Error loading country data for ${id} from database:`, error)
         // Créer des données par défaut en cas d'erreur
         this.currentDetailData = {
           id: id,
@@ -218,6 +276,8 @@ export const useAsideStore = defineStore('aside', {
           collapsibleSections: [],
           coalitions: []
         }
+      } finally {
+        this.isLoading = false
       }
     },
     
@@ -329,6 +389,34 @@ export const useAsideStore = defineStore('aside', {
         // Par défaut, retour à la vue principale
         this.returnToMainView()
       }
+    },
+
+    // Mettre à jour la vue courante
+    updateCurrentView(view: Partial<CurrentView>) {
+      this.currentView = { ...this.currentView, ...view }
+    },
+
+    // Naviguer vers une vue
+    navigateToView(view: CurrentView) {
+      this.currentView.previousView = { ...this.currentView }
+      this.currentView = view
+    },
+
+    // Retourner à la vue précédente
+    goBack() {
+      if (this.currentView.previousView) {
+        this.currentView = this.currentView.previousView
+      }
+    },
+
+    // Mettre à jour la requête de recherche
+    updateSearchQuery(query: string) {
+      this.searchQuery = query
+    },
+
+    // Effacer la recherche
+    clearSearch() {
+      this.searchQuery = ''
     }
   }
 }) 

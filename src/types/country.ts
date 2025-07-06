@@ -3,6 +3,7 @@ export interface Country {
   title: string;
   flag: string;
   continent?: string;
+  coordinates?: [number, number];
 }
 
 export interface CountryDetail extends Country {
@@ -26,4 +27,25 @@ export interface CountryDetail extends Country {
     id: string;
     title: string;
   }>;
+  // Données détaillées depuis la base de données
+  generalInfo?: {
+    capitale: string;
+    langue: string;
+    monnaie: string;
+  };
+  indicateurs?: any;
+  histoire?: any;
+  politique?: any;
+  economie?: any;
+  demographie?: any;
+  frontieres?: any;
+  tourisme?: any;
+  politicalRegime?: any;
+  agriculturalData?: any;
+  technologyData?: any;
+  demographicData?: any;
+  conflictsData?: any;
+  naturalResources?: any;
+  industrialData?: any;
+  transportData?: any;
 } 

@@ -20,17 +20,26 @@
         <FloatingDetailPanel />
       </main>
     </div>
+
+    <!-- Indicateur de chargement -->
+    <div v-if="isLoading" class="loading-overlay">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Chargement des données depuis la base de données...</p>
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, onMounted } from 'vue'
 import AsideNav from '@components/aside/aside.vue'
-import MapComponent from '@components/map/map.vue'
+import MapComponent from '@components/map/Map.vue'
 import HeaderNav from '@components/header/header.vue'
 import FloatingDetailPanel from '@components/panels/FloatingDetailPanel.vue'
 import type { LatLng } from 'leaflet'
 import { useCountrySelectionStore } from '@/stores/countrySelectionStore'
+import { useAsideStore } from '@/stores/asideStore'
 
 export default defineComponent({
   name: 'App',
@@ -44,9 +53,30 @@ export default defineComponent({
   setup() {
     const mapInstance = ref(null)
     const mapComponent = ref(null)
+    const isLoading = ref(true)
     
-    // Utiliser le store de sélection de pays
+    // Utiliser les stores
     const countryStore = useCountrySelectionStore()
+    const asideStore = useAsideStore()
+    
+    // Initialiser les données depuis la base de données
+    const initializeData = async () => {
+      try {
+        isLoading.value = true
+        
+        // Initialiser les données en parallèle
+        await Promise.all([
+          countryStore.initializeCountriesData(),
+          asideStore.initializeData()
+        ])
+        
+        console.log('Application initialisée avec les données de la base de données')
+      } catch (error) {
+        console.error('Erreur lors de l\'initialisation des données:', error)
+      } finally {
+        isLoading.value = false
+      }
+    }
     
     const handleMapClick = (latlng: LatLng) => {
       console.log(`Carte cliquée à: ${latlng.lat}, ${latlng.lng}`)
@@ -61,9 +91,15 @@ export default defineComponent({
       console.log(`Pays sélectionné depuis la carte: ${country.name}`)
     }
     
+    // Initialiser les données au montage du composant
+    onMounted(() => {
+      initializeData()
+    })
+    
     return {
       mapInstance,
       mapComponent,
+      isLoading,
       handleMapClick,
       handleMapReady,
       handleCountrySelected
@@ -103,5 +139,39 @@ body {
   position: relative;
   overflow: hidden;
   height: 100%;
+}
+
+/* Styles pour l'indicateur de chargement */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loading-spinner {
+  text-align: center;
+  color: white;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style> 
