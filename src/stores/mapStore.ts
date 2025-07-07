@@ -1,17 +1,26 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
+import { countryApi } from '@/services/apiService'
+
+interface Country {
+  id: string
+  title: string
+  flag: string
+  continent?: string
+  coordonnees?: [number, number]
+}
 
 export const useMapStore = defineStore('map', {
   state: () => ({
     // Données de base
-    countriesGeoJson: null,
+    countriesData: [] as Country[],
+    countriesGeoJson: null as any,
     
     // Sélections
-    selectedCountries: [], // Tableau pour permettre la sélection multiple
+    selectedCountries: [] as string[], // Tableau pour permettre la sélection multiple
     
     // Couches additionnelles
-    tradeRoutes: null,
-    conflictZones: null,
+    tradeRoutes: null as any,
+    conflictZones: null as any,
     
     // Visibilité des couches
     visibleLayers: {
@@ -29,40 +38,60 @@ export const useMapStore = defineStore('map', {
     
     // État de chargement
     isLoading: false,
-    error: null
+    error: null as string | null
   }),
   
   getters: {
     // Récupérer les pays sélectionnés avec leurs données complètes
     selectedCountriesData: (state) => {
-      if (!state.countriesGeoJson) return []
+      if (!state.countriesData) return []
       
-      return state.selectedCountries.map(countryCode => {
-        const feature = state.countriesGeoJson.features.find(f => 
-          (f.properties.iso_a2 || f.properties.ISO_A2) === countryCode
-        )
-        return feature
+      return state.selectedCountries.map(countryId => {
+        return state.countriesData.find(country => country.id === countryId)
       }).filter(Boolean)
     }
   },
   
   actions: {
-    // Charger les données de base des pays
+    // Charger les données de base des pays depuis l'API
     async loadCountriesData() {
       try {
+        console.log('[mapStore] Début du chargement des données des pays...')
         this.isLoading = true
         this.error = null
         
-        // Charger le fichier GeoJSON des frontières des pays
-        const response = await axios.get('/data/countries.geo.json')
+        // Charger les données des pays depuis l'API
+        const countries = await countryApi.getAllCountries()
+        console.log('[mapStore] Données reçues de l\'API:', countries.length, 'pays')
+        console.log('[mapStore] Premier pays:', countries[0])
         
-        if (response.data && response.data.type === 'FeatureCollection') {
-          this.countriesGeoJson = response.data
-        } else {
-          throw new Error('Format de données GeoJSON invalide')
+        console.log('[mapStore] Assignation des données:', countries.length, 'pays')
+        this.countriesData = countries
+        console.log('[mapStore] Données assignées, this.countriesData:', this.countriesData.length, 'pays')
+        
+        // Créer le GeoJSON pour les marqueurs
+        this.countriesGeoJson = {
+          type: 'FeatureCollection',
+          features: countries
+            .filter(country => country.coordonnees)
+            .map(country => ({
+              type: 'Feature',
+              properties: {
+                id: country.id,
+                name: country.title,
+                flag: country.flag
+              },
+              geometry: {
+                type: 'Point',
+                coordinates: country.coordonnees
+              }
+            }))
         }
+        
+        console.log('[mapStore] Données des pays chargées:', this.countriesData.length, 'pays')
+        console.log('[mapStore] GeoJSON créé avec', this.countriesGeoJson.features.length, 'features')
       } catch (error) {
-        console.error('Erreur lors du chargement des données GeoJSON:', error)
+        console.error('[mapStore] Erreur lors du chargement des données des pays:', error)
         this.error = 'Impossible de charger les données de la carte'
       } finally {
         this.isLoading = false
@@ -74,8 +103,8 @@ export const useMapStore = defineStore('map', {
       try {
         this.isLoading = true
         
-        const response = await axios.get('/data/trade-routes.geo.json')
-        this.tradeRoutes = response.data
+        const response = await fetch('/data/geo/trade-routes.geo.json')
+        this.tradeRoutes = await response.json()
         
         // Activer automatiquement la couche
         this.visibleLayers.tradeRoutes = true
@@ -91,8 +120,8 @@ export const useMapStore = defineStore('map', {
       try {
         this.isLoading = true
         
-        const response = await axios.get('/data/conflict-zones.geo.json')
-        this.conflictZones = response.data
+        const response = await fetch('/data/geo/conflict-zones.geo.json')
+        this.conflictZones = await response.json()
         
         // Activer automatiquement la couche
         this.visibleLayers.conflictZones = true
@@ -104,12 +133,12 @@ export const useMapStore = defineStore('map', {
     },
     
     // Sélectionner un pays (ajoute ou supprime)
-    toggleCountrySelection(countryCode) {
-      const index = this.selectedCountries.indexOf(countryCode)
+    toggleCountrySelection(countryId: string) {
+      const index = this.selectedCountries.indexOf(countryId)
       
       if (index === -1) {
         // Ajouter à la sélection
-        this.selectedCountries.push(countryCode)
+        this.selectedCountries.push(countryId)
       } else {
         // Retirer de la sélection
         this.selectedCountries.splice(index, 1)
@@ -117,13 +146,13 @@ export const useMapStore = defineStore('map', {
     },
     
     // Sélectionner un seul pays (efface les autres sélections)
-    selectSingleCountry(countryCode) {
-      this.selectedCountries = [countryCode]
+    selectSingleCountry(countryId: string) {
+      this.selectedCountries = [countryId]
     },
     
     // Sélectionner plusieurs pays à la fois
-    selectMultipleCountries(countryCodes) {
-      this.selectedCountries = [...countryCodes]
+    selectMultipleCountries(countryIds: string[]) {
+      this.selectedCountries = [...countryIds]
     },
     
     // Effacer toutes les sélections
@@ -132,7 +161,7 @@ export const useMapStore = defineStore('map', {
     },
     
     // Activer/désactiver une couche
-    toggleLayer(layerName) {
+    toggleLayer(layerName: keyof typeof this.visibleLayers) {
       if (this.visibleLayers.hasOwnProperty(layerName)) {
         this.visibleLayers[layerName] = !this.visibleLayers[layerName]
       }

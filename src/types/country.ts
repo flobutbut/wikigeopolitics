@@ -3,7 +3,7 @@ export interface Country {
   title: string;
   flag: string;
   continent?: string;
-  coordinates?: [number, number];
+  coordonnees?: [number, number];
 }
 
 export interface CountryDetail extends Country {

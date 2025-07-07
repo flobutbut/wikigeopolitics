@@ -1,7 +1,17 @@
 <template>
   <div v-if="selectedCountry && selectedCountry.title" class="floating-detail-panel">
     <div class="panel-header">
-      <h3>{{ selectedCountry.title }}</h3>
+      <div class="header-content">
+        <div class="country-info">
+          <img 
+            v-if="selectedCountry.flag" 
+            :src="selectedCountry.flag" 
+            :alt="`Drapeau de ${selectedCountry.title}`"
+            class="country-flag"
+          />
+          <h3>{{ selectedCountry.title }}</h3>
+        </div>
+      </div>
       <button @click="closePanel" class="close-button">×</button>
     </div>
     
@@ -147,6 +157,26 @@ export default defineComponent({
   border-bottom: 1px solid var(--border-color);
   background-color: var(--surface-dimmed);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.country-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.country-flag {
+  width: 24px;
+  height: 16px;
+  border-radius: var(--radius-xs);
+  object-fit: cover;
+  border: 1px solid var(--border-color);
 }
 
 .panel-header h3 {

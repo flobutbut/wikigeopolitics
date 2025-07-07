@@ -29,7 +29,10 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
 export const countryApi = {
   // Récupérer tous les pays
   async getAllCountries() {
-    return apiRequest<any[]>('/countries');
+    console.log('[apiService] Appel getAllCountries...')
+    const result = await apiRequest<any[]>('/countries');
+    console.log('[apiService] getAllCountries résultat:', result.length, 'pays')
+    return result;
   },
 
   // Récupérer un pays par ID

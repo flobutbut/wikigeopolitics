@@ -11,32 +11,30 @@
     </div>
     
     <MapComponent 
-      v-if="countriesGeoJson"
+      v-if="!isLoading && !error"
+      :key="countrySelectionStore.countriesData.length"
       :initialView="[20, 0]" 
       :initialZoom="2"
-      :selectedCountries="selectedCountries"
-      :countriesGeoJson="countriesGeoJson"
-      :tradeRoutes="tradeRoutes"
-      :conflictZones="conflictZones"
-      :visibleLayers="visibleLayers"
-      :isLoading="isLoading"
+      :countriesData="countrySelectionStore.countriesData"
       @country-selected="handleCountrySelected"
       @map-ready="handleMapReady"
     />
     
-    <MapLayersControl 
-      :visibleLayers="visibleLayers"
-      @toggle-layer="toggleMapLayer"
-    />
+
+    
+
+    
+
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, computed } from 'vue'
-import MapComponent from '@/components/map/map.vue'
+import { defineComponent, onMounted, computed, watch } from 'vue'
+import MapComponent from '@/components/map/Map.vue'
 import MapLayersControl from '@/components/map/MapLayersControl.vue'
-import { useMapStore } from '@/stores/mapStore'
+import { useCountrySelectionStore } from '@/stores/countrySelectionStore'
 import { useAsideStore } from '@/stores/asideStore'
+import { storeToRefs } from 'pinia'
 
 export default defineComponent({
   name: 'MapView',
@@ -47,64 +45,48 @@ export default defineComponent({
   },
   
   setup() {
-    const mapStore = useMapStore()
+    const countrySelectionStore = useCountrySelectionStore()
     const asideStore = useAsideStore()
+    
+    // Utiliser directement le store
+    const selectedCountry = computed(() => countrySelectionStore.selectedCountry)
+    const isLoading = computed(() => countrySelectionStore.isLoading)
+    const error = computed(() => countrySelectionStore.error)
     
     // Charger les données au montage du composant
     onMounted(() => {
       loadData()
     })
     
+
+    
     const loadData = async () => {
-      await mapStore.loadCountriesData()
-    }
-    
-    // Charger les couches additionnelles
-    const loadTradeRoutes = async () => {
-      await mapStore.loadTradeRoutes()
-    }
-    
-    const loadConflictZones = async () => {
-      await mapStore.loadConflictZones()
+      await countrySelectionStore.initializeCountriesData()
     }
     
     // Gérer la sélection d'un pays sur la carte
-    const handleCountrySelected = (country) => {
-      // Sélectionner le pays sur la carte
-      mapStore.selectSingleCountry(country.code)
+    const handleCountrySelected = (country: any) => {
+      console.log('Pays sélectionné sur la carte:', country)
+      
+      // Sélectionner le pays dans le store
+      countrySelectionStore.selectCountry(country.id)
       
       // Naviguer vers les détails du pays dans le panneau latéral
-      asideStore.navigateToCountryDetail(country.code)
-    }
-    
-    // Gérer l'activation/désactivation des couches
-    const toggleMapLayer = (layerName) => {
-      mapStore.toggleLayer(layerName)
-      
-      // Charger les données si nécessaire
-      if (layerName === 'tradeRoutes' && !mapStore.tradeRoutes) {
-        loadTradeRoutes()
-      } else if (layerName === 'conflictZones' && !mapStore.conflictZones) {
-        loadConflictZones()
-      }
+      asideStore.selectCountry(country.id)
     }
     
     // Gérer l'événement map-ready
-    const handleMapReady = (mapInstance) => {
+    const handleMapReady = (mapInstance: any) => {
       console.log('La carte est prête', mapInstance)
     }
     
     return {
-      countriesGeoJson: computed(() => mapStore.countriesGeoJson),
-      selectedCountries: computed(() => mapStore.selectedCountries),
-      tradeRoutes: computed(() => mapStore.tradeRoutes),
-      conflictZones: computed(() => mapStore.conflictZones),
-      visibleLayers: computed(() => mapStore.visibleLayers),
-      isLoading: computed(() => mapStore.isLoading),
-      error: computed(() => mapStore.error),
+      selectedCountry,
+      isLoading,
+      error,
+      countrySelectionStore,
       handleCountrySelected,
       handleMapReady,
-      toggleMapLayer,
       loadData
     }
   }

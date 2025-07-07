@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getCountriesGeoData, getAllCountries, getCountryDetails } from '@/services/readService'
+import countryService from '@/services/countryService'
 
 interface Country {
   id: string
@@ -12,28 +12,7 @@ interface CountryDetails {
   id: string
   title: string
   flag: string
-  generalInfo: {
-    capitale: string
-    langue: string
-    monnaie: string
-  }
-  sections: any[]
-  indicateurs: any
-  histoire: any
-  politique: any
-  economie: any
-  demographie: any
-  frontieres: any
-  coordonnees: [number, number]
-  tourisme: any
-  politicalRegime: any
-  agriculturalData: any
-  technologyData: any
-  demographicData: any
-  conflictsData: any
-  naturalResources: any
-  industrialData: any
-  transportData: any
+  [key: string]: any
 }
 
 export const useCountrySelectionStore = defineStore('countrySelection', {
@@ -78,21 +57,22 @@ export const useCountrySelectionStore = defineStore('countrySelection', {
         this.isLoading = true
         this.error = null
         
-        // Charger les données géographiques depuis la base de données
-        const geoData = await getCountriesGeoData()
+        // Charger les données depuis l'API
+        const countries = await countryService.getCountries()
         
-        // Transformer les données GeoJSON en format plus simple
-        this.countriesData = geoData.features.map(feature => ({
-          id: feature.properties.id,
-          name: feature.properties.name,
-          flag: feature.properties.flag,
-          coordinates: feature.geometry.coordinates as [number, number]
+        // Transformer les données au format attendu
+        this.countriesData = countries.map(country => ({
+          id: country.id,
+          name: country.title,
+          flag: country.flag,
+          coordinates: country.coordonnees as [number, number]
         }))
         
-        console.log(`Données de ${this.countriesData.length} pays chargées depuis la base de données`)
+        console.log(`✅ Données de ${this.countriesData.length} pays chargées depuis l'API`)
+        console.log('Premier pays transformé:', this.countriesData[0])
       } catch (error) {
         console.error('Erreur lors du chargement des données des pays:', error)
-        this.error = 'Impossible de charger les données des pays depuis la base de données'
+        this.error = 'Impossible de charger les données des pays depuis l\'API'
       } finally {
         this.isLoading = false
       }
@@ -104,10 +84,10 @@ export const useCountrySelectionStore = defineStore('countrySelection', {
       if (country) {
         this.selectedCountry = country
         
-        // Charger les détails du pays depuis la base de données
+        // Charger les détails du pays depuis l'API
         try {
           this.isLoading = true
-          const details = await getCountryDetails(countryId)
+          const details = await countryService.getCountryDetail(countryId)
           this.selectedCountryDetails = details
           console.log(`Pays sélectionné: ${country.name} avec détails chargés`)
         } catch (error) {
@@ -162,11 +142,11 @@ export const useCountrySelectionStore = defineStore('countrySelection', {
     async loadCountryDetails(countryId: string) {
       try {
         this.isLoading = true
-        const details = await getCountryDetails(countryId)
+        const details = await countryService.getCountryDetail(countryId)
         this.selectedCountryDetails = details
         return details
-      } catch (error) {
-        console.error('Erreur lors du chargement des détails du pays:', error)
+      } catch (type) {
+        console.error('Erreur lors du chargement des détails du pays:', type)
         this.selectedCountryDetails = null
         return null
       } finally {

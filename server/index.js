@@ -36,9 +36,18 @@ async function query(text, params) {
 // Récupérer tous les pays
 app.get('/api/countries', async (req, res) => {
   try {
-    const countries = await query(
-      'SELECT id, nom as title, drapeau as flag, continent, coordonnees FROM country ORDER BY nom'
+    const rows = await query(
+      'SELECT id, nom as title, drapeau as flag, continent, ST_AsText(coordonnees) as coordonnees FROM country WHERE coordonnees IS NOT NULL ORDER BY nom'
     );
+    
+    const countries = rows.map(row => ({
+      id: row.id,
+      title: row.title,
+      flag: row.flag,
+      continent: row.continent,
+      coordonnees: row.coordonnees ? row.coordonnees.replace('POINT(', '').replace(')', '').split(' ').map(coord => parseFloat(coord)) : null
+    }));
+    
     res.json(countries);
   } catch (error) {
     console.error('Erreur lors de la récupération des pays:', error);
@@ -50,7 +59,7 @@ app.get('/api/countries', async (req, res) => {
 app.get('/api/countries/:id', async (req, res) => {
   try {
     const countries = await query(
-      'SELECT id, nom as title, drapeau as flag, continent, coordonnees FROM country WHERE id = $1',
+      'SELECT id, nom as title, drapeau as flag, continent, ST_AsText(coordonnees) as coordonnees FROM country WHERE id = $1',
       [req.params.id]
     );
     
@@ -58,7 +67,10 @@ app.get('/api/countries/:id', async (req, res) => {
       return res.status(404).json({ error: 'Pays non trouvé' });
     }
     
-    res.json(countries[0]);
+    const country = countries[0];
+    country.coordonnees = country.coordonnees ? country.coordonnees.replace('POINT(', '').replace(')', '').split(' ') : null;
+    
+    res.json(country);
   } catch (error) {
     console.error('Erreur lors de la récupération du pays:', error);
     res.status(500).json({ error: 'Erreur serveur' });
@@ -99,7 +111,7 @@ app.get('/api/countries-geo', async (req, res) => {
 app.get('/api/countries/:id/details', async (req, res) => {
   try {
     const countryRow = await query(
-      'SELECT * FROM country WHERE id = $1',
+      'SELECT *, ST_AsText(coordonnees) as coordonnees_text FROM country WHERE id = $1',
       [req.params.id]
     );
 
@@ -109,11 +121,19 @@ app.get('/api/countries/:id/details', async (req, res) => {
 
     const country = countryRow[0];
 
+    // Convertir les coordonnées PostGIS en format utilisable
+    let coordonnees = null;
+    if (country.coordonnees_text) {
+      const coords = country.coordonnees_text.replace('POINT(', '').replace(')', '').split(' ');
+      coordonnees = [parseFloat(coords[0]), parseFloat(coords[1])]; // [lng, lat]
+    }
+
     // On retourne simplement tous les champs JSONB déjà présents
     const details = {
       id: country.id,
       title: country.nom,
       flag: country.drapeau,
+      coordonnees: coordonnees,
       generalInfo: {
         capitale: country.capitale,
         langue: country.langue,
@@ -126,7 +146,6 @@ app.get('/api/countries/:id/details', async (req, res) => {
       economie: country.economie || {},
       demographie: country.demographie || {},
       frontieres: country.frontieres || {},
-      coordonnees: country.coordonnees,
       tourisme: country.tourisme || {}
     };
 

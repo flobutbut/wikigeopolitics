@@ -11,6 +11,7 @@
       <main class="main-content">
         <MapComponent 
           ref="mapComponent"
+          :countriesData="countryStore.countriesData"
           @map-click="handleMapClick"
           @map-ready="handleMapReady"
           @country-selected="handleCountrySelected"
@@ -32,7 +33,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue'
+import { defineComponent, ref, onMounted, watch } from 'vue'
 import AsideNav from '@components/aside/aside.vue'
 import MapComponent from '@components/map/Map.vue'
 import HeaderNav from '@components/header/header.vue'
@@ -70,7 +71,7 @@ export default defineComponent({
           asideStore.initializeData()
         ])
         
-        console.log('Application initialisée avec les données de la base de données')
+
       } catch (error) {
         console.error('Erreur lors de l\'initialisation des données:', error)
       } finally {
@@ -84,12 +85,38 @@ export default defineComponent({
     
     const handleMapReady = (map: any) => {
       mapInstance.value = map
-      console.log('Carte initialisée et prête')
     }
     
     const handleCountrySelected = (country: any) => {
       console.log(`Pays sélectionné depuis la carte: ${country.name}`)
+      
+      // Sélectionner le pays dans le store
+      countryStore.selectCountry(country.id)
+      
+      // Zoomer sur le pays sélectionné
+      if (mapInstance.value && country.coordinates) {
+        const [lng, lat] = country.coordinates
+        ;(mapInstance.value as any).setView([lat, lng], 6) // Zoom niveau 6 pour voir le pays
+      }
+      
+      // Afficher les détails du pays dans le panneau flottant
+      asideStore.selectCountry(country.id)
     }
+    
+    // Méthode pour zoomer sur un pays depuis l'aside
+    const zoomToCountryFromAside = (countryId: string) => {
+      if (mapComponent.value) {
+        ;(mapComponent.value as any).zoomToCountry(countryId)
+      }
+    }
+    
+    // Surveiller les changements de pays sélectionné dans le store
+    watch(() => countryStore.selectedCountry, (newCountry) => {
+      if (newCountry && newCountry.id) {
+        console.log(`Pays sélectionné dans le store: ${newCountry.name}`)
+        zoomToCountryFromAside(newCountry.id)
+      }
+    })
     
     // Initialiser les données au montage du composant
     onMounted(() => {
@@ -100,9 +127,11 @@ export default defineComponent({
       mapInstance,
       mapComponent,
       isLoading,
+      countryStore,
       handleMapClick,
       handleMapReady,
-      handleCountrySelected
+      handleCountrySelected,
+      zoomToCountryFromAside
     }
   }
 })
