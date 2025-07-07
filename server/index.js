@@ -111,7 +111,7 @@ app.get('/api/countries-geo', async (req, res) => {
 app.get('/api/countries/:id/details', async (req, res) => {
   try {
     const countryRow = await query(
-      'SELECT *, ST_AsText(coordonnees) as coordonnees_text FROM country WHERE id = $1',
+      'SELECT c.*, ST_AsText(c.coordonnees) as coordonnees_text, pr.name as regime_name, pr.characteristics as regime_characteristics FROM country c LEFT JOIN political_regime pr ON c.current_regime_id = pr.id WHERE c.id = $1',
       [req.params.id]
     );
 
@@ -134,6 +134,10 @@ app.get('/api/countries/:id/details', async (req, res) => {
       title: country.nom,
       flag: country.drapeau,
       coordonnees: coordonnees,
+      currentRegime: {
+        name: country.regime_name,
+        characteristics: country.regime_characteristics
+      },
       generalInfo: {
         capitale: country.capitale,
         langue: country.langue,
@@ -152,6 +156,69 @@ app.get('/api/countries/:id/details', async (req, res) => {
     res.json(details);
   } catch (error) {
     console.error('Erreur lors de la récupération des détails du pays:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Récupérer tous les régimes politiques
+app.get('/api/political-regimes', async (req, res) => {
+  try {
+    const regimes = await query(
+      'SELECT id, name, description, characteristics, examples, continents FROM political_regime ORDER BY name'
+    );
+    
+    res.json(regimes);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des régimes politiques:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Récupérer les pays par régime politique
+app.get('/api/political-regimes/:id/countries', async (req, res) => {
+  try {
+    const countries = await query(
+      'SELECT c.id, c.nom, c.drapeau, c.continent, ST_AsText(c.coordonnees) as coordonnees FROM country c WHERE c.current_regime_id = $1 ORDER BY c.nom',
+      [req.params.id]
+    );
+    
+    const formattedCountries = countries.map(country => ({
+      id: country.id,
+      title: country.nom,
+      flag: country.drapeau,
+      continent: country.continent,
+      coordonnees: country.coordonnees ? country.coordonnees.replace('POINT(', '').replace(')', '').split(' ').map(coord => parseFloat(coord)) : null
+    }));
+    
+    res.json(formattedCountries);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des pays par régime:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Récupérer les pays avec leurs régimes politiques
+app.get('/api/countries-with-regimes', async (req, res) => {
+  try {
+    const countries = await query(
+      'SELECT c.id, c.nom, c.drapeau, c.continent, ST_AsText(c.coordonnees) as coordonnees, pr.name as regime_name, pr.characteristics as regime_characteristics FROM country c LEFT JOIN political_regime pr ON c.current_regime_id = pr.id ORDER BY c.nom'
+    );
+    
+    const formattedCountries = countries.map(country => ({
+      id: country.id,
+      title: country.nom,
+      flag: country.drapeau,
+      continent: country.continent,
+      coordonnees: country.coordonnees ? country.coordonnees.replace('POINT(', '').replace(')', '').split(' ').map(coord => parseFloat(coord)) : null,
+      currentRegime: country.regime_name ? {
+        name: country.regime_name,
+        characteristics: country.regime_characteristics
+      } : null
+    }));
+    
+    res.json(formattedCountries);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des pays avec régimes:', error);
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });

@@ -210,7 +210,7 @@ services:
 ### Tables principales
 
 #### COUNTRY (Pays)
-Table centrale contenant les informations sur les pays.
+Table centrale contenant les informations sur les pays et leur continent.
 
 ```sql
 CREATE TABLE country (
@@ -220,7 +220,8 @@ CREATE TABLE country (
     capitale VARCHAR(255),
     langue VARCHAR(255),
     monnaie VARCHAR(100),
-    continent VARCHAR(100),
+    continent VARCHAR(100), -- ex: 'Europe', 'Asie', etc.
+    current_regime_id VARCHAR(50) REFERENCES political_regime(id),
     sections JSONB,
     indicateurs JSONB,
     histoire JSONB,
@@ -230,6 +231,19 @@ CREATE TABLE country (
     frontieres JSONB,
     coordonnees GEOMETRY(POINT, 4326),
     tourisme JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### POLITICAL_REGIME (Régimes politiques)
+```sql
+CREATE TABLE political_regime (
+    id VARCHAR(50) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    characteristics JSONB,
+    examples JSONB,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -347,10 +361,11 @@ La base de données est initialisée avec des données d'exemple basées sur les
 
 ### Pays par continent
 ```sql
-SELECT continent, COUNT(*) as nombre_pays
+SELECT continent, array_agg(nom) as pays
 FROM country
+WHERE continent IS NOT NULL
 GROUP BY continent
-ORDER BY nombre_pays DESC;
+ORDER BY continent;
 ```
 
 ### Conflits en cours

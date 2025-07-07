@@ -31,14 +31,11 @@
       
       <!-- Vue de liste de pays -->
       <template v-if="currentView.type === 'countryList'">
-        <div v-for="continent in ['europe', 'asia', 'africa', 'northAmerica', 'southAmerica', 'oceania', 'other']" 
-             :key="continent" 
-             class="continent-section"
-             v-show="continents[continent] && continents[continent].length > 0">
-          <SectionTitle level="2" size="default">{{ getContinentLabel(continent) }}</SectionTitle>
+        <div v-for="c in continentOrder" :key="c.key" class="continent-section" v-show="continents[c.key] && continents[c.key].length > 0">
+          <SectionTitle level="2" size="default">{{ c.label }}</SectionTitle>
           <ul class="aside__menu">
             <MenuItem
-              v-for="country in continents[continent]" 
+              v-for="country in continents[c.key]"
               :key="country.id"
               :title="country.title"
               @click="selectCountry(country.id)"
@@ -106,52 +103,43 @@ export default defineComponent({
       )
     })
     
-    // Organiser les pays par continent
+    // Mapping des clés internes vers les labels français
+    const continentOrder = [
+      { key: 'Europe', label: 'Europe' },
+      { key: 'Asie', label: 'Asie' },
+      { key: 'Afrique', label: 'Afrique' },
+      { key: 'Amérique du Nord', label: 'Amérique du Nord' },
+      { key: 'Amérique du Sud', label: 'Amérique du Sud' },
+      { key: 'Océanie', label: 'Océanie' },
+      { key: 'Autres', label: 'Autres' }
+    ]
+    
+    // Organiser les pays par continent (français)
     const continents = computed(() => {
       const result = {
-        europe: [],
-        asia: [],
-        africa: [],
-        northAmerica: [],
-        southAmerica: [],
-        oceania: [],
-        other: []
+        'Europe': [],
+        'Asie': [],
+        'Afrique': [],
+        'Amérique du Nord': [],
+        'Amérique du Sud': [],
+        'Océanie': [],
+        'Autres': []
       }
-      
       if (!asideStore.filteredCountries) return result
-      
       asideStore.filteredCountries.forEach(country => {
-        const continent = country.continent || 'other'
-        
-        // Vérifier si le continent existe dans result, sinon utiliser 'other'
+        const continent = country.continent || 'Autres'
         if (result[continent]) {
           result[continent].push(country)
         } else {
-          result.other.push(country)
+          result['Autres'].push(country)
         }
       })
-      
       // Trier les pays par ordre alphabétique dans chaque continent
       Object.keys(result).forEach(continent => {
         result[continent].sort((a, b) => a.title.localeCompare(b.title))
       })
-      
       return result
     })
-    
-    // Fonction pour obtenir le libellé d'un continent
-    const getContinentLabel = (continent) => {
-      const labels = {
-        europe: 'Europe',
-        asia: 'Asie',
-        africa: 'Afrique',
-        northAmerica: 'Amérique du Nord',
-        southAmerica: 'Amérique du Sud',
-        oceania: 'Océanie',
-        other: 'Autres'
-      }
-      return labels[continent] || continent
-    }
     
     // Retour à la vue précédente
     const returnToPreviousView = () => {
@@ -189,7 +177,7 @@ export default defineComponent({
       filteredItems,
       filteredOrganizations,
       continents,
-      getContinentLabel,
+      continentOrder,
       returnToPreviousView,
       navigateToDetail,
       selectCountry,
