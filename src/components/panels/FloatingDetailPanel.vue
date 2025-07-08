@@ -4,8 +4,8 @@
       <div class="header-content">
         <div class="country-info">
           <img 
-            v-if="selectedCountry.flag" 
-            :src="selectedCountry.flag" 
+            v-if="selectedCountry.drapeau" 
+            :src="selectedCountry.drapeau" 
             :alt="`Drapeau de ${selectedCountry.title}`"
             class="country-flag"
           />
@@ -21,39 +21,58 @@
       @tab-change="handleTabChange"
     >
       <template #default="{ activeTab }">
-        <!-- Vue Détails -->
         <div v-if="activeTab === 'details'" class="details-view">
-          <!-- Sections principales -->
-          <DetailSection
-            v-for="(section, index) in selectedCountry.sections"
-            :key="index"
-            :title="section.title"
-            :value="section.value"
-            :keyValues="section.keyValues"
+          <!-- Bloc principal : Forme de l'État + Chef d'État -->
+          <div class="main-block">
+            <DetailSection
+              title="Forme de l'État"
+              :value="selectedCountry.regimePolitique || 'Data'"
+            />
+            <DetailSection
+              :title="chefEtatLabel"
+              :value="selectedCountry.chefEtat || 'Data'"
+              v-if="chefEtatLabel"
+            />
+          </div>
+
+          <!-- Bloc indicateurs économiques -->
+          <div class="eco-block">
+            <DetailSection
+              title="PIB"
+              :value="displayValue(selectedCountry.pib, formatCurrency)"
+            />
+            <DetailSection
+              title="Population"
+              :value="displayValue(selectedCountry.population, formatNumber)"
+            />
+            <DetailSection
+              title="Revenus médiants"
+              :value="displayValue(selectedCountry.revenuMedian, formatCurrency)"
+            />
+            <DetailSection
+              title="Superficie"
+              :value="displayValue(selectedCountry.superficieKm2, formatArea)"
+            />
+          </div>
+
+          <!-- Bloc Histoire (CollapsibleSection) -->
+          <CollapsibleSection
+            title="Histoire"
+            :expanded="true"
+            :content="selectedCountry.histoire || 'Aucune information historique disponible.'"
           />
-          
-          <!-- Sections collapsibles -->
-          <CollapsibleSection 
-            v-for="section in selectedCountry.collapsibleSections" 
-            :key="section.id"
-            :title="section.title"
-            :content="section.content"
-            :source="section.source"
-            :sourceUrl="section.sourceUrl"
-            :expanded="section.expanded"
-            :sectionId="section.id"
-            @toggle="toggleSection"
-          />
-          
-          <!-- Coalitions diplomatiques -->
-          <div v-if="selectedCountry.coalitions && selectedCountry.coalitions.length > 0" class="coalitions-section">
-            <SectionTitle level="4" size="small">Coalitions diplomatiques</SectionTitle>
+
+          <!-- Bloc Coalitions diplomatiques (CollapsibleSection) -->
+          <CollapsibleSection
+            title="Coalitions diplomatiques"
+            :expanded="true"
+          >
             <div class="coalitions-list">
               <div v-for="coalition in selectedCountry.coalitions" :key="coalition.id" class="coalition-item">
                 {{ coalition.title }}
               </div>
             </div>
-          </div>
+          </CollapsibleSection>
         </div>
         
         <!-- Vue Actualités -->
@@ -89,46 +108,85 @@ export default defineComponent({
   setup() {
     const asideStore = useAsideStore()
     
-    const selectedCountry = computed(() => {
-      console.log('FloatingDetailPanel - selectedCountry:', asideStore.currentDetailData)
-      return asideStore.currentDetailData
+    const selectedCountry = computed(() => asideStore.currentDetailData)
+
+    // Label dynamique pour le chef d'État
+    const chefEtatLabel = computed(() => {
+      const regime = selectedCountry.value.regimePolitique?.toLowerCase() || ''
+      if (regime.includes('république')) return 'Président de la République'
+      if (regime.includes('monarchie')) return 'Monarque'
+      if (regime.includes('fédération')) return 'Chef d\'État'
+      if (regime) return 'Chef d\'État'
+      return ''
     })
-    
-    // Configuration des onglets
-    const tabs = [
-      { id: 'details', label: 'Détails' },
-      { id: 'news', label: 'Actualités' }
-    ]
-    
-    const handleTabChange = (tabId: string) => {
-      console.log('Tab changed to:', tabId)
-    }
-    
-    const toggleSection = (sectionId: string, expanded: boolean) => {
-      // Toggle l'état d'expansion de la section
-      const section = selectedCountry.value.collapsibleSections.find((s: any) => s.id === sectionId)
-      if (section) {
-        section.expanded = expanded
+
+    // Fonctions utilitaires pour le formatage
+    const formatCurrency = (value: number) => {
+      if (value === undefined || value === null) return ''
+      if (value >= 1e12) {
+        return `${(value / 1e12).toFixed(1)} T€`
+      } else if (value >= 1e9) {
+        return `${(value / 1e9).toFixed(1)} milliards d'euros`
+      } else if (value >= 1e6) {
+        return `${(value / 1e6).toFixed(1)} M€`
+      } else {
+        return `${value.toLocaleString()} €`
       }
     }
-    
+    const formatNumber = (value: number) => (value === undefined || value === null) ? '' : value.toLocaleString()
+    const formatArea = (value: number) => (value === undefined || value === null) ? '' : `${value.toLocaleString()} km²`
+
+    // Affiche la valeur formatée ou "Data" si absente
+    const displayValue = (val: any, formatter: (v: any) => string) => {
+      return (val !== undefined && val !== null) ? formatter(val) : 'Data'
+    }
+
+    const handleTabChange = (tabId: string) => {}
+    const toggleSection = (sectionId: string, expanded: boolean) => {}
     const closePanel = () => {
-      // Vider les données du pays sélectionné sans changer la vue
       asideStore.currentDetailData = {
         id: '',
         title: '',
+        drapeau: '',
+        capitale: '',
+        langue: '',
+        monnaie: '',
+        pib: undefined,
+        population: undefined,
+        revenuMedian: undefined,
+        superficieKm2: undefined,
+        regimePolitique: '',
+        appartenanceGeographique: '',
+        histoire: '',
+        indiceSouverainete: undefined,
+        indiceDependance: undefined,
+        statutStrategique: '',
+        dateCreation: '',
+        dateDerniereMiseAJour: '',
+        chefEtat: '',
+        definition: '',
+        definitionSource: '',
+        definitionSourceUrl: '',
         sections: [],
         collapsibleSections: [],
         coalitions: []
       }
     }
-    
+    const tabs = [
+      { id: 'details', label: 'Détails' },
+      { id: 'news', label: 'Actualités' }
+    ]
     return {
       selectedCountry,
-      tabs,
+      chefEtatLabel,
+      formatCurrency,
+      formatNumber,
+      formatArea,
+      displayValue,
       handleTabChange,
       toggleSection,
-      closePanel
+      closePanel,
+      tabs
     }
   }
 })
@@ -211,8 +269,11 @@ export default defineComponent({
   padding: var(--spacing-md);
 }
 
-.coalitions-section {
-  margin-top: var(--spacing-md);
+.main-block, .eco-block {
+  background: var(--surface-dimmed);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
 }
 
 .coalitions-list {

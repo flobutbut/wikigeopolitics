@@ -1,257 +1,719 @@
 # Documentation Technique - WikiGeopolitics
 
-## Version
-- **Version actuelle** : 2.3.0
-- **Dernière mise à jour** : 23 mars 2025
-- **Fonctionnalité ajoutée** : Migration complète vers PostgreSQL avec architecture client-serveur opérationnelle
+## 🎯 Vue d'ensemble
 
-## Architecture Technique
+**WikiGeopolitics** est une application web de cartographie géopolitique interactive développée avec une architecture moderne et scalable.
 
-### Stack Technologique
-- **Frontend** : Vue.js 3 avec Composition API
-- **Backend** : Node.js avec Express
-- **Langage** : TypeScript 5.x (frontend), JavaScript (backend)
-- **Bundler** : Vite
-- **Gestion d'état** : Pinia
-- **Cartographie** : Leaflet.js
-- **Base de données** : PostgreSQL avec PostGIS
-- **API** : REST API avec Express
-- **Package manager** : Yarn (frontend), npm (backend)
+**🔄 Mise à jour : Alignement complet avec le schéma cible terminé (Janvier 2025)**
+
+## 🏗️ Architecture technique
+
+### Stack technologique
+
+#### Frontend
+- **Framework** : Vue.js 3 avec Composition API
+- **Language** : TypeScript 5.x
+- **Build tool** : Vite 5.x
+- **State management** : Pinia
+- **Styling** : CSS personnalisé avec design tokens
+- **Cartographie** : Leaflet.js avec OpenStreetMap
+- **Package manager** : Yarn
+
+#### Backend (en développement)
+- **Framework** : Node.js avec Express
+- **Language** : TypeScript
+- **Base de données** : PostgreSQL 15 avec PostGIS
+- **ORM** : Prisma (prévu)
+- **API** : RESTful avec documentation OpenAPI
+- **Validation** : Zod (prévu)
+
+#### Infrastructure
 - **Conteneurisation** : Docker & Docker Compose
+- **Base de données** : PostgreSQL 15 avec PostGIS
+- **Administration** : PgAdmin
+- **Versioning** : Git avec GitHub
+- **CI/CD** : À configurer
 
-### Architecture Client-Serveur
+### Architecture des données
 
-#### Frontend (Vue.js)
-- **Interface utilisateur** : Composants Vue.js réactifs
-- **Gestion d'état** : Stores Pinia pour la synchronisation
-- **Communication API** : Service API pour les requêtes HTTP
-- **Cartographie** : Leaflet.js pour l'affichage des cartes
+#### Schéma de base de données (Aligné avec le schéma cible)
 
-#### Backend (Node.js + Express)
-- **Serveur API** : Express.js avec routes REST
-- **Base de données** : PostgreSQL avec pool de connexions
-- **CORS** : Configuration pour les requêtes cross-origin
-- **Gestion d'erreurs** : Middleware d'erreur approprié
+```mermaid
+erDiagram
+  COUNTRY ||--o{ COUNTRY_ORGANIZATION : membre
+  COUNTRY ||--o{ RELATION_COUNTRY : impliqué
+  COUNTRY ||--o{ CONFLICT_COUNTRY : impliqué
+  COUNTRY ||--o{ RESOURCE_COUNTRY : lié
+  COUNTRY ||--o{ INDUSTRY_COUNTRY : acteur
+  COUNTRY ||--o{ TRADE_ROUTE_COUNTRY : acteur
+  COUNTRY ||--o{ COMM_NETWORK_COUNTRY : acteur
+  COUNTRY ||--o{ DEMOGRAPHIC : a
+  ORGANIZATION ||--o{ COUNTRY_ORGANIZATION : membre
+  ORGANIZATION ||--o{ RELATION : sponsorise
+  CONFLICT ||--o{ CONFLICT_COUNTRY : participants
+  CONFLICT }o--|| RESOURCE : enjeu
+  CONFLICT }o--|| TRADE_ROUTE : enjeu
+  RESOURCE ||--o{ RESOURCE_COUNTRY : implication
+  RESOURCE ||--o{ TRADE_ROUTE : transporte
+  INDUSTRY ||--o{ INDUSTRY_COUNTRY : présence
+  INDUSTRY ||--o{ COMPANY : contient
+  TRADE_ROUTE ||--o{ TRADE_ROUTE_COUNTRY : usage
+  COMM_NETWORK ||--o{ COMM_NETWORK_COUNTRY : couverture
+```
 
-#### Base de Données (PostgreSQL)
-- **Données géographiques** : PostGIS pour les coordonnées
-- **Structure simplifiée** : Table `country` avec champs JSONB
-- **Pool de connexions** : Gestion efficace des connexions
+#### Tables principales (17 tables)
 
-## Migration vers l'Architecture Client-Serveur
+| Table | Description | Colonnes clés |
+|-------|-------------|---------------|
+| `country` | Pays avec données économiques et géopolitiques | id, nom, pib, population, coordonnees |
+| `organization` | Organisations internationales | id, nom, type, dateCreation |
+| `relation` | Relations internationales | id, nom, type, dateDebut, dateFin |
+| `conflict` | Conflits armés | id, nom, type, statut, localisation |
+| `resource` | Ressources naturelles | id, nom, categorie, impactEnvironnemental |
+| `industry` | Industries | id, nom, categorie, production_mondiale |
+| `company` | Entreprises | id, nom, pays, secteur, indicateurs |
+| `trade_route` | Routes commerciales | id, nom, type, endpoints, geoJsonRef |
+| `comm_network` | Réseaux de communication | id, nom, type, dateMiseEnService |
+| `demographic` | Données démographiques | id, pays, population, tendances |
 
-### Changements Majeurs
-- **Séparation client/serveur** : Frontend et backend séparés
-- **API REST** : Communication via HTTP/JSON
-- **Base de données PostgreSQL** : Migration depuis les fichiers JSON
-- **Architecture simplifiée** : Navigation et catégories en statique
-- **Scalabilité** : Architecture modulaire et extensible
+#### Tables de relation (7 tables)
 
-### Services API
+| Table | Description | Relations |
+|-------|-------------|-----------|
+| `country_organization` | Pays membres d'organisations | countryId ↔ organizationId |
+| `relation_country` | Pays impliqués dans des relations | relationId ↔ countryId |
+| `conflict_country` | Pays impliqués dans des conflits | conflictId ↔ countryId |
+| `resource_country` | Ressources par pays | resourceId ↔ countryId |
+| `industry_country` | Industries par pays | industryId ↔ countryId |
+| `trade_route_country` | Routes commerciales par pays | tradeRouteId ↔ countryId |
+| `comm_network_country` | Réseaux de communication par pays | commNetworkId ↔ countryId |
 
-#### Frontend (`src/services/apiService.ts`)
+## 🗄️ Configuration de la base de données
+
+### Docker Compose
+
+```yaml
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: wikigeopolitics-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: wikigeopolitics
+      POSTGRES_USER: wikigeo_user
+      POSTGRES_PASSWORD: wikigeo_password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+      - ./database/backups:/backups
+    networks:
+      - wikigeopolitics-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: wikigeopolitics-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@wikigeopolitics.com
+      PGADMIN_DEFAULT_PASSWORD: admin_password
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - wikigeopolitics-network
+    depends_on:
+      - postgres
+```
+
+### Scripts de gestion
+
+```bash
+# Démarrage
+./database/scripts/start-db.sh
+
+# Arrêt
+./database/scripts/stop-db.sh
+
+# Sauvegarde
+./database/scripts/backup.sh
+
+# Restauration
+./database/scripts/restore.sh
+```
+
+## 🗺️ Interface cartographique
+
+### Configuration Leaflet
+
 ```typescript
-// Service pour les pays
-export const countryApi = {
-  async getAllCountries() { /* ... */ },
-  async getCountryById(id: string) { /* ... */ },
-  async getCountriesGeoData() { /* ... */ },
-  async getCountryDetails(id: string) { /* ... */ }
+// Configuration de la carte
+const mapConfig = {
+  center: [20, 0],
+  zoom: 2,
+  minZoom: 1,
+  maxZoom: 18,
+  layers: [
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    })
+  ]
 };
+```
 
-// Service pour la navigation
-export const navigationApi = {
-  async getNavigationData() { /* ... */ },
-  async getCategoryData(categoryId: string) { /* ... */ }
+### Gestion des marqueurs
+
+```typescript
+// Création des marqueurs de pays
+const createCountryMarker = (country: Country) => {
+  const marker = L.marker([country.coordonnees.lat, country.coordonnees.lng], {
+    icon: createCustomIcon(country.drapeau)
+  });
+  
+  marker.on('click', () => selectCountry(country.id));
+  return marker;
 };
 ```
 
-#### Backend (`server/index.js`)
-```javascript
-// Routes API principales
-app.get('/api/countries', async (req, res) => { /* ... */ });
-app.get('/api/countries/:id', async (req, res) => { /* ... */ });
-app.get('/api/countries-geo', async (req, res) => { /* ... */ });
-app.get('/api/countries/:id/details', async (req, res) => { /* ... */ });
-app.get('/api/navigation', async (req, res) => { /* ... */ });
-app.get('/api/categories/:id', async (req, res) => { /* ... */ });
+### Sélection par proximité
+
+```typescript
+// Algorithme de sélection par proximité
+const findNearestCountry = (point: L.LatLng, countries: Country[]) => {
+  let nearest = null;
+  let minDistance = Infinity;
+  
+  countries.forEach(country => {
+    const distance = point.distanceTo(L.latLng(
+      country.coordonnees.lat, 
+      country.coordonnees.lng
+    ));
+    
+    if (distance < minDistance) {
+      minDistance = distance;
+      nearest = country;
+    }
+  });
+  
+  return nearest;
+};
 ```
 
-### Stores Mis à Jour
+## 📱 Interface utilisateur
 
-#### CountrySelectionStore
-- **Chargement asynchrone** : Appels API au lieu de pg direct
-- **Gestion d'erreurs** : Traitement des erreurs HTTP
-- **Cache intelligent** : Évite les requêtes redondantes
+### Structure des composants
 
-#### AsideStore
-- **Navigation dynamique** : Données via API REST
-- **États de chargement** : Indicateurs visuels appropriés
-- **Gestion d'erreurs** : Fallback en cas d'échec API
-
-#### Composants Principaux
-
-##### App.vue
-```typescript
-// Initialisation des données via API
-const initializeData = async () => {
-  await Promise.all([
-    countryStore.initializeCountriesData(),
-    asideStore.initializeData()
-  ])
-}
+```
+src/components/
+├── aside/
+│   ├── aside.vue              # Conteneur principal
+│   ├── AsideMainView.vue      # Vue principale
+│   ├── AsideNavigationView.vue # Navigation
+│   ├── AsideDetailView.vue    # Détails des pays
+│   ├── CollapsibleSection.vue # Sections repliables
+│   └── DetailSection.vue      # Sections de détails
+├── common/
+│   ├── Button.vue             # Boutons réutilisables
+│   ├── Search.vue             # Barre de recherche
+│   ├── TabNavigation.vue      # Navigation par onglets
+│   └── icons/
+│       └── ChevronIcon.vue    # Icônes SVG
+├── country/
+│   └── CountryItem.vue        # Élément de pays
+├── header/
+│   └── header.vue             # En-tête de l'application
+├── map/
+│   ├── Map.vue                # Carte principale
+│   ├── MapLayersControl.vue   # Contrôles de couches
+│   └── map 2.vue             # Version alternative
+├── navigation/
+│   ├── MenuItem.vue           # Éléments de menu
+│   └── ReturnButton.vue       # Bouton de retour
+├── panels/
+│   ├── FloatingDetailPanel.vue # Panneau de détails flottant
+│   └── NewsView.vue           # Vue des actualités
+└── timeline/
+    └── Timeline.vue           # Timeline interactive
 ```
 
-##### Map.vue
-- **Marqueurs dynamiques** : Création depuis les données API
-- **Sélection asynchrone** : Gestion des sélections avec chargement API
+### Gestion d'état avec Pinia
 
-## Structure des Données
-
-### Interface Country Mise à Jour
 ```typescript
-export interface Country {
-  id: string;
-  title: string;
-  flag: string;
-  continent?: string;
-  coordinates?: [number, number];
-}
-```
-
-### Interface CountryDetail Simplifiée
-```typescript
-export interface CountryDetail extends Country {
-  // Données de base
-  generalInfo?: {
-    capitale: string;
-    langue: string;
-    monnaie: string;
+// Store pour la sélection de pays
+export const useCountrySelectionStore = defineStore('countrySelection', () => {
+  const selectedCountry = ref<Country | null>(null);
+  const isDetailPanelOpen = ref(false);
+  
+  const selectCountry = (country: Country) => {
+    selectedCountry.value = country;
+    isDetailPanelOpen.value = true;
   };
   
-  // Données JSONB depuis la table country
-  sections?: any[];
-  indicateurs?: any;
-  histoire?: any;
-  politique?: any;
-  economie?: any;
-  demographie?: any;
-  frontieres?: any;
-  coordonnees?: any;
-  tourisme?: any;
+  const clearSelection = () => {
+    selectedCountry.value = null;
+    isDetailPanelOpen.value = false;
+  };
+  
+  return {
+    selectedCountry,
+    isDetailPanelOpen,
+    selectCountry,
+    clearSelection
+  };
+});
+```
+
+### Styles et design tokens
+
+```css
+/* Design tokens */
+:root {
+  --color-primary: #2563eb;
+  --color-secondary: #64748b;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  
+  --border-radius: 0.375rem;
+  --border-radius-lg: 0.5rem;
+  
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
 }
 ```
 
-## Fonctionnalités Implémentées
+## 🔧 Services et API
 
-### 1. Architecture Client-Serveur
-- **API REST** : Communication standardisée entre client et serveur
-- **Séparation des responsabilités** : Frontend UI, Backend logique métier
-- **Base de données PostgreSQL** : Migration complète depuis les fichiers JSON
-- **Sécurité** : Validation côté serveur
+### Service de base de données
 
-### 2. Base de Données PostgreSQL
-- **Table country** : Structure centralisée avec champs JSONB
-- **82 pays** : Données complètes avec coordonnées géographiques
-- **PostGIS** : Extension géospatiale pour les coordonnées
-- **Backup/restore** : Système de sauvegarde et restauration
+```typescript
+// Configuration de connexion PostgreSQL
+const dbConfig = {
+  host: 'localhost',
+  port: 5432,
+  database: 'wikigeopolitics',
+  user: 'wikigeo_user',
+  password: 'wikigeo_password'
+};
 
-### 3. Navigation Simplifiée
-- **Données statiques** : Navigation et catégories servies par le backend
-- **Pas de tables SQL** : Évite la complexité des tables de navigation
-- **Performance** : Chargement rapide des données de navigation
+// Pool de connexions
+const pool = new Pool(dbConfig);
 
-### 4. Chargement Asynchrone
-- **Indicateur de chargement** : Overlay avec spinner pendant l'initialisation
-- **Gestion d'erreurs** : Messages d'erreur appropriés en cas de problème
-- **Chargement en parallèle** : Initialisation simultanée des stores
-
-### 5. Sélection depuis la Carte
-- **Marqueurs de pays** : Création depuis les données API
-- **Sélection par clic** : Chargement asynchrone des détails
-- **Sélection par proximité** : Algorithme amélioré avec données géographiques
-
-### 6. Navigation dans l'Aside
-- **Catégories dynamiques** : Chargement depuis l'API
-- **Sous-pages à la demande** : Chargement lazy des données de catégories
-- **Cache intelligent** : Évite les rechargements inutiles
-
-## Gestion des Erreurs
-
-### Connexion à l'API
-- **Test de connexion** : Vérification automatique au démarrage
-- **Fallback** : Données par défaut en cas d'échec
-- **Messages utilisateur** : Indication claire des problèmes
-
-### Chargement des Données
-- **Timeout** : Limitation du temps de chargement
-- **Retry** : Tentatives de reconnexion automatiques
-- **Cache** : Utilisation des données en cache en cas d'erreur
-
-## Performance
-
-### Optimisations
-- **Chargement lazy** : Données chargées à la demande
-- **Cache intelligent** : Évite les requêtes redondantes
-- **Requêtes optimisées** : Utilisation de Promise.all pour les requêtes parallèles
-- **Pool de connexions** : Gestion efficace des connexions PostgreSQL
-- **Données statiques** : Navigation et catégories sans requêtes SQL
-
-### Monitoring
-- **Logs détaillés** : Suivi des opérations API
-- **Métriques** : Temps de réponse et taux d'erreur
-- **Debug** : Mode debug pour le développement
-
-## Démarrage du Projet
-
-### Prérequis
-- Node.js 16+
-- Docker et Docker Compose
-- Yarn (frontend), npm (backend)
-
-### Démarrage
-```bash
-# 1. Démarrer la base de données PostgreSQL
-docker-compose up -d
-
-# 2. Restaurer la base de données (si nécessaire)
-./database/init/init-db-from-backup.sh
-
-# 3. Démarrer le serveur backend
-cd server && yarn dev
-
-# 4. Dans un autre terminal, démarrer le frontend
-yarn dev
-
-# 5. Ouvrir http://localhost:5176
+// Requêtes optimisées
+export const getCountries = async (): Promise<Country[]> => {
+  const query = `
+    SELECT 
+      id, nom, drapeau, capitale, langue, monnaie, continent,
+      pib, population, revenuMedian, superficieKm2,
+      regimePolitique, appartenanceGeographique,
+      ST_AsGeoJSON(coordonnees) as coordonnees
+    FROM country
+    ORDER BY nom
+  `;
+  
+  const result = await pool.query(query);
+  return result.rows;
+};
 ```
 
-## Tests Recommandés
+### Service de lecture des données
 
-- [x] Test de connexion à l'API
-- [x] Test de chargement des données de base
-- [x] Test de sélection de pays avec détails
-- [x] Test de navigation dans les catégories
-- [x] Test de gestion d'erreurs de connexion
-- [ ] Test de performance avec de nombreux pays
-- [ ] Test de cache et rechargement
+```typescript
+// Service pour les opérations de lecture
+export class ReadService {
+  // Récupération des pays avec filtres
+  static async getCountries(filters?: CountryFilters): Promise<Country[]> {
+    let query = 'SELECT * FROM country WHERE 1=1';
+    const params: any[] = [];
+    
+    if (filters?.continent) {
+      query += ' AND continent = $1';
+      params.push(filters.continent);
+    }
+    
+    if (filters?.regimePolitique) {
+      query += ' AND regimePolitique = $2';
+      params.push(filters.regimePolitique);
+    }
+    
+    const result = await pool.query(query, params);
+    return result.rows;
+  }
+  
+  // Récupération des conflits avec pays impliqués
+  static async getConflicts(): Promise<Conflict[]> {
+    const query = `
+      SELECT 
+        c.*,
+        array_agg(cc.countryId) as pays_impliques
+      FROM conflict c
+      LEFT JOIN conflict_country cc ON c.id = cc.conflictId
+      GROUP BY c.id
+    `;
+    
+    const result = await pool.query(query);
+    return result.rows;
+  }
+}
+```
 
-## Prochaines Étapes
+## 📊 Données et modèles
 
-### Améliorations Techniques
-1. **Optimisation des requêtes** : Indexation et optimisation des requêtes fréquentes
-2. **Sécurité renforcée** : Authentification et autorisation
-3. **Monitoring** : Métriques de performance en temps réel
-4. **Tests automatisés** : Couverture de tests complète
+### Types TypeScript
 
-### Fonctionnalités Futures
-1. **Mode hors ligne** : Cache local pour utilisation sans connexion
-2. **Export de données** : Fonctionnalités d'export en différents formats
-3. **API REST complète** : Interface programmatique pour les développeurs
-4. **Notifications** : Système de notifications pour les mises à jour
+```typescript
+// Types principaux
+export interface Country {
+  id: string;
+  nom: string;
+  drapeau?: string;
+  capitale?: string;
+  langue?: string;
+  monnaie?: string;
+  continent?: string;
+  pib?: number;
+  population?: number;
+  revenuMedian?: number;
+  superficieKm2?: number;
+  regimePolitique?: string;
+  appartenanceGeographique?: string;
+  coordonnees: GeoJSON.Point;
+  histoire?: string;
+  indiceSouverainete?: number;
+  indiceDependance?: number;
+  statutStrategique?: string;
+  dateCreation?: Date;
+  dateDerniereMiseAJour?: Date;
+}
 
-### Améliorations UX
-1. **Tooltips informatifs** : Informations contextuelles sur les pays
-2. **Mode sombre** : Thème sombre pour l'interface
-3. **Accessibilité** : Support clavier et lecteur d'écran
-4. **Responsive design** : Optimisation pour mobile et tablette
+export interface Conflict {
+  id: string;
+  nom: string;
+  type: string;
+  statut: string;
+  dateDebut?: Date;
+  dateFin?: Date;
+  intensite?: string;
+  localisation?: GeoJSON.Polygon;
+  victimes?: any;
+  timeline?: any;
+  efforts_paix?: any;
+  consequences?: any;
+}
+
+export interface Resource {
+  id: string;
+  nom: string;
+  categorie: string;
+  description?: string;
+  reserves_mondiales?: any;
+  usages?: any;
+  impactEnvironnemental?: string;
+  enjeux_geopolitiques?: string;
+}
+```
+
+### Modèles de données JSON
+
+```json
+// Structure des données pays
+{
+  "id": "france",
+  "nom": "France",
+  "drapeau": "🇫🇷",
+  "capitale": "Paris",
+  "langue": "Français",
+  "monnaie": "Euro (EUR)",
+  "continent": "Europe",
+  "pib": 2782900000000,
+  "population": 67390000,
+  "revenuMedian": 42000,
+  "superficieKm2": 551695,
+  "regimePolitique": "République démocratique",
+  "appartenanceGeographique": "Union européenne",
+  "coordonnees": {
+    "type": "Point",
+    "coordinates": [2.2137, 46.2276]
+  },
+  "histoire": "Histoire de la France...",
+  "indiceSouverainete": 85.2,
+  "indiceDependance": 14.8,
+  "statutStrategique": "Puissance moyenne"
+}
+```
+
+## 🚀 Déploiement et configuration
+
+### Variables d'environnement
+
+```bash
+# .env
+VITE_API_URL=http://localhost:3000
+VITE_MAP_TILE_URL=https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=wikigeopolitics
+POSTGRES_USER=wikigeo_user
+POSTGRES_PASSWORD=wikigeo_password
+```
+
+### Scripts de développement
+
+```json
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
+    "type-check": "vue-tsc --noEmit"
+  }
+}
+```
+
+### Configuration Vite
+
+```typescript
+// vite.config.ts
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import { resolve } from 'path';
+
+export default defineConfig({
+  plugins: [vue()],
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src')
+    }
+  },
+  server: {
+    port: 5176,
+    host: true
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: true
+  }
+});
+```
+
+## 🔍 Optimisations et performance
+
+### Optimisations de base de données
+
+```sql
+-- Index pour les requêtes fréquentes
+CREATE INDEX idx_country_continent ON country(continent);
+CREATE INDEX idx_country_regime ON country(regimePolitique);
+CREATE INDEX idx_country_coordinates ON country USING GIST(coordonnees);
+
+-- Index pour les tables de relation
+CREATE INDEX idx_country_organization_country ON country_organization(countryId);
+CREATE INDEX idx_conflict_country_conflict ON conflict_country(conflictId);
+CREATE INDEX idx_resource_country_resource ON resource_country(resourceId);
+```
+
+### Optimisations frontend
+
+```typescript
+// Lazy loading des composants
+const AsideDetailView = defineAsyncComponent(() => 
+  import('./AsideDetailView.vue')
+);
+
+// Virtual scrolling pour les longues listes
+const useVirtualList = (items: any[], itemHeight: number) => {
+  const visibleItems = computed(() => {
+    // Logique de virtualisation
+  });
+  
+  return { visibleItems };
+};
+
+// Cache intelligent des données
+const useDataCache = () => {
+  const cache = new Map();
+  
+  const getCachedData = async (key: string, fetcher: () => Promise<any>) => {
+    if (cache.has(key)) {
+      return cache.get(key);
+    }
+    
+    const data = await fetcher();
+    cache.set(key, data);
+    return data;
+  };
+  
+  return { getCachedData };
+};
+```
+
+## 🧪 Tests et qualité
+
+### Configuration des tests
+
+```typescript
+// vitest.config.ts
+import { defineConfig } from 'vitest/config';
+import vue from '@vitejs/plugin-vue';
+
+export default defineConfig({
+  plugins: [vue()],
+  test: {
+    environment: 'jsdom',
+    globals: true
+  }
+});
+```
+
+### Tests unitaires
+
+```typescript
+// tests/services/countryService.test.ts
+import { describe, it, expect } from 'vitest';
+import { CountryService } from '@/services/countryService';
+
+describe('CountryService', () => {
+  it('should return all countries', async () => {
+    const countries = await CountryService.getAll();
+    expect(countries).toBeInstanceOf(Array);
+    expect(countries.length).toBeGreaterThan(0);
+  });
+  
+  it('should filter countries by continent', async () => {
+    const europeanCountries = await CountryService.getByContinent('Europe');
+    expect(europeanCountries.every(c => c.continent === 'Europe')).toBe(true);
+  });
+});
+```
+
+### Tests d'intégration
+
+```typescript
+// tests/integration/map.test.ts
+import { describe, it, expect } from 'vitest';
+import { mount } from '@vue/test-utils';
+import Map from '@/components/map/Map.vue';
+
+describe('Map Component', () => {
+  it('should render map with markers', () => {
+    const wrapper = mount(Map);
+    expect(wrapper.find('.leaflet-container').exists()).toBe(true);
+  });
+  
+  it('should handle country selection', async () => {
+    const wrapper = mount(Map);
+    // Test de sélection de pays
+  });
+});
+```
+
+## 🔒 Sécurité
+
+### Bonnes pratiques
+
+- ✅ **Validation des données** : Zod pour la validation des schémas
+- ✅ **Requêtes paramétrées** : Prévention des injections SQL
+- ✅ **CORS configuré** : Contrôle des origines autorisées
+- ✅ **Variables d'environnement** : Secrets non exposés dans le code
+- ✅ **HTTPS en production** : Chiffrement des communications
+
+### Configuration de sécurité
+
+```typescript
+// Configuration CORS
+const corsOptions = {
+  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5176'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+
+// Validation des entrées
+const countrySchema = z.object({
+  nom: z.string().min(1).max(255),
+  continent: z.string().optional(),
+  pib: z.number().positive().optional()
+});
+```
+
+## 📚 Documentation API
+
+### Endpoints principaux
+
+```typescript
+// GET /api/countries
+// Récupère tous les pays
+interface CountriesResponse {
+  countries: Country[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+// GET /api/countries/:id
+// Récupère un pays spécifique
+interface CountryResponse {
+  country: Country;
+  organizations: Organization[];
+  conflicts: Conflict[];
+  resources: Resource[];
+}
+
+// GET /api/conflicts
+// Récupère tous les conflits
+interface ConflictsResponse {
+  conflicts: Conflict[];
+  total: number;
+}
+
+// GET /api/resources
+// Récupère toutes les ressources
+interface ResourcesResponse {
+  resources: Resource[];
+  total: number;
+}
+```
+
+## 🚀 Prochaines étapes techniques
+
+### Priorité 1 : Backend API
+1. **Développer l'API Express** avec TypeScript
+2. **Intégrer Prisma** pour l'ORM
+3. **Créer les endpoints** pour toutes les entités
+4. **Documenter l'API** avec OpenAPI/Swagger
+5. **Tests unitaires** pour l'API
+
+### Priorité 2 : Optimisations
+1. **Cache Redis** pour les données fréquemment accédées
+2. **CDN** pour les assets statiques
+3. **Compression** des réponses API
+4. **Pagination** pour les grandes listes
+5. **Lazy loading** des données géospatiales
+
+### Priorité 3 : Fonctionnalités avancées
+1. **WebSockets** pour les mises à jour en temps réel
+2. **Service Workers** pour le mode hors ligne
+3. **PWA** avec manifest et cache
+4. **Analytics** et monitoring
+5. **A/B testing** pour l'UX
+
+---
+
+**Dernière mise à jour** : Janvier 2025  
+**Version** : 1.0.0-alpha  
+**Statut** : Développement actif

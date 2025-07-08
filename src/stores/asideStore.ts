@@ -29,6 +29,43 @@ interface CollapsibleSection {
   title: string;
   expanded: boolean;
   content: string;
+  source?: string;
+  sourceUrl?: string;
+}
+
+interface CountryDetailData {
+  id: string;
+  title: string;
+  drapeau?: string;
+  capitale?: string;
+  langue?: string;
+  monnaie?: string;
+  pib?: number;
+  population?: number;
+  revenuMedian?: number;
+  superficieKm2?: number;
+  regimePolitique?: string;
+  appartenanceGeographique?: string;
+  chefEtat?: string;
+  histoire?: string;
+  indiceSouverainete?: number;
+  indiceDependance?: number;
+  statutStrategique?: string;
+  dateCreation?: string;
+  dateDerniereMiseAJour?: string;
+  sections: Array<{
+    title?: string;
+    value?: string;
+    keyValues?: Array<{
+      key: string;
+      value: string;
+    }>;
+  }>;
+  collapsibleSections: CollapsibleSection[];
+  coalitions: Array<{
+    id: string;
+    title: string;
+  }>;
 }
 
 // Définir le store avec Pinia
@@ -56,10 +93,27 @@ export const useAsideStore = defineStore('aside', {
     currentDetailData: {
       id: '',
       title: '',
+      drapeau: '',
+      capitale: '',
+      langue: '',
+      monnaie: '',
+      pib: undefined,
+      population: undefined,
+      revenuMedian: undefined,
+      superficieKm2: undefined,
+      regimePolitique: '',
+      appartenanceGeographique: '',
+      chefEtat: '',
+      histoire: '',
+      indiceSouverainete: undefined,
+      indiceDependance: undefined,
+      statutStrategique: '',
+      dateCreation: '',
+      dateDerniereMiseAJour: '',
       sections: [],
       collapsibleSections: [] as CollapsibleSection[],
       coalitions: []
-    },
+    } as CountryDetailData,
     // Ajouter un cache pour les données chargées
     dataCache: {} as Record<string, any>,
     // État de chargement
@@ -223,6 +277,23 @@ export const useAsideStore = defineStore('aside', {
           this.currentDetailData = {
             id: countryData.id,
             title: countryData.title,
+            drapeau: countryData.drapeau,
+            capitale: countryData.capitale,
+            langue: countryData.langue,
+            monnaie: countryData.monnaie,
+            pib: countryData.pib,
+            population: countryData.population,
+            revenuMedian: countryData.revenuMedian,
+            superficieKm2: countryData.superficieKm2,
+            regimePolitique: countryData.regimePolitique,
+            appartenanceGeographique: countryData.appartenanceGeographique,
+            chefEtat: countryData.chefEtat,
+            histoire: countryData.histoire,
+            indiceSouverainete: countryData.indiceSouverainete,
+            indiceDependance: countryData.indiceDependance,
+            statutStrategique: countryData.statutStrategique,
+            dateCreation: countryData.dateCreation,
+            dateDerniereMiseAJour: countryData.dateDerniereMiseAJour,
             sections: countryData.sections || [],
             collapsibleSections: [
               {
@@ -257,6 +328,23 @@ export const useAsideStore = defineStore('aside', {
           this.currentDetailData = {
             id: id,
             title: id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' '),
+            drapeau: '',
+            capitale: '',
+            langue: '',
+            monnaie: '',
+            pib: undefined,
+            population: undefined,
+            revenuMedian: undefined,
+            superficieKm2: undefined,
+            regimePolitique: '',
+            appartenanceGeographique: '',
+            chefEtat: '',
+            histoire: '',
+            indiceSouverainete: undefined,
+            indiceDependance: undefined,
+            statutStrategique: '',
+            dateCreation: '',
+            dateDerniereMiseAJour: '',
             sections: [],
             collapsibleSections: [],
             coalitions: []
@@ -272,6 +360,23 @@ export const useAsideStore = defineStore('aside', {
         this.currentDetailData = {
           id: id,
           title: id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' '),
+          drapeau: '',
+          capitale: '',
+          langue: '',
+          monnaie: '',
+          pib: undefined,
+          population: undefined,
+          revenuMedian: undefined,
+          superficieKm2: undefined,
+          regimePolitique: '',
+          appartenanceGeographique: '',
+          chefEtat: '',
+          histoire: '',
+          indiceSouverainete: undefined,
+          indiceDependance: undefined,
+          statutStrategique: '',
+          dateCreation: '',
+          dateDerniereMiseAJour: '',
           sections: [],
           collapsibleSections: [],
           coalitions: []

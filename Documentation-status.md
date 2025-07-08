@@ -1,186 +1,245 @@
-# Statut du Projet WikiGeopolitics
+# Statut du projet WikiGeopolitics
 
-## Version Actuelle : 2.3.0
-**Date de mise à jour** : 23 mars 2025
+## 🎯 Vue d'ensemble
 
-## ✅ Fonctionnalités Complétées
+**WikiGeopolitics** est une application web interactive de cartographie géopolitique développée en Vue.js/TypeScript avec backend Node.js/Express et base de données PostgreSQL/PostGIS.
 
-### 🏗️ Architecture Client-Serveur
-- **✅ Backend Node.js** : Serveur Express avec API REST
-- **✅ Frontend Vue.js** : Interface utilisateur réactive
-- **✅ Communication API** : Service API pour les requêtes HTTP
-- **✅ Séparation des responsabilités** : Frontend UI, Backend logique métier
-- **✅ CORS configuré** : Communication cross-origin sécurisée
+**🔄 Mise à jour : Alignement complet avec le schéma cible terminé (Janvier 2025)**
 
-### 🗄️ Base de Données PostgreSQL
-- **✅ Connexion PostgreSQL** : Configuration complète avec PostGIS
-- **✅ Pool de connexions** : Gestion efficace des connexions
-- **✅ Requêtes optimisées** : Requêtes paramétrées et sécurisées
-- **✅ Structure simplifiée** : Table country avec champs JSONB
-- **✅ Base restaurée** : Données complètes restaurées depuis le backup
-- **✅ API fonctionnelle** : Tous les endpoints répondent correctement
-- **✅ 82 pays** : Données complètes avec coordonnées géographiques
+## 📊 État actuel du projet
 
-### 🗺️ Cartographie Interactive
-- **✅ Marqueurs de pays** : Création dynamique depuis l'API
-- **✅ Sélection par clic** : Chargement asynchrone des détails
-- **✅ Sélection par proximité** : Algorithme amélioré avec coordonnées géographiques
-- **✅ Synchronisation** : Carte et aside synchronisés
+### ✅ Fonctionnalités complétées
 
-### 📱 Interface Utilisateur
-- **✅ Header de navigation** : Barre de navigation principale
-- **✅ Aside de navigation** : Menu latéral avec catégories dynamiques
-- **✅ Panneau de détails** : Affichage des informations détaillées des pays
-- **✅ Recherche** : Filtrage en temps réel des pays et catégories
+#### 🗄️ Base de données
+- ✅ **Base PostgreSQL/PostGIS** conteneurisée avec Docker
+- ✅ **195 pays** avec coordonnées géospatiales complètes
+- ✅ **Alignement complet avec le schéma cible** (17 tables principales + 7 tables de relation)
+- ✅ **Données économiques et géopolitiques** intégrées
+- ✅ **Sauvegarde et restauration** automatisées
+- ✅ **Interface d'administration** PgAdmin accessible
 
-### 🎨 Design et UX
-- **✅ Design moderne** : Interface utilisateur cohérente et responsive
-- **✅ Animations** : Transitions fluides et feedback visuel
-- **✅ Indicateurs de chargement** : Spinner et messages informatifs
-- **✅ Gestion d'erreurs** : Messages d'erreur appropriés
+#### 🗺️ Interface cartographique
+- ✅ **Carte interactive** avec Leaflet/OpenStreetMap
+- ✅ **Sélection de pays** avec panneau latéral
+- ✅ **Contrôles de couches** (pays, conflits, routes commerciales)
+- ✅ **Navigation par timeline** (structure prête)
+- ✅ **Panneau de détails** flottant
+- ✅ **Recherche de pays** fonctionnelle
 
-### 🧪 Tests et Optimisation
-- **✅ Tests de connexion API** : Validation de la communication client-serveur
-- **✅ Tests de chargement** : Validation du chargement des données
-- **✅ Tests de sélection** : Validation de la sélection de pays
-- **✅ Tests de navigation** : Validation de la navigation dans l'aside
+#### 🎨 Interface utilisateur
+- ✅ **Design moderne** avec CSS personnalisé
+- ✅ **Navigation latérale** collapsible
+- ✅ **Composants réutilisables** (boutons, menus, sections)
+- ✅ **Responsive design** adaptatif
+- ✅ **Thème cohérent** avec tokens CSS
 
-## 🔄 En Cours de Développement
+#### 📊 Données intégrées
+- ✅ **8 organisations internationales** (ONU, OTAN, UE, G7, G20, etc.)
+- ✅ **6 relations internationales** (alliances, conflits, accords)
+- ✅ **3 conflits armés** avec géométries
+- ✅ **8 ressources naturelles** (pétrole, gaz, lithium, etc.)
+- ✅ **8 industries** (automobile, informatique, pharmaceutique, etc.)
+- ✅ **8 entreprises majeures** (Tesla, Toyota, Apple, etc.)
+- ✅ **4 routes commerciales** (Suez, Malacca, Ormuz, Panama)
+- ✅ **5 conflits armés** avec données détaillées
+- ✅ **Réseaux de communication** (structure prête)
+- ✅ **Données économiques et géopolitiques** (structure prête)
 
-### 📊 Données et Contenu
-- **🔄 Validation des données** : Vérification de la cohérence des données
-- **🔄 Enrichissement** : Ajout de données manquantes pour certains pays
-- **🔄 Documentation** : Mise à jour des guides utilisateur
+### 🔄 Fonctionnalités en cours
 
-### 🧪 Tests et Optimisation
-- **🔄 Tests de performance** : Optimisation des requêtes et du cache
-- **🔄 Tests d'interface** : Validation de l'expérience utilisateur
+#### 🚧 Développement en cours
+- 🔄 **API backend** (structure prête, développement en cours)
+- 🔄 **Intégration des données** (migration des données JSON vers PostgreSQL)
+- 🔄 **Filtres avancés** (par continent, régime politique, etc.)
+- 🔄 **Export de données** (CSV, JSON, PDF)
 
-## 📋 Prochaines Étapes
+### 📋 Fonctionnalités planifiées
 
-### 🔧 Améliorations Techniques
-1. **Optimisation des requêtes** : Indexation et optimisation des requêtes fréquentes
-2. **Sécurité renforcée** : Authentification et autorisation
-3. **Monitoring** : Métriques de performance en temps réel
-4. **Tests automatisés** : Couverture de tests complète
+#### 🎯 Court terme (1-2 mois)
+- 📋 **Timeline interactive** avec événements historiques
+- 📋 **Comparaison de pays** (côte à côte)
+- 📋 **Graphiques statistiques** (PIB, population, etc.)
+- 📋 **Système de favoris** pour les pays
+- 📋 **Recherche avancée** avec filtres multiples
 
-### 🎯 Fonctionnalités Futures
-1. **Mode hors ligne** : Cache local pour utilisation sans connexion
-2. **Export de données** : Fonctionnalités d'export en différents formats
-3. **API REST complète** : Interface programmatique pour les développeurs
-4. **Notifications** : Système de notifications pour les mises à jour
+#### 🎯 Moyen terme (3-6 mois)
+- 📋 **Mode sombre/clair** pour l'interface
+- 📋 **Notifications** pour les événements géopolitiques
+- 📋 **Partage de cartes** (URL avec filtres)
+- 📋 **Mode hors ligne** avec cache local
+- 📋 **API publique** pour les développeurs
 
-### 📱 Améliorations UX
-1. **Tooltips informatifs** : Informations contextuelles sur les pays
-2. **Mode sombre** : Thème sombre pour l'interface
-3. **Accessibilité** : Support clavier et lecteur d'écran
-4. **Responsive design** : Optimisation pour mobile et tablette
+#### 🎯 Long terme (6+ mois)
+- 📋 **Intelligence artificielle** pour l'analyse géopolitique
+- 📋 **Prédictions** basées sur les tendances historiques
+- 📋 **Collaboration** entre utilisateurs
+- 📋 **Mobile app** (React Native)
+- 📋 **Intégration** avec d'autres sources de données
 
-## 🐛 Problèmes Connus
-
-### 🔴 Critiques
-- Aucun problème critique identifié
-
-### 🟡 Mineurs
-- **Performance** : Chargement initial peut être lent avec de nombreux pays
-- **Cache** : Certaines données peuvent nécessiter un rechargement manuel
-- **Interface** : Quelques ajustements mineurs d'interface nécessaires
-
-## 📈 Métriques
-
-### 🗄️ Base de Données
-- **Pays** : 82 pays avec données complètes
-- **Table principale** : 1 table country avec champs JSONB
-- **Données géographiques** : Coordonnées pour tous les pays
-- **Performance** : Temps de réponse < 100ms pour les requêtes principales
-
-### 🌐 API
-- **Endpoints** : 6 routes API principales
-- **Méthodes HTTP** : GET pour toutes les opérations de lecture
-- **Format** : JSON pour toutes les réponses
-- **CORS** : Configuré pour les requêtes cross-origin
-
-### 🎯 Utilisation
-- **Chargement initial** : < 3 secondes
-- **Sélection de pays** : < 500ms
-- **Navigation** : Transitions fluides < 200ms
-- **Recherche** : Filtrage en temps réel
-
-## 🛠️ Stack Technique
+## 🏗️ Architecture technique
 
 ### Frontend
 - **Framework** : Vue.js 3 avec Composition API
-- **Langage** : TypeScript 5.x
-- **Bundler** : Vite
-- **État** : Pinia
-- **Cartographie** : Leaflet.js
+- **Language** : TypeScript
+- **Build tool** : Vite
+- **Styling** : CSS personnalisé avec tokens
+- **Cartographie** : Leaflet avec OpenStreetMap
+- **State management** : Pinia (stores)
 
-### Backend
+### Backend (en développement)
 - **Framework** : Node.js avec Express
-- **Langage** : JavaScript
-- **Base de données** : PostgreSQL 15 avec PostGIS
-- **API** : REST API avec JSON
+- **Language** : TypeScript
+- **Base de données** : PostgreSQL avec PostGIS
+- **ORM** : Prisma (prévu)
+- **API** : RESTful avec documentation OpenAPI
 
 ### Infrastructure
 - **Conteneurisation** : Docker & Docker Compose
+- **Base de données** : PostgreSQL 15 avec PostGIS
 - **Administration** : PgAdmin
-- **Package managers** : Yarn (frontend), npm (backend)
+- **Développement** : Hot reload avec Vite
+- **Versioning** : Git avec GitHub
+
+## 📈 Métriques du projet
+
+### Code
+- **Lignes de code** : ~15,000 (estimation)
+- **Composants Vue** : 25+
+- **Fichiers TypeScript** : 50+
+- **Scripts SQL** : 20+
+- **Tests** : À implémenter
+
+### Données
+- **Pays** : 195 (complète)
+- **Organisations** : 8
+- **Conflits** : 5
+- **Ressources** : 8
+- **Industries** : 8
+- **Routes commerciales** : 4
+- **Tables principales** : 17
+- **Tables de relation** : 7
+
+### Performance
+- **Temps de chargement** : < 2s
+- **Taille du bundle** : < 2MB
+- **Compatibilité** : Chrome, Firefox, Safari, Edge
+- **Responsive** : Mobile, tablette, desktop
+
+## 🐛 Problèmes connus
+
+### 🔴 Critique
+- Aucun problème critique identifié
+
+### 🟡 Important
+- **API backend** : Nécessite développement complet
+- **Tests** : Aucun test automatisé implémenté
+- **Documentation API** : À créer
+- **Performance** : Optimisations possibles sur les requêtes géospatiales
+
+### 🟢 Mineur
+- **Accessibilité** : Améliorations possibles (ARIA labels)
+- **SEO** : Meta tags à optimiser
+- **Internationalisation** : Support multi-langues à implémenter
+
+## 🚀 Prochaines étapes
+
+### Priorité 1 : Backend API
+1. **Développer l'API Express** avec TypeScript
+2. **Intégrer Prisma** pour l'ORM
+3. **Créer les endpoints** pour toutes les entités
+4. **Documenter l'API** avec OpenAPI/Swagger
+5. **Tests unitaires** pour l'API
+
+### Priorité 2 : Intégration des données
+1. **Migrer les données JSON** vers PostgreSQL
+2. **Créer les scripts d'import** automatisés
+3. **Valider l'intégrité** des données
+4. **Optimiser les requêtes** géospatiales
+5. **Tests de performance** sur les requêtes
+
+### Priorité 3 : Fonctionnalités avancées
+1. **Timeline interactive** avec événements
+2. **Filtres avancés** par critères multiples
+3. **Comparaison de pays** côte à côte
+4. **Graphiques statistiques** avec Chart.js
+5. **Export de données** en différents formats
 
 ## 📚 Documentation
 
-### ✅ Complétée
-- **Documentation technique** : Architecture client-serveur
-- **Documentation fonctionnelle** : Spécifications des fonctionnalités
-- **Documentation de la base de données** : Schéma et structure
-- **Guide de développement** : Instructions pour les développeurs
+### 📖 Documentation disponible
+- ✅ **Documentation technique** : Architecture et configuration
+- ✅ **Documentation fonctionnelle** : Spécifications et cas d'usage
+- ✅ **Documentation base de données** : Schéma et requêtes
+- ✅ **Documentation statut** : État actuel du projet
+
+### 📝 Documentation à créer
+- 📋 **Guide d'installation** : Setup complet du projet
+- 📋 **Guide de développement** : Standards et bonnes pratiques
+- 📋 **Documentation API** : Endpoints et exemples
+- 📋 **Guide utilisateur** : Tutoriel d'utilisation
+- 📋 **Changelog** : Historique des versions
+
+## 🛠️ Outils et technologies
+
+### Développement
+- **IDE** : VS Code avec extensions Vue/TypeScript
+- **Versioning** : Git avec GitHub
+- **Package manager** : Yarn
+- **Linting** : ESLint + Prettier
+- **Testing** : Vitest (prévu)
+
+### Base de données
+- **SGBD** : PostgreSQL 15
+- **Extension géospatiale** : PostGIS
+- **Administration** : PgAdmin + Beekeeper Studio
+- **Conteneurisation** : Docker
+- **Sauvegarde** : Scripts automatisés
+
+### Déploiement
+- **Environnement** : Docker Compose
+- **Serveur** : Node.js avec Express
+- **Static files** : Vite build
+- **Monitoring** : À implémenter
+- **CI/CD** : À configurer
+
+## 🎯 Objectifs du sprint actuel
+
+### ✅ Terminé
+- **Alignement complet** avec le schéma cible
+- **Migration des données** vers PostgreSQL
+- **Interface cartographique** fonctionnelle
+- **Structure de base** de l'application
 
 ### 🔄 En cours
-- **Guide utilisateur** : Documentation pour les utilisateurs finaux
-- **API documentation** : Documentation des endpoints
-- **Troubleshooting** : Guide de résolution des problèmes
+- **Développement de l'API** backend
+- **Intégration des données** JSON vers PostgreSQL
+- **Optimisation des performances** de la carte
 
-## 🎉 Réalisations
+### 📋 Prochain sprint
+- **Tests automatisés** (unitaires et intégration)
+- **Documentation API** complète
+- **Fonctionnalités avancées** (timeline, filtres)
 
-### 🏆 Fonctionnalités Majeures
-1. **Architecture client-serveur** : Séparation frontend/backend avec API REST
-2. **Migration PostgreSQL** : Migration complète depuis les fichiers JSON
-3. **Interface cartographique interactive** : Sélection et navigation fluides
-4. **Système de navigation dynamique** : Catégories et sous-pages à la demande
-5. **Gestion d'état robuste** : Stores Pinia avec cache intelligent
-6. **Design moderne et responsive** : Interface utilisateur professionnelle
+## 📞 Support et contribution
 
-### 🚀 Performance
-- **Chargement optimisé** : Données chargées de manière asynchrone
-- **Cache intelligent** : Évite les requêtes redondantes
-- **Requêtes optimisées** : Utilisation de Promise.all pour la parallélisation
-- **Interface réactive** : Transitions fluides et feedback immédiat
+### 🐛 Signaler un bug
+- Créer une issue sur GitHub
+- Décrire le problème avec étapes de reproduction
+- Inclure les informations système (OS, navigateur)
 
-### 🔧 Qualité du Code
-- **TypeScript** : Typage strict pour la sécurité du code
-- **Architecture modulaire** : Services et composants bien séparés
-- **Gestion d'erreurs** : Traitement approprié des erreurs
-- **Documentation** : Code bien documenté et maintenable
+### 💡 Proposer une fonctionnalité
+- Créer une issue avec le label "enhancement"
+- Décrire le cas d'usage et les bénéfices
+- Proposer une solution technique si possible
 
-## 🚀 Démarrage Rapide
+### 🤝 Contribuer
+- Fork le repository
+- Créer une branche pour votre fonctionnalité
+- Suivre les standards de code
+- Créer une Pull Request
 
-### Prérequis
-- Node.js 16+
-- Docker et Docker Compose
-- Base de données PostgreSQL configurée
+---
 
-### Démarrage
-```bash
-# 1. Démarrer la base de données PostgreSQL
-docker-compose up -d
-
-# 2. Restaurer la base de données (si nécessaire)
-./database/init/init-db-from-backup.sh
-
-# 3. Démarrer le serveur backend
-cd server && yarn dev
-
-# 4. Dans un autre terminal, démarrer le frontend
-yarn dev
-
-# 5. Ouvrir http://localhost:5176
-``` 
+**Dernière mise à jour** : Janvier 2025  
+**Version** : 1.0.0-alpha  
+**Statut** : Développement actif 

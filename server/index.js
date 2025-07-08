@@ -31,6 +31,22 @@ async function query(text, params) {
   }
 }
 
+// Fonctions utilitaires pour le formatage
+function formatCurrency(amount) {
+  if (!amount) return 'Non disponible';
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+}
+
+function formatNumber(number) {
+  if (!number) return 'Non disponible';
+  return new Intl.NumberFormat('fr-FR').format(number);
+}
+
 // Routes API
 
 // Récupérer tous les pays
@@ -111,7 +127,7 @@ app.get('/api/countries-geo', async (req, res) => {
 app.get('/api/countries/:id/details', async (req, res) => {
   try {
     const countryRow = await query(
-      'SELECT c.*, ST_AsText(c.coordonnees) as coordonnees_text, pr.name as regime_name, pr.characteristics as regime_characteristics FROM country c LEFT JOIN political_regime pr ON c.current_regime_id = pr.id WHERE c.id = $1',
+      'SELECT * FROM country WHERE id = $1',
       [req.params.id]
     );
 
@@ -123,34 +139,62 @@ app.get('/api/countries/:id/details', async (req, res) => {
 
     // Convertir les coordonnées PostGIS en format utilisable
     let coordonnees = null;
-    if (country.coordonnees_text) {
-      const coords = country.coordonnees_text.replace('POINT(', '').replace(')', '').split(' ');
+    if (country.coordonnees) {
+      const coords = country.coordonnees.replace('POINT(', '').replace(')', '').split(' ');
       coordonnees = [parseFloat(coords[0]), parseFloat(coords[1])]; // [lng, lat]
     }
 
-    // On retourne simplement tous les champs JSONB déjà présents
+    // Retourner les données avec la nouvelle structure
     const details = {
       id: country.id,
       title: country.nom,
-      flag: country.drapeau,
+      drapeau: country.drapeau,
+      capitale: country.capitale,
+      langue: country.langue,
+      monnaie: country.monnaie,
+      pib: country.pib,
+      population: country.population,
+      revenuMedian: country.revenumedian,
+      superficieKm2: country.superficiekm2,
+      regimePolitique: country.regimepolitique,
+      appartenanceGeographique: country.appartenancegeographique,
+      chefEtat: country.chefetat,
+      histoire: country.histoire,
+      indiceSouverainete: country.indicesouverainete,
+      indiceDependance: country.indicedependance,
+      statutStrategique: country.statutstrategique,
+      dateCreation: country.datecreation,
+      dateDerniereMiseAJour: country.datedernieremiseajour,
       coordonnees: coordonnees,
-      currentRegime: {
-        name: country.regime_name,
-        characteristics: country.regime_characteristics
-      },
-      generalInfo: {
-        capitale: country.capitale,
-        langue: country.langue,
-        monnaie: country.monnaie
-      },
-      sections: country.sections || [],
-      indicateurs: country.indicateurs || {},
-      histoire: country.histoire || {},
-      politique: country.politique || {},
-      economie: country.economie || {},
-      demographie: country.demographie || {},
-      frontieres: country.frontieres || {},
-      tourisme: country.tourisme || {}
+      // Sections pour compatibilité
+      sections: [],
+      collapsibleSections: [
+        {
+          id: 'histoire',
+          title: 'Histoire',
+          expanded: false,
+          content: country.histoire || 'Aucune information disponible'
+        },
+        {
+          id: 'politique',
+          title: 'Système politique',
+          expanded: false,
+          content: `Régime politique: ${country.regimepolitique || 'Non spécifié'}`
+        },
+        {
+          id: 'economie',
+          title: 'Économie',
+          expanded: false,
+          content: `PIB: ${country.pib ? formatCurrency(country.pib) : 'Non disponible'}\nPopulation: ${country.population ? formatNumber(country.population) : 'Non disponible'}`
+        },
+        {
+          id: 'demographie',
+          title: 'Société et Démographie',
+          expanded: false,
+          content: `Population: ${country.population ? formatNumber(country.population) : 'Non disponible'}\nRevenu médian: ${country.revenumedian ? formatCurrency(country.revenumedian) : 'Non disponible'}`
+        }
+      ],
+      coalitions: []
     };
 
     res.json(details);

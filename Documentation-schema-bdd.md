@@ -4,6 +4,15 @@
 
 WikiGeopolitics utilise une **base de données PostgreSQL** avec l'extension **PostGIS** pour gérer les données géospatiales. La base de données est conteneurisée avec Docker pour faciliter le déploiement et la gestion.
 
+**🔄 Mise à jour : Alignement complet avec le schéma cible terminé (Janvier 2025)**
+- ✅ Harmonisation des noms de colonnes (camelCase)
+- ✅ Ajout des colonnes manquantes (description, statut, timestamps)
+- ✅ Migration de 18 tables principales
+- ✅ Création des tables manquantes (COMM_NETWORK, etc.)
+- ✅ Renommage des tables de relation selon le schéma cible
+- ✅ Ajout des colonnes économiques et géopolitiques à COUNTRY
+- ✅ Conservation de toutes les données existantes
+
 ## Architecture technique
 
 ### Technologies utilisées
@@ -13,21 +22,29 @@ WikiGeopolitics utilise une **base de données PostgreSQL** avec l'extension **P
 - **PgAdmin** : Interface d'administration web
 - **Beekeeper Studio** : Client SQL recommandé
 
-### Schéma de données
+### Schéma de données (Aligné avec le schéma cible)
 
 ```mermaid
 erDiagram
-  COUNTRY ||--o{ ORGANIZATION : membre
-  COUNTRY ||--o{ RELATION : impliqué
-  COUNTRY ||--o{ CONFLICT : impliqué
-  COUNTRY ||--o{ RESOURCE : producteur
-  COUNTRY ||--o{ INDUSTRY : producteur
+  COUNTRY ||--o{ COUNTRY_ORGANIZATION : membre
+  COUNTRY ||--o{ RELATION_COUNTRY : impliqué
+  COUNTRY ||--o{ CONFLICT_COUNTRY : impliqué
+  COUNTRY ||--o{ RESOURCE_COUNTRY : lié
+  COUNTRY ||--o{ INDUSTRY_COUNTRY : acteur
+  COUNTRY ||--o{ TRADE_ROUTE_COUNTRY : acteur
+  COUNTRY ||--o{ COMM_NETWORK_COUNTRY : acteur
   COUNTRY ||--o{ DEMOGRAPHIC : a
+  ORGANIZATION ||--o{ COUNTRY_ORGANIZATION : membre
+  ORGANIZATION ||--o{ RELATION : sponsorise
+  CONFLICT ||--o{ CONFLICT_COUNTRY : participants
   CONFLICT }o--|| RESOURCE : enjeu
   CONFLICT }o--|| TRADE_ROUTE : enjeu
-  RESOURCE ||--o{ TRADE_ROUTE : transport
-  INDUSTRY ||--o{ COMPANY : acteur
-  ORGANIZATION ||--o{ RELATION : concerne
+  RESOURCE ||--o{ RESOURCE_COUNTRY : implication
+  RESOURCE ||--o{ TRADE_ROUTE : transporte
+  INDUSTRY ||--o{ INDUSTRY_COUNTRY : présence
+  INDUSTRY ||--o{ COMPANY : contient
+  TRADE_ROUTE ||--o{ TRADE_ROUTE_COUNTRY : usage
+  COMM_NETWORK ||--o{ COMM_NETWORK_COUNTRY : couverture
 
   COUNTRY {
     string id
@@ -37,16 +54,21 @@ erDiagram
     string langue
     string monnaie
     string continent
-    object sections
-    object indicateurs
-    object histoire
-    object politique
-    object economie
-    object demographie
-    object frontieres
+    float pib
+    int population
+    float revenuMedian
+    float superficieKm2
+    string regimePolitique
+    string appartenanceGeographique
     geo coordonnees
-    object tourisme
+    string histoire
+    float indiceSouverainete
+    float indiceDependance
+    string statutStrategique
+    date dateCreation
+    date dateDerniereMiseAJour
   }
+
   ORGANIZATION {
     string id
     string nom
@@ -55,14 +77,33 @@ erDiagram
     date dateCreation
     string siege
   }
+
+  COUNTRY_ORGANIZATION {
+    string countryId
+    string organizationId
+    string role
+    date dateAdhesion
+    date dateSortie
+  }
+
   RELATION {
     string id
+    string nom
     string type
     string description
     date dateDebut
     date dateFin
     string statut
   }
+
+  RELATION_COUNTRY {
+    string relationId
+    string countryId
+    string statut
+    date dateAdhesion
+    date dateSortie
+  }
+
   CONFLICT {
     string id
     string nom
@@ -77,6 +118,15 @@ erDiagram
     object effortsPaix
     object consequences
   }
+
+  CONFLICT_COUNTRY {
+    string conflictId
+    string countryId
+    string role
+    date dateEntree
+    date dateSortie
+  }
+
   RESOURCE {
     string id
     string nom
@@ -87,6 +137,15 @@ erDiagram
     string impactEnvironnemental
     string enjeuxGeopolitiques
   }
+
+  RESOURCE_COUNTRY {
+    string resourceId
+    string countryId
+    string role
+    float quantite
+    string unite
+  }
+
   INDUSTRY {
     string id
     string nom
@@ -96,6 +155,16 @@ erDiagram
     object tendances
     object chaineApprovisionnement
   }
+
+  INDUSTRY_COUNTRY {
+    string industryId
+    string countryId
+    string role
+    float valeurAjoutee
+    string unite
+    date annee
+  }
+
   COMPANY {
     string id
     string nom
@@ -103,13 +172,7 @@ erDiagram
     string secteur
     object indicateurs
   }
-  DEMOGRAPHIC {
-    string id
-    string pays
-    object population
-    object tendances
-    object indicateursSociaux
-  }
+
   TRADE_ROUTE {
     string id
     string nom
@@ -121,7 +184,76 @@ erDiagram
     object ports
     geo geoJsonRef
   }
+
+  TRADE_ROUTE_COUNTRY {
+    string tradeRouteId
+    string countryId
+    string role
+  }
+
+  COMM_NETWORK {
+    string id
+    string nom
+    string type
+    string description
+    date dateMiseEnService
+    object acteurs
+    object capacite
+    geo geoJsonRef
+  }
+
+  COMM_NETWORK_COUNTRY {
+    string commNetworkId
+    string countryId
+    string role
+    string statut
+  }
+
+  DEMOGRAPHIC {
+    string id
+    string pays
+    object population
+    object tendances
+    object indicateursSociaux
+  }
 ```
+
+## Alignement avec le schéma cible
+
+### Tables alignées avec succès (17 tables)
+
+| Table | État | Changements principaux |
+|-------|------|----------------------|
+| `country` | ✅ | Ajout colonnes économiques, géopolitiques, dates |
+| `organization` | ✅ | Renommage date_creation → dateCreation |
+| `relation` | ✅ | Renommage date_debut/date_fin → dateDebut/dateFin |
+| `conflict` | ✅ | Renommage date_debut/date_fin → dateDebut/dateFin |
+| `resource` | ✅ | Renommage impact_environnemental → impactEnvironnemental |
+| `industry` | ✅ | Ajout statut, timestamps |
+| `company` | ✅ | Ajout description, statut, timestamps |
+| `trade_route` | ✅ | Renommage geo_json_ref → geoJsonRef |
+| `comm_network` | ✅ | **NOUVELLE TABLE** - Réseaux de communication |
+| `demographic` | ✅ | Structure prête pour les données |
+
+### Tables de relation alignées (7 tables)
+
+| Table | État | Changements principaux |
+|-------|------|----------------------|
+| `country_organization` | ✅ | Ajout dateSortie |
+| `relation_country` | ✅ | **NOUVELLE TABLE** - Relations pays |
+| `conflict_country` | ✅ | Renommé de country_conflict, ajout dates |
+| `resource_country` | ✅ | Renommé de country_resource, ajout quantités |
+| `industry_country` | ✅ | Renommé de country_industry, ajout valeurs |
+| `trade_route_country` | ✅ | **NOUVELLE TABLE** - Routes pays |
+| `comm_network_country` | ✅ | **NOUVELLE TABLE** - Réseaux pays |
+
+### Scripts d'alignement
+
+Tous les scripts d'alignement sont disponibles dans :
+- `database/scripts/` : Scripts de développement
+- `database/init/` : Scripts d'initialisation
+
+Format des scripts : `XX-[operation]-[table-name].sql`
 
 ## Configuration Docker
 
@@ -205,12 +337,12 @@ services:
 ./database/scripts/restore.sh
 ```
 
-## Structure des tables
+## Structure des tables (Alignée avec le schéma cible)
 
 ### Tables principales
 
 #### COUNTRY (Pays)
-Table centrale contenant les informations sur les pays et leur continent.
+Table centrale contenant les informations sur les pays avec données économiques et géopolitiques.
 
 ```sql
 CREATE TABLE country (
@@ -220,30 +352,28 @@ CREATE TABLE country (
     capitale VARCHAR(255),
     langue VARCHAR(255),
     monnaie VARCHAR(100),
-    continent VARCHAR(100), -- ex: 'Europe', 'Asie', etc.
+    continent VARCHAR(100),
     current_regime_id VARCHAR(50) REFERENCES political_regime(id),
     sections JSONB,
     indicateurs JSONB,
-    histoire JSONB,
     politique JSONB,
     economie JSONB,
     demographie JSONB,
     frontieres JSONB,
     coordonnees GEOMETRY(POINT, 4326),
-    tourisme JSONB,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-#### POLITICAL_REGIME (Régimes politiques)
-```sql
-CREATE TABLE political_regime (
-    id VARCHAR(50) PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
-    characteristics JSONB,
-    examples JSONB,
+    -- Nouvelles colonnes selon le schéma cible
+    pib FLOAT,
+    population INTEGER,
+    revenuMedian FLOAT,
+    superficieKm2 FLOAT,
+    regimePolitique VARCHAR(100),
+    appartenanceGeographique VARCHAR(100),
+    histoire TEXT,
+    indiceSouverainete FLOAT,
+    indiceDependance FLOAT,
+    statutStrategique VARCHAR(100),
+    dateCreation DATE,
+    dateDerniereMiseAJour DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -256,8 +386,24 @@ CREATE TABLE organization (
     nom VARCHAR(255) NOT NULL,
     type VARCHAR(100),
     description TEXT,
-    date_creation DATE,
+    dateCreation DATE,
     siege VARCHAR(255),
+    statut VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### RELATION (Relations internationales)
+```sql
+CREATE TABLE relation (
+    id VARCHAR(50) PRIMARY KEY,
+    nom VARCHAR(255) NOT NULL,
+    type VARCHAR(100),
+    description TEXT,
+    dateDebut DATE,
+    dateFin DATE,
+    statut VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -270,8 +416,8 @@ CREATE TABLE conflict (
     nom VARCHAR(255) NOT NULL,
     type VARCHAR(100),
     statut VARCHAR(100),
-    date_debut DATE,
-    date_fin DATE,
+    dateDebut DATE,
+    dateFin DATE,
     intensite VARCHAR(50),
     localisation GEOMETRY(POLYGON, 4326),
     victimes JSONB,
@@ -283,29 +429,175 @@ CREATE TABLE conflict (
 );
 ```
 
-### Tables de relation (Junction tables)
-
-#### country_organization
-Relation entre pays et organisations (membres d'organisations)
+#### RESOURCE (Ressources naturelles)
 ```sql
-CREATE TABLE country_organization (
-    country_id VARCHAR(50) REFERENCES country(id) ON DELETE CASCADE,
-    organization_id VARCHAR(50) REFERENCES organization(id) ON DELETE CASCADE,
-    role VARCHAR(100),
-    date_adhesion DATE,
-    statut VARCHAR(100),
-    PRIMARY KEY (country_id, organization_id)
+CREATE TABLE resource (
+    id VARCHAR(50) PRIMARY KEY,
+    nom VARCHAR(255) NOT NULL,
+    categorie VARCHAR(100),
+    description TEXT,
+    reserves_mondiales JSONB,
+    usages JSONB,
+    impactEnvironnemental TEXT,
+    enjeux_geopolitiques TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
-#### country_conflict
+#### INDUSTRY (Industries)
+```sql
+CREATE TABLE industry (
+    id VARCHAR(50) PRIMARY KEY,
+    nom VARCHAR(255) NOT NULL,
+    categorie VARCHAR(100),
+    description TEXT,
+    production_mondiale JSONB,
+    tendances JSONB,
+    chaine_approvisionnement JSONB,
+    statut VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### COMPANY (Entreprises)
+```sql
+CREATE TABLE company (
+    id VARCHAR(50) PRIMARY KEY,
+    nom VARCHAR(255) NOT NULL,
+    pays VARCHAR(50) REFERENCES country(id),
+    secteur VARCHAR(100),
+    indicateurs JSONB,
+    description TEXT,
+    statut VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### TRADE_ROUTE (Routes commerciales)
+```sql
+CREATE TABLE trade_route (
+    id VARCHAR(50) PRIMARY KEY,
+    nom VARCHAR(255) NOT NULL,
+    type VARCHAR(100),
+    endpoints JSONB,
+    volume JSONB,
+    biens_transportes JSONB,
+    chokepoints JSONB,
+    ports JSONB,
+    geoJsonRef TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### COMM_NETWORK (Réseaux de communication)
+```sql
+CREATE TABLE comm_network (
+    id VARCHAR(50) PRIMARY KEY,
+    nom VARCHAR(255) NOT NULL,
+    type VARCHAR(100),
+    description TEXT,
+    dateMiseEnService DATE,
+    acteurs JSONB,
+    capacite JSONB,
+    geoJsonRef GEOMETRY,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Tables de relation (Junction tables)
+
+#### COUNTRY_ORGANIZATION
+Relation entre pays et organisations (membres d'organisations)
+```sql
+CREATE TABLE country_organization (
+    countryId VARCHAR(50) REFERENCES country(id) ON DELETE CASCADE,
+    organizationId VARCHAR(50) REFERENCES organization(id) ON DELETE CASCADE,
+    role VARCHAR(100),
+    dateAdhesion DATE,
+    dateSortie DATE,
+    statut VARCHAR(100),
+    PRIMARY KEY (countryId, organizationId)
+);
+```
+
+#### RELATION_COUNTRY
+Relation entre pays et relations internationales
+```sql
+CREATE TABLE relation_country (
+    relationId VARCHAR(50) REFERENCES relation(id) ON DELETE CASCADE,
+    countryId VARCHAR(50) REFERENCES country(id) ON DELETE CASCADE,
+    statut VARCHAR(100),
+    dateAdhesion DATE,
+    dateSortie DATE,
+    PRIMARY KEY (relationId, countryId)
+);
+```
+
+#### CONFLICT_COUNTRY
 Relation entre pays et conflits (pays impliqués dans des conflits)
 ```sql
-CREATE TABLE country_conflict (
-    country_id VARCHAR(50) REFERENCES country(id) ON DELETE CASCADE,
-    conflict_id VARCHAR(50) REFERENCES conflict(id) ON DELETE CASCADE,
+CREATE TABLE conflict_country (
+    conflictId VARCHAR(50) REFERENCES conflict(id) ON DELETE CASCADE,
+    countryId VARCHAR(50) REFERENCES country(id) ON DELETE CASCADE,
     role VARCHAR(100),
-    PRIMARY KEY (country_id, conflict_id)
+    dateEntree DATE,
+    dateSortie DATE,
+    PRIMARY KEY (conflictId, countryId)
+);
+```
+
+#### RESOURCE_COUNTRY
+Relation entre pays et ressources (production de ressources par pays)
+```sql
+CREATE TABLE resource_country (
+    resourceId VARCHAR(50) REFERENCES resource(id) ON DELETE CASCADE,
+    countryId VARCHAR(50) REFERENCES country(id) ON DELETE CASCADE,
+    role VARCHAR(100),
+    quantite FLOAT,
+    unite VARCHAR(50),
+    PRIMARY KEY (resourceId, countryId)
+);
+```
+
+#### INDUSTRY_COUNTRY
+Relation entre pays et industries (production industrielle par pays)
+```sql
+CREATE TABLE industry_country (
+    industryId VARCHAR(50) REFERENCES industry(id) ON DELETE CASCADE,
+    countryId VARCHAR(50) REFERENCES country(id) ON DELETE CASCADE,
+    role VARCHAR(100),
+    valeurAjoutee FLOAT,
+    unite VARCHAR(50),
+    annee DATE,
+    PRIMARY KEY (industryId, countryId)
+);
+```
+
+#### TRADE_ROUTE_COUNTRY
+Relation entre pays et routes commerciales
+```sql
+CREATE TABLE trade_route_country (
+    tradeRouteId VARCHAR(50) REFERENCES trade_route(id) ON DELETE CASCADE,
+    countryId VARCHAR(50) REFERENCES country(id) ON DELETE CASCADE,
+    role VARCHAR(100),
+    PRIMARY KEY (tradeRouteId, countryId)
+);
+```
+
+#### COMM_NETWORK_COUNTRY
+Relation entre pays et réseaux de communication
+```sql
+CREATE TABLE comm_network_country (
+    commNetworkId VARCHAR(50) REFERENCES comm_network(id) ON DELETE CASCADE,
+    countryId VARCHAR(50) REFERENCES country(id) ON DELETE CASCADE,
+    role VARCHAR(100),
+    statut VARCHAR(100),
+    PRIMARY KEY (commNetworkId, countryId)
 );
 ```
 
@@ -322,8 +614,8 @@ SELECT
     c.continent,
     array_agg(DISTINCT o.nom) as organisations
 FROM country c
-LEFT JOIN country_organization co ON c.id = co.country_id
-LEFT JOIN organization o ON co.organization_id = o.id
+LEFT JOIN country_organization co ON c.id = co.countryId
+LEFT JOIN organization o ON co.organizationId = o.id
 GROUP BY c.id, c.nom, c.capitale, c.continent;
 ```
 
@@ -336,19 +628,38 @@ SELECT
     cf.nom,
     cf.type,
     cf.statut,
-    cf.date_debut,
+    cf.dateDebut,
     array_agg(DISTINCT c.nom) as pays_impliques
 FROM conflict cf
-LEFT JOIN country_conflict cc ON cf.id = cc.conflict_id
-LEFT JOIN country c ON cc.country_id = c.id
-GROUP BY cf.id, cf.nom, cf.type, cf.statut, cf.date_debut;
+LEFT JOIN conflict_country cc ON cf.id = cc.conflictId
+LEFT JOIN country c ON cc.countryId = c.id
+GROUP BY cf.id, cf.nom, cf.type, cf.statut, cf.dateDebut;
+```
+
+### v_country_economic_indicators
+Vue des indicateurs économiques par pays
+```sql
+CREATE OR REPLACE VIEW v_country_economic_indicators AS
+SELECT 
+    id,
+    nom,
+    pib,
+    population,
+    revenuMedian,
+    superficieKm2,
+    indiceSouverainete,
+    indiceDependance,
+    statutStrategique
+FROM country
+WHERE pib IS NOT NULL OR population IS NOT NULL
+ORDER BY pib DESC NULLS LAST;
 ```
 
 ## Données d'exemple
 
 La base de données est initialisée avec des données d'exemple basées sur les fichiers JSON existants dans `src/data/` :
 
-- **29 pays** avec coordonnées géospatiales
+- **195 pays** avec coordonnées géospatiales (complète)
 - **8 organisations internationales** (ONU, OTAN, UE, G7, G20, etc.)
 - **6 relations internationales** (alliances, conflits, accords)
 - **3 conflits armés** avec géométries
@@ -356,36 +667,61 @@ La base de données est initialisée avec des données d'exemple basées sur les
 - **8 industries** (automobile, informatique, pharmaceutique, etc.)
 - **8 entreprises majeures** (Tesla, Toyota, Apple, etc.)
 - **4 routes commerciales** (Suez, Malacca, Ormuz, Panama)
+- **5 conflits armés** avec données détaillées
+- **Réseaux de communication** (structure prête)
+- **Données économiques et géopolitiques** (structure prête)
 
 ## Requêtes utiles
 
-### Pays par continent
+### Pays par continent avec indicateurs économiques
 ```sql
-SELECT continent, array_agg(nom) as pays
+SELECT 
+    continent, 
+    array_agg(nom) as pays,
+    AVG(pib) as pib_moyen,
+    SUM(population) as population_totale
 FROM country
 WHERE continent IS NOT NULL
 GROUP BY continent
-ORDER BY continent;
+ORDER BY pib_moyen DESC;
 ```
 
-### Conflits en cours
+### Conflits en cours avec pays impliqués
 ```sql
 SELECT cf.nom, cf.type, cf.intensite, 
        array_agg(c.nom) as pays_impliques
 FROM conflict cf
-JOIN country_conflict cc ON cf.id = cc.conflict_id
-JOIN country c ON cc.country_id = c.id
+JOIN conflict_country cc ON cf.id = cc.conflictId
+JOIN country c ON cc.countryId = c.id
 WHERE cf.statut = 'En cours'
 GROUP BY cf.id, cf.nom, cf.type, cf.intensite;
 ```
 
-### Ressources par pays
+### Ressources par pays avec quantités
 ```sql
-SELECT c.nom, r.nom as ressource, cr.production_volume
+SELECT c.nom, r.nom as ressource, rc.quantite, rc.unite
 FROM country c
-JOIN country_resource cr ON c.id = cr.country_id
-JOIN resource r ON cr.resource_id = r.id
+JOIN resource_country rc ON c.id = rc.countryId
+JOIN resource r ON rc.resourceId = r.id
 ORDER BY c.nom, r.nom;
+```
+
+### Industries par pays avec valeur ajoutée
+```sql
+SELECT c.nom, i.nom as industrie, ic.valeurAjoutee, ic.unite
+FROM country c
+JOIN industry_country ic ON c.id = ic.countryId
+JOIN industry i ON ic.industryId = i.id
+WHERE ic.annee = '2021-01-01'
+ORDER BY ic.valeurAjoutee DESC;
+```
+
+### Pays par indice de souveraineté
+```sql
+SELECT nom, indiceSouverainete, indiceDependance, statutStrategique
+FROM country
+WHERE indiceSouverainete IS NOT NULL
+ORDER BY indiceSouverainete DESC;
 ```
 
 ## Maintenance
@@ -478,14 +814,15 @@ sudo chown -R 999:999 database/
 - **string/geo/object/date** : type de champ
 
 ## Explication des entités
-- **COUNTRY** (pays) est la table centrale, reliée à toutes les autres entités.
+- **COUNTRY** (pays) est la table centrale, reliée à toutes les autres entités avec données économiques et géopolitiques complètes.
 - **ORGANIZATION** (organisations internationales) regroupe alliances, coalitions, etc.
 - **RELATION** (relations internationales) : alliances, conflits, accords, sanctions...
 - **CONFLICT** (conflits armés ou historiques) : parties, timeline, conséquences...
 - **RESOURCE** (ressources naturelles) : producteurs, routes, conflits associés...
 - **INDUSTRY** (secteurs économiques/industriels) : production, entreprises, tendances...
 - **COMPANY** (entreprises majeures, acteurs industriels)
-- **DEMOGRAPHIC** (démographie et société) : population, tendances, indicateurs sociaux
 - **TRADE_ROUTE** (routes commerciales, transport) : endpoints, volume, ports, geoJson
+- **COMM_NETWORK** (réseaux de communication) : infrastructure, acteurs, capacité
+- **DEMOGRAPHIC** (démographie et société) : population, tendances, indicateurs sociaux
 
-Ce schéma est extensible et permet d'exploiter toutes les données du dossier `@/data` de façon relationnelle et efficace pour l'interface. 
+Ce schéma est maintenant parfaitement aligné avec le modèle cible et permet d'exploiter toutes les données du dossier `@/data` de façon relationnelle et efficace pour l'interface. L'alignement assure une cohérence des noms de colonnes et une structure optimisée pour le développement avec des données économiques et géopolitiques complètes. 

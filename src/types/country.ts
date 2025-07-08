@@ -4,6 +4,28 @@ export interface Country {
   flag: string;
   continent?: string;
   coordonnees?: [number, number];
+  // Nouveaux champs de la base de données
+  drapeau?: string;
+  capitale?: string;
+  langue?: string;
+  monnaie?: string;
+  pib?: number;
+  population?: number;
+  revenuMedian?: number;
+  superficieKm2?: number;
+  regimePolitique?: string;
+  appartenanceGeographique?: string;
+  histoire?: string;
+  indiceSouverainete?: number;
+  indiceDependance?: number;
+  statutStrategique?: string;
+  dateCreation?: string;
+  dateDerniereMiseAJour?: string;
+  // Champs pour l'affichage détaillé
+  chefEtat?: string;
+  definition?: string;
+  definitionSource?: string;
+  definitionSourceUrl?: string;
 }
 
 export interface CountryDetail extends Country {
@@ -48,4 +70,8 @@ export interface CountryDetail extends Country {
   naturalResources?: any;
   industrialData?: any;
   transportData?: any;
+  chefEtat?: string;
+  definition?: string;
+  definitionSource?: string;
+  definitionSourceUrl?: string;
 } 
