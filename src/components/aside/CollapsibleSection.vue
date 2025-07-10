@@ -120,8 +120,11 @@ export default defineComponent({
 }
 
 .collapsible-content {
-  padding: 0 var(--spacing-sm) var(--spacing-sm) var(--spacing-sm);
   background-color: var(--surface-dimmed);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-sm);
+  color: var(--text-color);
+  padding: 0 var(--spacing-sm) var(--spacing-sm) var(--spacing-sm);
 }
 
 .section-content {

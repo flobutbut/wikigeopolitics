@@ -128,7 +128,6 @@ export default defineComponent({
 <style scoped>
 .menu-item {
   list-style: none;
-  margin: var(--spacing-xs) 0;
 }
 
 .menu-item__link,
