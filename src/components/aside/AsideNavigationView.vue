@@ -31,11 +31,11 @@
       
       <!-- Vue de liste de pays -->
       <template v-if="currentView.type === 'countryList'">
-        <div v-for="c in continentOrder" :key="c.key" class="continent-section" v-show="continents[c.key] && continents[c.key].length > 0">
-          <SectionTitle level="2" size="default">{{ c.label }}</SectionTitle>
+        <!-- Vue simple pour les pays par régime politique -->
+        <template v-if="currentView.id && currentView.id.startsWith('regime-')">
           <ul class="aside__menu">
             <MenuItem
-              v-for="country in continents[c.key]"
+              v-for="country in countriesByRegime"
               :key="country.id"
               :title="country.title"
               @click="selectCountry(country.id)"
@@ -45,7 +45,42 @@
               </template>
             </MenuItem>
           </ul>
-        </div>
+        </template>
+        
+        <!-- Vue avec classification par continent pour la liste générale des pays -->
+        <template v-else>
+          <div v-for="c in continentOrder" :key="c.key" class="continent-section" v-show="continents[c.key] && continents[c.key].length > 0">
+            <SectionTitle level="2" size="default">{{ c.label }}</SectionTitle>
+            <ul class="aside__menu">
+              <MenuItem
+                v-for="country in continents[c.key]"
+                :key="country.id"
+                :title="country.title"
+                @click="selectCountry(country.id)"
+              >
+                <template #prepend>
+                  <span class="country-flag">{{ country.flag }}</span>
+                </template>
+              </MenuItem>
+            </ul>
+          </div>
+        </template>
+      </template>
+
+      <!-- Vue de liste de régimes politiques -->
+      <template v-if="currentView.type === 'politicalRegimeList'">
+        <ul class="aside__menu">
+          <MenuItem
+            v-for="regime in filteredPoliticalRegimes"
+            :key="regime.id"
+            :title="regime.name"
+            @click="selectPoliticalRegime(regime.id)"
+          >
+            <template #prepend>
+              <span class="regime-icon">🏛️</span>
+            </template>
+          </MenuItem>
+        </ul>
       </template>
     </div>
   </div>
@@ -102,6 +137,29 @@ export default defineComponent({
         org.title.toLowerCase().includes(query)
       )
     })
+
+    // Régimes politiques filtrés
+    const filteredPoliticalRegimes = computed(() => {
+      if (!asideStore.appData.politicalRegimeList) {
+        return []
+      }
+      
+      if (!asideStore.searchQuery) {
+        return asideStore.appData.politicalRegimeList
+      }
+      
+      const query = asideStore.searchQuery.toLowerCase()
+      const filtered = asideStore.appData.politicalRegimeList.filter(regime => 
+        regime.name.toLowerCase().includes(query) || 
+        regime.description?.toLowerCase().includes(query)
+      )
+      return filtered
+    })
+    
+    // Pays par régime politique (pour la vue simple)
+    const countriesByRegime = computed(() => {
+      return asideStore.appData.countryList || []
+    })
     
     // Mapping des clés internes vers les labels français
     const continentOrder = [
@@ -143,14 +201,8 @@ export default defineComponent({
     
     // Retour à la vue précédente
     const returnToPreviousView = () => {
-      // Vérifier si nous sommes dans la liste des pays
-      if (currentView.value.type === 'countryList') {
-        // Retourner directement à la vue principale
-        asideStore.returnToMainView()
-      } else {
-        // Sinon, utiliser le comportement standard
-        asideStore.returnToPreviousView()
-      }
+      // Utiliser la logique du store qui gère correctement la navigation
+      asideStore.returnToPreviousView()
     }
     
     // Navigation vers un détail
@@ -171,17 +223,25 @@ export default defineComponent({
     const selectOrganization = (id) => {
       asideStore.navigateToDetail(id)
     }
+
+    // Sélection d'un régime politique
+    const selectPoliticalRegime = (id) => {
+      asideStore.selectPoliticalRegime(id)
+    }
     
     return {
       currentView,
       filteredItems,
       filteredOrganizations,
+      filteredPoliticalRegimes,
       continents,
       continentOrder,
       returnToPreviousView,
       navigateToDetail,
       selectCountry,
-      selectOrganization
+      selectOrganization,
+      selectPoliticalRegime,
+      countriesByRegime
     }
   }
 })
@@ -251,5 +311,10 @@ export default defineComponent({
 
 .country-name {
   font-size: var(--font-size-sm);
+}
+
+.regime-icon {
+  margin-right: var(--spacing-xs);
+  font-size: var(--font-size-md);
 }
 </style> 

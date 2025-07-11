@@ -1,245 +1,61 @@
-# Statut du projet WikiGeopolitics
+# Documentation Status - WikiGéopolitics
 
-## 🎯 Vue d'ensemble
+## 📊 État du projet
 
-**WikiGeopolitics** est une application web interactive de cartographie géopolitique développée en Vue.js/TypeScript avec backend Node.js/Express et base de données PostgreSQL/PostGIS.
-
-**🔄 Mise à jour : Alignement complet avec le schéma cible terminé (Janvier 2025)**
-
-## 📊 État actuel du projet
-
-### ✅ Fonctionnalités complétées
+### ✅ Fonctionnalités terminées
 
 #### 🗄️ Base de données
-- ✅ **Base PostgreSQL/PostGIS** conteneurisée avec Docker
-- ✅ **195 pays** avec coordonnées géospatiales complètes
-- ✅ **Alignement complet avec le schéma cible** (17 tables principales + 7 tables de relation)
-- ✅ **Données économiques et géopolitiques** intégrées
-- ✅ **Sauvegarde et restauration** automatisées
-- ✅ **Interface d'administration** PgAdmin accessible
+- **Migration des régimes politiques** : Structure simplifiée avec colonnes `id`, `name`, `description`
+- **Table de relation `country_political_regime`** : Remplie avec 238 pays répartis de manière crédible
+- **Redistribution crédible** : 7 régimes politiques avec données géopolitiques réalistes
+- **Champs chef d'État** : Ajout de `chef_etat` et `date_prise_poste` à la table `country_political_regime`
 
-#### 🗺️ Interface cartographique
-- ✅ **Carte interactive** avec Leaflet/OpenStreetMap
-- ✅ **Sélection de pays** avec panneau latéral
-- ✅ **Contrôles de couches** (pays, conflits, routes commerciales)
-- ✅ **Navigation par timeline** (structure prête)
-- ✅ **Panneau de détails** flottant
-- ✅ **Recherche de pays** fonctionnelle
+#### 🎯 Interface utilisateur
+- **Navigation par régime** : Fonctionnelle avec données crédibles
+- **Composants refactorisés** : `AsideDetailView` → `FloatingDetailView` (déplacé vers `/panels`)
+- **API backend** : Adaptée pour utiliser la table de relation
+- **Affichage chef d'État** : Informations sur le chef d'État et date de prise de poste dans les détails
 
-#### 🎨 Interface utilisateur
-- ✅ **Design moderne** avec CSS personnalisé
-- ✅ **Navigation latérale** collapsible
-- ✅ **Composants réutilisables** (boutons, menus, sections)
-- ✅ **Responsive design** adaptatif
-- ✅ **Thème cohérent** avec tokens CSS
+### 🔧 Modifications récentes
 
-#### 📊 Données intégrées
-- ✅ **8 organisations internationales** (ONU, OTAN, UE, G7, G20, etc.)
-- ✅ **6 relations internationales** (alliances, conflits, accords)
-- ✅ **3 conflits armés** avec géométries
-- ✅ **8 ressources naturelles** (pétrole, gaz, lithium, etc.)
-- ✅ **8 industries** (automobile, informatique, pharmaceutique, etc.)
-- ✅ **8 entreprises majeures** (Tesla, Toyota, Apple, etc.)
-- ✅ **4 routes commerciales** (Suez, Malacca, Ormuz, Panama)
-- ✅ **5 conflits armés** avec données détaillées
-- ✅ **Réseaux de communication** (structure prête)
-- ✅ **Données économiques et géopolitiques** (structure prête)
+#### Ajout des champs chef d'État
+- **Script SQL** : `102-add-chef-etat-fields.sql` - Ajout des colonnes `chef_etat` et `date_prise_poste`
+- **Données initiales** : `103-populate-chef-etat-data.sql` - Remplissage avec 20 pays majeurs
+- **Données actuelles** : `104-update-chef-etat-current.sql` - Mise à jour avec 50+ pays et données vérifiées (2024-2025)
+- **Complétion finale** : `106-final-complete-chef-etat.sql` - 100% des pays avec données chef d'État (238 pays)
+- **Nettoyage** : `107-remove-obsolete-columns.sql` - Suppression des colonnes obsolètes `regimepolitique` et `chefetat` de la table `country`
+- **Backend** : API `/api/countries/:id/details` adaptée pour utiliser uniquement la table `country_political_regime`
+- **Frontend** : `FloatingDetailView.vue` affiche le chef d'État avec label dynamique et date de prise de poste formatée
 
-### 🔄 Fonctionnalités en cours
+#### Renommage et déplacement de composant
+- **Ancien** : `src/components/aside/AsideDetailView.vue`
+- **Nouveau** : `src/components/panels/FloatingDetailView.vue`
+- **Mise à jour des imports** :
+  - `src/components/aside/aside.vue`
+  - `src/components/panels/FloatingDetailPanel.vue`
 
-#### 🚧 Développement en cours
-- 🔄 **API backend** (structure prête, développement en cours)
-- 🔄 **Intégration des données** (migration des données JSON vers PostgreSQL)
-- 🔄 **Filtres avancés** (par continent, régime politique, etc.)
-- 🔄 **Export de données** (CSV, JSON, PDF)
+### 📈 Statistiques finales des régimes politiques
 
-### 📋 Fonctionnalités planifiées
+| Régime | Pays | % | Exemples |
+|--------|------|----|----------|
+| République présidentielle | 108 | 45.4% | États-Unis, Brésil, France |
+| République parlementaire | 43 | 18.1% | Allemagne, Italie, Inde |
+| Régime autoritaire | 29 | 12.2% | Chine, Russie, Iran |
+| Monarchie constitutionnelle | 24 | 10.1% | Royaume-Uni, Japon, Espagne |
+| République fédérale | 23 | 9.7% | USA, Allemagne, Suisse |
+| Théocratie | 7 | 2.9% | Vatican, Iran, Arabie Saoudite |
+| Démocratie directe | 4 | 1.7% | Suisse, Liechtenstein |
 
-#### 🎯 Court terme (1-2 mois)
-- 📋 **Timeline interactive** avec événements historiques
-- 📋 **Comparaison de pays** (côte à côte)
-- 📋 **Graphiques statistiques** (PIB, population, etc.)
-- 📋 **Système de favoris** pour les pays
-- 📋 **Recherche avancée** avec filtres multiples
+### 🚀 Serveurs
+- **Frontend** : `http://localhost:5173` ✅
+- **Backend** : `http://localhost:3000` ✅
+- **Base de données** : PostgreSQL/PostGIS ✅
 
-#### 🎯 Moyen terme (3-6 mois)
-- 📋 **Mode sombre/clair** pour l'interface
-- 📋 **Notifications** pour les événements géopolitiques
-- 📋 **Partage de cartes** (URL avec filtres)
-- 📋 **Mode hors ligne** avec cache local
-- 📋 **API publique** pour les développeurs
-
-#### 🎯 Long terme (6+ mois)
-- 📋 **Intelligence artificielle** pour l'analyse géopolitique
-- 📋 **Prédictions** basées sur les tendances historiques
-- 📋 **Collaboration** entre utilisateurs
-- 📋 **Mobile app** (React Native)
-- 📋 **Intégration** avec d'autres sources de données
-
-## 🏗️ Architecture technique
-
-### Frontend
-- **Framework** : Vue.js 3 avec Composition API
-- **Language** : TypeScript
-- **Build tool** : Vite
-- **Styling** : CSS personnalisé avec tokens
-- **Cartographie** : Leaflet avec OpenStreetMap
-- **State management** : Pinia (stores)
-
-### Backend (en développement)
-- **Framework** : Node.js avec Express
-- **Language** : TypeScript
-- **Base de données** : PostgreSQL avec PostGIS
-- **ORM** : Prisma (prévu)
-- **API** : RESTful avec documentation OpenAPI
-
-### Infrastructure
-- **Conteneurisation** : Docker & Docker Compose
-- **Base de données** : PostgreSQL 15 avec PostGIS
-- **Administration** : PgAdmin
-- **Développement** : Hot reload avec Vite
-- **Versioning** : Git avec GitHub
-
-## 📈 Métriques du projet
-
-### Code
-- **Lignes de code** : ~15,000 (estimation)
-- **Composants Vue** : 25+
-- **Fichiers TypeScript** : 50+
-- **Scripts SQL** : 20+
-- **Tests** : À implémenter
-
-### Données
-- **Pays** : 195 (complète)
-- **Organisations** : 8
-- **Conflits** : 5
-- **Ressources** : 8
-- **Industries** : 8
-- **Routes commerciales** : 4
-- **Tables principales** : 17
-- **Tables de relation** : 7
-
-### Performance
-- **Temps de chargement** : < 2s
-- **Taille du bundle** : < 2MB
-- **Compatibilité** : Chrome, Firefox, Safari, Edge
-- **Responsive** : Mobile, tablette, desktop
-
-## 🐛 Problèmes connus
-
-### 🔴 Critique
-- Aucun problème critique identifié
-
-### 🟡 Important
-- **API backend** : Nécessite développement complet
-- **Tests** : Aucun test automatisé implémenté
-- **Documentation API** : À créer
-- **Performance** : Optimisations possibles sur les requêtes géospatiales
-
-### 🟢 Mineur
-- **Accessibilité** : Améliorations possibles (ARIA labels)
-- **SEO** : Meta tags à optimiser
-- **Internationalisation** : Support multi-langues à implémenter
-
-## 🚀 Prochaines étapes
-
-### Priorité 1 : Backend API
-1. **Développer l'API Express** avec TypeScript
-2. **Intégrer Prisma** pour l'ORM
-3. **Créer les endpoints** pour toutes les entités
-4. **Documenter l'API** avec OpenAPI/Swagger
-5. **Tests unitaires** pour l'API
-
-### Priorité 2 : Intégration des données
-1. **Migrer les données JSON** vers PostgreSQL
-2. **Créer les scripts d'import** automatisés
-3. **Valider l'intégrité** des données
-4. **Optimiser les requêtes** géospatiales
-5. **Tests de performance** sur les requêtes
-
-### Priorité 3 : Fonctionnalités avancées
-1. **Timeline interactive** avec événements
-2. **Filtres avancés** par critères multiples
-3. **Comparaison de pays** côte à côte
-4. **Graphiques statistiques** avec Chart.js
-5. **Export de données** en différents formats
-
-## 📚 Documentation
-
-### 📖 Documentation disponible
-- ✅ **Documentation technique** : Architecture et configuration
-- ✅ **Documentation fonctionnelle** : Spécifications et cas d'usage
-- ✅ **Documentation base de données** : Schéma et requêtes
-- ✅ **Documentation statut** : État actuel du projet
-
-### 📝 Documentation à créer
-- 📋 **Guide d'installation** : Setup complet du projet
-- 📋 **Guide de développement** : Standards et bonnes pratiques
-- 📋 **Documentation API** : Endpoints et exemples
-- 📋 **Guide utilisateur** : Tutoriel d'utilisation
-- 📋 **Changelog** : Historique des versions
-
-## 🛠️ Outils et technologies
-
-### Développement
-- **IDE** : VS Code avec extensions Vue/TypeScript
-- **Versioning** : Git avec GitHub
-- **Package manager** : Yarn
-- **Linting** : ESLint + Prettier
-- **Testing** : Vitest (prévu)
-
-### Base de données
-- **SGBD** : PostgreSQL 15
-- **Extension géospatiale** : PostGIS
-- **Administration** : PgAdmin + Beekeeper Studio
-- **Conteneurisation** : Docker
-- **Sauvegarde** : Scripts automatisés
-
-### Déploiement
-- **Environnement** : Docker Compose
-- **Serveur** : Node.js avec Express
-- **Static files** : Vite build
-- **Monitoring** : À implémenter
-- **CI/CD** : À configurer
-
-## 🎯 Objectifs du sprint actuel
-
-### ✅ Terminé
-- **Alignement complet** avec le schéma cible
-- **Migration des données** vers PostgreSQL
-- **Interface cartographique** fonctionnelle
-- **Structure de base** de l'application
-
-### 🔄 En cours
-- **Développement de l'API** backend
-- **Intégration des données** JSON vers PostgreSQL
-- **Optimisation des performances** de la carte
-
-### 📋 Prochain sprint
-- **Tests automatisés** (unitaires et intégration)
-- **Documentation API** complète
-- **Fonctionnalités avancées** (timeline, filtres)
-
-## 📞 Support et contribution
-
-### 🐛 Signaler un bug
-- Créer une issue sur GitHub
-- Décrire le problème avec étapes de reproduction
-- Inclure les informations système (OS, navigateur)
-
-### 💡 Proposer une fonctionnalité
-- Créer une issue avec le label "enhancement"
-- Décrire le cas d'usage et les bénéfices
-- Proposer une solution technique si possible
-
-### 🤝 Contribuer
-- Fork le repository
-- Créer une branche pour votre fonctionnalité
-- Suivre les standards de code
-- Créer une Pull Request
+### 📝 Prochaines étapes
+- [ ] Tests utilisateur de la navigation par régime
+- [ ] Optimisation des performances si nécessaire
+- [ ] Ajout de nouvelles fonctionnalités géopolitiques
 
 ---
 
-**Dernière mise à jour** : Janvier 2025  
-**Version** : 1.0.0-alpha  
-**Statut** : Développement actif 
+*Dernière mise à jour : Nettoyage de la base de données - suppression des colonnes obsolètes* 

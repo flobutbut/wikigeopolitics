@@ -61,11 +61,11 @@ export default defineComponent({
     const handleToggleOption = (option: { id: string, enabled: boolean }) => {
       asideStore.handleToggleOption(option)
     }
-    
+
     return {
       filteredNavigation,
       navigateToSubmenu,
-      handleToggleOption
+      handleToggleOption,
     }
   }
 })

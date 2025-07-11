@@ -23,8 +23,8 @@
     >
       <template #default="{ activeTab }">
         <div v-if="activeTab === 'details'" class="details-view">
-          <!-- Utilisation d'AsideDetailView pour afficher les détails -->
-          <AsideDetailView />
+              <!-- Utilisation de FloatingDetailView pour afficher les détails -->
+    <FloatingDetailView />
         </div>
         
         <!-- Vue Actualités -->
@@ -40,7 +40,7 @@
 <script lang="ts">
 import { defineComponent, computed } from 'vue'
 import { useAsideStore } from '@/stores/asideStore'
-import AsideDetailView from '@/components/aside/AsideDetailView.vue'
+import FloatingDetailView from '@/components/panels/FloatingDetailView.vue'
 import TabNavigation from '@/components/common/TabNavigation.vue'
 import NewsView from '@/components/panels/NewsView.vue'
 
@@ -48,7 +48,7 @@ export default defineComponent({
   name: 'FloatingDetailPanel',
   
   components: {
-    AsideDetailView,
+    FloatingDetailView,
     TabNavigation,
     NewsView
   },
@@ -83,7 +83,8 @@ export default defineComponent({
         dateDerniereMiseAJour: '',
         sections: [],
         collapsibleSections: [],
-        coalitions: []
+        coalitions: [],
+        accords: []
       }
     }
     
@@ -117,6 +118,14 @@ export default defineComponent({
   border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
+  /* Masquer la scrollbar */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+/* Masquer la scrollbar pour WebKit (Chrome, Safari, Edge) */
+.floating-detail-panel::-webkit-scrollbar {
+  display: none;
 }
 
 .panel-header {
@@ -182,5 +191,13 @@ export default defineComponent({
   padding: var(--spacing-md);
   flex: 1;
   overflow-y: auto;
+  /* Masquer la scrollbar */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+/* Masquer la scrollbar pour WebKit (Chrome, Safari, Edge) */
+.details-view::-webkit-scrollbar {
+  display: none;
 }
 </style> 

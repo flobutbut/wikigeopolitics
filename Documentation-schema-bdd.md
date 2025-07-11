@@ -4,7 +4,7 @@
 
 WikiGeopolitics utilise une **base de données PostgreSQL** avec l'extension **PostGIS** pour gérer les données géospatiales. La base de données est conteneurisée avec Docker pour faciliter le déploiement et la gestion.
 
-**🔄 Mise à jour : Rationalisation complète terminée (Janvier 2025)**
+**🔄 Mise à jour : Système de régimes politiques et chefs d'État optimisé (Janvier 2025)**
 - ✅ Suppression des tables redondantes (`international_relation`, `international_relation_country`)
 - ✅ Nettoyage des redondances dans `organization` (OTAN, ASEAN, OPEP)
 - ✅ Harmonisation des types d'organisations (17 types cohérents)
@@ -12,6 +12,10 @@ WikiGeopolitics utilise une **base de données PostgreSQL** avec l'extension **P
 - ✅ Migration des données uniques vers le système unifié
 - ✅ Suppression du trigger problématique sur `organization`
 - ✅ Vérification d'intégrité complète des références
+- ✅ **Nouveau** : Système de régimes politiques avec table `political_regime` et `country_political_regime`
+- ✅ **Nouveau** : Champs chef d'État (`chef_etat`, `date_prise_poste`) dans `country_political_regime`
+- ✅ **Nouveau** : Suppression des colonnes obsolètes (`regimepolitique`, `chefetat`) de la table `country`
+- ✅ **Nouveau** : 100% des pays (238) avec données de chef d'État complètes
 
 ## Architecture technique
 
@@ -33,6 +37,8 @@ erDiagram
   COUNTRY ||--o{ TRADE_ROUTE_COUNTRY : acteur
   COUNTRY ||--o{ COMM_NETWORK_COUNTRY : acteur
   COUNTRY ||--o{ DEMOGRAPHIC : a
+  COUNTRY ||--o{ COUNTRY_POLITICAL_REGIME : a
+  POLITICAL_REGIME ||--o{ COUNTRY_POLITICAL_REGIME : définit
   ORGANIZATION ||--o{ COUNTRY_ORGANIZATION : membre
   CONFLICT ||--o{ CONFLICT_COUNTRY : participants
   CONFLICT }o--|| RESOURCE : enjeu
@@ -56,7 +62,6 @@ erDiagram
     int population
     float revenuMedian
     float superficieKm2
-    string regimePolitique
     string appartenanceGeographique
     geo coordonnees
     string histoire
@@ -65,6 +70,25 @@ erDiagram
     string statutStrategique
     date dateCreation
     date dateDerniereMiseAJour
+  }
+
+  POLITICAL_REGIME {
+    string id
+    string name
+    string description
+    string type
+    date created_at
+    date updated_at
+  }
+
+  COUNTRY_POLITICAL_REGIME {
+    string country_id
+    string regime_id
+    boolean current_regime
+    string chef_etat
+    date date_prise_poste
+    date created_at
+    date updated_at
   }
 
   ORGANIZATION {
@@ -208,6 +232,11 @@ erDiagram
 - ❌ `organization_relation` → Supprimé (redondant)
 - ❌ `country_relation` → Supprimé (redondant)
 
+### Colonnes supprimées (obsolètes)
+- ❌ `regimepolitique` de la table `country` → Migré vers `country_political_regime`
+- ❌ `chefetat` de la table `country` → Migré vers `country_political_regime`
+- ❌ `current_regime_id` de la table `country` → Remplacé par la relation `country_political_regime`
+
 ### Redondances nettoyées dans `organization`
 - ❌ `otan` → ✅ `org_nato` (nom complet avec acronyme)
 - ❌ `asean` → ✅ `org_asean` (nom complet avec acronyme)
@@ -337,7 +366,6 @@ CREATE TABLE country (
     langue VARCHAR(255),
     monnaie VARCHAR(100),
     continent VARCHAR(100),
-    current_regime_id VARCHAR(50) REFERENCES political_regime(id),
     sections JSONB,
     indicateurs JSONB,
     politique JSONB,
@@ -350,7 +378,6 @@ CREATE TABLE country (
     population INTEGER,
     revenuMedian FLOAT,
     superficieKm2 FLOAT,
-    regimePolitique VARCHAR(100),
     appartenanceGeographique VARCHAR(100),
     histoire TEXT,
     indiceSouverainete FLOAT,
@@ -360,6 +387,36 @@ CREATE TABLE country (
     dateDerniereMiseAJour DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### POLITICAL_REGIME (Régimes politiques)
+Table des types de régimes politiques disponibles.
+
+```sql
+CREATE TABLE political_regime (
+    id VARCHAR(50) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    type VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### COUNTRY_POLITICAL_REGIME (Relation pays-régimes)
+Table de relation entre pays et régimes politiques avec informations sur les chefs d'État.
+
+```sql
+CREATE TABLE country_political_regime (
+    country_id VARCHAR(50) REFERENCES country(id) ON DELETE CASCADE,
+    regime_id VARCHAR(50) REFERENCES political_regime(id) ON DELETE CASCADE,
+    current_regime BOOLEAN DEFAULT false,
+    chef_etat VARCHAR(255),
+    date_prise_poste DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (country_id, regime_id)
 );
 ```
 
@@ -614,9 +671,11 @@ ORDER BY pib DESC NULLS LAST;
 
 La base de données est initialisée avec des données d'exemple basées sur les fichiers JSON existants dans `src/data/` :
 
-- **195 pays** avec coordonnées géospatiales (complète)
+- **238 pays** avec coordonnées géospatiales (complète)
 - **35 organisations internationales** (rationalisées et nettoyées)
 - **124 relations pays-organisations** (système unifié)
+- **10 régimes politiques** (démocratie, monarchie, dictature, etc.)
+- **238 relations pays-régimes** avec données de chefs d'État (100% complète)
 - **3 conflits armés** avec géométries
 - **8 ressources naturelles** (pétrole, gaz, lithium, etc.)
 - **8 industries** (automobile, informatique, pharmaceutique, etc.)
@@ -700,6 +759,50 @@ JOIN country_organization co ON c.id = co.countryId
 GROUP BY c.id, c.nom
 ORDER BY nombre_organisations DESC
 LIMIT 10;
+```
+
+### Régimes politiques par pays avec chefs d'État
+```sql
+SELECT 
+    c.nom as pays,
+    pr.name as regime_politique,
+    cpr.chef_etat,
+    cpr.date_prise_poste,
+    cpr.current_regime
+FROM country c
+JOIN country_political_regime cpr ON c.id = cpr.country_id
+JOIN political_regime pr ON cpr.regime_id = pr.id
+WHERE cpr.current_regime = true
+ORDER BY c.nom;
+```
+
+### Pays par type de régime politique
+```sql
+SELECT 
+    pr.name as regime_politique,
+    COUNT(c.id) as nombre_pays,
+    array_agg(c.nom ORDER BY c.nom) as pays
+FROM political_regime pr
+JOIN country_political_regime cpr ON pr.id = cpr.regime_id
+JOIN country c ON cpr.country_id = c.id
+WHERE cpr.current_regime = true
+GROUP BY pr.id, pr.name
+ORDER BY nombre_pays DESC;
+```
+
+### Chefs d'État récents (prise de poste après 2020)
+```sql
+SELECT 
+    c.nom as pays,
+    cpr.chef_etat,
+    cpr.date_prise_poste,
+    pr.name as regime_politique
+FROM country_political_regime cpr
+JOIN country c ON cpr.country_id = c.id
+JOIN political_regime pr ON cpr.regime_id = pr.id
+WHERE cpr.current_regime = true 
+    AND cpr.date_prise_poste >= '2020-01-01'
+ORDER BY cpr.date_prise_poste DESC;
 ```
 
 ## Maintenance
@@ -793,6 +896,8 @@ sudo chown -R 999:999 database/
 
 ## Explication des entités
 - **COUNTRY** (pays) est la table centrale, reliée à toutes les autres entités avec données économiques et géopolitiques complètes.
+- **POLITICAL_REGIME** (régimes politiques) définit les types de régimes (démocratie, monarchie, dictature, etc.).
+- **COUNTRY_POLITICAL_REGIME** (relation pays-régimes) gère les régimes actuels et historiques des pays avec informations sur les chefs d'État.
 - **ORGANIZATION** (organisations internationales) regroupe alliances, coalitions, etc. (35 organisations rationalisées).
 - **CONFLICT** (conflits armés ou historiques) : parties, timeline, conséquences...
 - **RESOURCE** (ressources naturelles) : producteurs, routes, conflits associés...
@@ -802,4 +907,4 @@ sudo chown -R 999:999 database/
 - **COMM_NETWORK** (réseaux de communication) : infrastructure, acteurs, capacité
 - **DEMOGRAPHIC** (démographie et société) : population, tendances, indicateurs sociaux
 
-Ce schéma est maintenant parfaitement rationalisé et optimisé, avec un système unifié pour les organisations et leurs relations avec les pays. Toutes les redondances ont été supprimées et les types d'organisations harmonisés pour une meilleure cohérence et facilité d'utilisation. 
+Ce schéma est maintenant parfaitement rationalisé et optimisé, avec un système unifié pour les organisations et leurs relations avec les pays, ainsi qu'un système complet de gestion des régimes politiques et des chefs d'État. Toutes les redondances ont été supprimées et les types d'organisations harmonisés pour une meilleure cohérence et facilité d'utilisation. 

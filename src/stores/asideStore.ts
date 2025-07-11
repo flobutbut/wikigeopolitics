@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getAllCountries, getNavigationData, getCategoryData } from '@/services/readService'
+import { getAllCountries, getNavigationData, getCategoryData, getAllPoliticalRegimes, getCountriesByRegime } from '@/services/readService'
 
 // Définir les interfaces pour le typage
 interface AppData {
@@ -9,6 +9,7 @@ interface AppData {
   };
   mainNavigation: any[];
   countryList: any[];
+  politicalRegimeList: any[];
   subPages: Record<string, any>;
   detailPages: Record<string, any>;
 }
@@ -47,6 +48,7 @@ interface CountryDetailData {
   regimePolitique?: string;
   appartenanceGeographique?: string;
   chefEtat?: string;
+  datePrisePoste?: string;
   histoire?: string;
   indiceSouverainete?: number;
   indiceDependance?: number;
@@ -65,6 +67,18 @@ interface CountryDetailData {
   coalitions: Array<{
     id: string;
     title: string;
+    type?: string;
+    role?: string;
+    dateAdhesion?: string;
+    dateSortie?: string;
+  }>;
+  accords: Array<{
+    id: string;
+    title: string;
+    type?: string;
+    role?: string;
+    dateAdhesion?: string;
+    dateSortie?: string;
   }>;
 }
 
@@ -77,6 +91,7 @@ export const useAsideStore = defineStore('aside', {
       search: { enabled: true, placeholder: "Rechercher" },
       mainNavigation: [],
       countryList: [],
+      politicalRegimeList: [],
       subPages: {},
       detailPages: {}
     } as AppData,
@@ -104,6 +119,7 @@ export const useAsideStore = defineStore('aside', {
       regimePolitique: '',
       appartenanceGeographique: '',
       chefEtat: '',
+      datePrisePoste: '',
       histoire: '',
       indiceSouverainete: undefined,
       indiceDependance: undefined,
@@ -112,7 +128,8 @@ export const useAsideStore = defineStore('aside', {
       dateDerniereMiseAJour: '',
       sections: [],
       collapsibleSections: [] as CollapsibleSection[],
-      coalitions: []
+      coalitions: [],
+      accords: []
     } as CountryDetailData,
     // Ajouter un cache pour les données chargées
     dataCache: {} as Record<string, any>,
@@ -184,6 +201,18 @@ export const useAsideStore = defineStore('aside', {
         country.title.toLowerCase().includes(query) || 
         country.flag.includes(query)
       )
+    },
+
+    filteredPoliticalRegimes: (state) => {
+      if (!state.appData.politicalRegimeList) return []
+      
+      if (!state.searchQuery) return state.appData.politicalRegimeList
+      
+      const query = state.searchQuery.toLowerCase()
+      return state.appData.politicalRegimeList.filter((regime: any) => 
+        regime.name.toLowerCase().includes(query) || 
+        regime.description?.toLowerCase().includes(query)
+      )
     }
   },
 
@@ -196,24 +225,22 @@ export const useAsideStore = defineStore('aside', {
         this.error = null
         
         // Charger les données depuis la base de données
-        const [countries, navigationData] = await Promise.all([
+        const [countries, navigationData, politicalRegimes] = await Promise.all([
           getAllCountries(),
-          getNavigationData()
+          getNavigationData(),
+          getAllPoliticalRegimes()
         ])
         
-        // Assembler les données
-        this.appData = {
-          search: { enabled: true, placeholder: "Rechercher" },
-          mainNavigation: navigationData.categories || [],
-          countryList: countries || [],
-          subPages: {},
-          detailPages: {}
-        }
+        // Mettre à jour l'état avec les données récupérées
+        this.appData.countryList = countries || []
+        this.appData.mainNavigation = navigationData?.categories || []
+        this.appData.politicalRegimeList = politicalRegimes || []
         
-        console.log('App data loaded from database')
+        console.log(`[asideStore] Données initialisées: ${this.appData.countryList.length} pays, ${this.appData.politicalRegimeList.length} régimes politiques`)
+        
       } catch (error) {
-        console.error('Error loading app data from database:', error)
-        this.error = 'Impossible de charger les données depuis la base de données'
+        console.error('Erreur lors de l\'initialisation des données:', error)
+        this.error = 'Erreur lors du chargement des données'
       } finally {
         this.isLoading = false
       }
@@ -288,6 +315,7 @@ export const useAsideStore = defineStore('aside', {
             regimePolitique: countryData.regimePolitique,
             appartenanceGeographique: countryData.appartenanceGeographique,
             chefEtat: countryData.chefEtat,
+            datePrisePoste: countryData.datePrisePoste,
             histoire: countryData.histoire,
             indiceSouverainete: countryData.indiceSouverainete,
             indiceDependance: countryData.indiceDependance,
@@ -321,7 +349,8 @@ export const useAsideStore = defineStore('aside', {
                 content: countryData.demographie?.content || 'Aucune information disponible'
               }
             ] as CollapsibleSection[],
-            coalitions: countryData.politicalRegime?.organizations || []
+            coalitions: countryData.coalitions || [],
+            accords: countryData.accords || []
           }
         } else {
           // Créer des données par défaut si le pays n'existe pas
@@ -339,6 +368,7 @@ export const useAsideStore = defineStore('aside', {
             regimePolitique: '',
             appartenanceGeographique: '',
             chefEtat: '',
+            datePrisePoste: '',
             histoire: '',
             indiceSouverainete: undefined,
             indiceDependance: undefined,
@@ -347,7 +377,8 @@ export const useAsideStore = defineStore('aside', {
             dateDerniereMiseAJour: '',
             sections: [],
             collapsibleSections: [],
-            coalitions: []
+            coalitions: [],
+            accords: []
           }
         }
         
@@ -371,6 +402,7 @@ export const useAsideStore = defineStore('aside', {
           regimePolitique: '',
           appartenanceGeographique: '',
           chefEtat: '',
+          datePrisePoste: '',
           histoire: '',
           indiceSouverainete: undefined,
           indiceDependance: undefined,
@@ -379,7 +411,8 @@ export const useAsideStore = defineStore('aside', {
           dateDerniereMiseAJour: '',
           sections: [],
           collapsibleSections: [],
-          coalitions: []
+          coalitions: [],
+          accords: []
         }
       } finally {
         this.isLoading = false
@@ -393,6 +426,12 @@ export const useAsideStore = defineStore('aside', {
       // Vérifier si c'est la liste des pays
       if (id === 'pays-du-monde-list') {
         this.navigateToCountryList()
+        return
+      }
+      
+      // Vérifier si c'est la liste des régimes politiques
+      if (id === 'regimes-politiques') {
+        this.navigateToPoliticalRegimeList()
         return
       }
       
@@ -423,6 +462,25 @@ export const useAsideStore = defineStore('aside', {
       this.currentView.type = 'countryList'
       this.currentView.id = 'country-list'
       this.currentView.title = 'Pays du monde'
+      this.currentView.searchEnabled = true
+      this.currentView.hasReturnButton = true
+      this.currentView.items = []
+      this.currentView.organizations = null
+      
+      // Réinitialiser la recherche
+      this.searchQuery = ''
+    },
+
+    // Navigation vers la liste des régimes politiques
+    navigateToPoliticalRegimeList() {
+      console.log('Navigating to political regime list')
+      
+      // Sauvegarder la vue précédente
+      this.currentView.previousView = { ...this.currentView }
+      
+      this.currentView.type = 'politicalRegimeList'
+      this.currentView.id = 'political-regime-list'
+      this.currentView.title = 'Régimes politiques'
       this.currentView.searchEnabled = true
       this.currentView.hasReturnButton = true
       this.currentView.items = []
@@ -469,6 +527,42 @@ export const useAsideStore = defineStore('aside', {
       console.log('Organization selected:', id)
       // Logique pour sélectionner une organisation
     },
+
+    // Sélection d'un régime politique
+    async selectPoliticalRegime(id: string) {
+      console.log('Political regime selected:', id)
+      
+      try {
+        // Sauvegarder la vue précédente
+        this.currentView.previousView = { ...this.currentView }
+        
+        // Trouver le nom du régime politique
+        const regime = this.appData.politicalRegimeList.find(r => r.id === id)
+        const regimeName = regime ? regime.name : 'Régime politique'
+        
+        // Charger les pays associés à ce régime
+        const countries = await getCountriesByRegime(id)
+        
+        // Mettre à jour la vue pour afficher les pays de ce régime
+        this.currentView.type = 'countryList'
+        this.currentView.id = `regime-${id}-countries`
+        this.currentView.title = regimeName
+        this.currentView.searchEnabled = true
+        this.currentView.hasReturnButton = true
+        this.currentView.items = []
+        this.currentView.organizations = null
+        
+        // Mettre à jour la liste des pays filtrés pour ce régime
+        this.appData.countryList = countries || []
+        
+        // Réinitialiser la recherche
+        this.searchQuery = ''
+        
+      } catch (error) {
+        console.error('Erreur lors du chargement des pays par régime:', error)
+        this.error = 'Erreur lors du chargement des pays'
+      }
+    },
     
     // Gestion de la recherche
     setSearchQuery(query: string) {
@@ -489,6 +583,8 @@ export const useAsideStore = defineStore('aside', {
           this.navigateToSubmenu(this.currentView.previousView.id)
         } else if (this.currentView.previousView.type === 'countryList') {
           this.navigateToCountryList()
+        } else if (this.currentView.previousView.type === 'politicalRegimeList') {
+          this.navigateToPoliticalRegimeList()
         }
       } else {
         // Par défaut, retour à la vue principale

@@ -1,4 +1,4 @@
-import { countryApi, navigationApi } from './apiService';
+import { countryApi, navigationApi, politicalRegimeApi } from './apiService';
 import { Country } from '@/types/country';
 
 export async function getAllCountries(): Promise<Country[]> {
@@ -32,4 +32,14 @@ export async function getNavigationData() {
 // Récupérer les données d'une catégorie spécifique
 export async function getCategoryData(categoryId: string) {
   return await navigationApi.getCategoryData(categoryId);
+}
+
+// Récupérer tous les régimes politiques
+export async function getAllPoliticalRegimes() {
+  return await politicalRegimeApi.getAllPoliticalRegimes();
+}
+
+// Récupérer les pays par régime politique
+export async function getCountriesByRegime(regimeId: string) {
+  return await politicalRegimeApi.getCountriesByRegime(regimeId);
 } 

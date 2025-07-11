@@ -8,11 +8,11 @@
       
       <!-- Vue intermédiaire (niveaux 1 à n) -->
       <AsideNavigationView 
-        v-else-if="['submenu', 'countryList'].includes(currentView.type)" 
+        v-else-if="['submenu', 'countryList', 'politicalRegimeList'].includes(currentView.type)" 
       />
       
       <!-- Vue détail (fiche finale) -->
-      <AsideDetailView v-else-if="currentView.type === 'detail'" />
+      <FloatingDetailView v-else-if="currentView.type === 'detail'" />
     </div>
   </aside>
 </template>
@@ -21,7 +21,7 @@
 import { computed, onMounted } from 'vue'
 import AsideMainView from './AsideMainView.vue'
 import AsideNavigationView from './AsideNavigationView.vue'
-import AsideDetailView from './AsideDetailView.vue'
+import FloatingDetailView from '@/components/panels/FloatingDetailView.vue'
 import { useAsideStore } from '@/stores/asideStore'
 
 // Utiliser le store Pinia

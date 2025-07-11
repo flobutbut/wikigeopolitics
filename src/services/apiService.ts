@@ -51,6 +51,22 @@ export const countryApi = {
   }
 };
 
+// Service pour les régimes politiques
+export const politicalRegimeApi = {
+  // Récupérer tous les régimes politiques
+  async getAllPoliticalRegimes() {
+    console.log('[apiService] Appel getAllPoliticalRegimes...')
+    const result = await apiRequest<any[]>('/political-regimes');
+    console.log('[apiService] getAllPoliticalRegimes résultat:', result.length, 'régimes')
+    return result;
+  },
+
+  // Récupérer les pays par régime politique
+  async getCountriesByRegime(regimeId: string) {
+    return apiRequest<any[]>(`/political-regimes/${regimeId}/countries`);
+  }
+};
+
 // Service pour la navigation
 export const navigationApi = {
   // Récupérer les données de navigation

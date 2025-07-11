@@ -2,20 +2,25 @@
   <div class="aside__detail-view">
     <div class="aside__section">
       <div class="detail-content">
+
+
         <!-- Bloc principal : Forme de l'État + Chef d'État -->
         <DetailSection
           :sections="[
             { title: 'Forme de l\'État', value: detailData.regimePolitique || 'Data' },
-            { title: chefEtatLabel, value: detailData.chefEtat || 'Data' }
+            { title: chefEtatLabel, value: chefEtatInfo },
+            { title: 'Prise de poste', value: datePrisePosteInfo }
           ].filter(section => section.title)"
         />
+
+
 
         <!-- Bloc indicateurs économiques -->
         <DetailSection
           :sections="[
             { title: 'PIB', value: displayValue(detailData.pib, formatCurrency) },
             { title: 'Population', value: displayValue(detailData.population, formatNumber) },
-            { title: 'Revenus médiants', value: displayValue(detailData.revenuMedian, formatCurrency) },
+            { title: 'Revenus médians', value: displayValue(detailData.revenuMedian, formatCurrency) },
             { title: 'Superficie', value: displayValue(detailData.superficieKm2, formatArea) }
           ]"
         />
@@ -37,7 +42,11 @@
         >
           <div class="coalitions-list">
             <div v-for="coalition in detailData.coalitions" :key="coalition.id" class="coalition-item">
-              {{ coalition.title }}
+              <div class="coalition-title">{{ coalition.title }}</div>
+              <div v-if="coalition.role" class="coalition-role">{{ coalition.role }}</div>
+              <div v-if="coalition.dateAdhesion" class="coalition-date">
+                Adhésion: {{ formatDate(coalition.dateAdhesion) }}
+              </div>
             </div>
             <div v-if="!detailData.coalitions || detailData.coalitions.length === 0" class="no-data">
               Aucune coalition diplomatique disponible.
@@ -52,12 +61,14 @@
           @toggle="toggleTradeAgreements"
         >
           <div class="trade-agreements-list">
-            <div v-if="detailData.tradeAgreements && detailData.tradeAgreements.length > 0">
-              <div v-for="agreement in detailData.tradeAgreements" :key="agreement.id" class="trade-agreement-item">
-                {{ agreement.title }}
+            <div v-for="accord in detailData.accords" :key="accord.id" class="trade-agreement-item">
+              <div class="accord-title">{{ accord.title }}</div>
+              <div v-if="accord.role" class="accord-role">{{ accord.role }}</div>
+              <div v-if="accord.dateAdhesion" class="accord-date">
+                Adhésion: {{ formatDate(accord.dateAdhesion) }}
               </div>
             </div>
-            <div v-else class="no-data">
+            <div v-if="!detailData.accords || detailData.accords.length === 0" class="no-data">
               Aucun accord de libre-échange disponible.
             </div>
           </div>
@@ -70,11 +81,11 @@
 <script lang="ts">
 import { defineComponent, computed, ref } from 'vue'
 import { useAsideStore } from '@/stores/asideStore'
-import CollapsibleSection from './CollapsibleSection.vue'
-import DetailSection from './DetailSection.vue'
+import CollapsibleSection from '@/components/aside/CollapsibleSection.vue'
+import DetailSection from '@/components/aside/DetailSection.vue'
 
 export default defineComponent({
-  name: 'AsideDetailView',
+  name: 'FloatingDetailView',
   
   components: {
     CollapsibleSection,
@@ -97,6 +108,26 @@ export default defineComponent({
       return ''
     })
 
+    // Informations sur le chef d'État
+    const chefEtatInfo = computed(() => {
+      const chefEtat = asideStore.currentDetailData.chefEtat
+      return chefEtat || 'Data'
+    })
+
+    // Informations sur la date de prise de poste
+    const datePrisePosteInfo = computed(() => {
+      const datePrisePoste = asideStore.currentDetailData.datePrisePoste
+      
+      if (!datePrisePoste) return 'Data'
+      
+      const date = new Date(datePrisePoste)
+      return date.toLocaleDateString('fr-FR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+    })
+
     // Fonctions utilitaires pour le formatage
     const formatCurrency = (value: number) => {
       if (value === undefined || value === null) return ''
@@ -116,6 +147,17 @@ export default defineComponent({
     // Affiche la valeur formatée ou "Data" si absente
     const displayValue = (val: any, formatter: (v: any) => string) => {
       return (val !== undefined && val !== null) ? formatter(val) : 'Data'
+    }
+
+    // Formater une date en français
+    const formatDate = (dateString: string) => {
+      if (!dateString) return ''
+      const date = new Date(dateString)
+      return date.toLocaleDateString('fr-FR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
     }
     
     // Toggle pour les sections collapsibles
@@ -145,9 +187,12 @@ export default defineComponent({
       tradeAgreementsExpanded,
       historyExpanded, // Added to return
       chefEtatLabel,
+      chefEtatInfo,
+      datePrisePosteInfo,
       formatCurrency,
       formatNumber,
       formatArea,
+      formatDate,
       displayValue,
       toggleSection,
       toggleCoalitions,
@@ -174,17 +219,32 @@ export default defineComponent({
 }
 
 .coalition-item {
-  padding: var(--spacing-xs);
   background-color: var(--surface-dimmed);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
+  margin-bottom: var(--spacing-xs);
   transition: background-color var(--transition-speed) var(--transition-function);
 }
 
 .coalition-item:hover {
   background-color: var(--surface-hover);
+}
+
+.coalition-title {
+  font-weight: var(--font-weight-medium);
+}
+
+.coalition-role {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-xs);
+  color: var(--text-muted);
+}
+
+.coalition-date {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-xs);
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 .trade-agreements-list {
@@ -194,17 +254,32 @@ export default defineComponent({
 }
 
 .trade-agreement-item {
-  padding: var(--spacing-xs);
   background-color: var(--surface-dimmed);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
+  margin-bottom: var(--spacing-xs);
   transition: background-color var(--transition-speed) var(--transition-function);
 }
 
 .trade-agreement-item:hover {
   background-color: var(--surface-hover);
+}
+
+.accord-title {
+  font-weight: var(--font-weight-medium);
+}
+
+.accord-role {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-xs);
+  color: var(--text-muted);
+}
+
+.accord-date {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-xs);
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 .no-data {

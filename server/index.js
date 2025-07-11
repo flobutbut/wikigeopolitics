@@ -22,12 +22,19 @@ const pool = new Pool({
 
 // Fonction utilitaire pour les requêtes
 async function query(text, params) {
+  console.log('[DB] Tentative de connexion à la base de données...');
   const client = await pool.connect();
   try {
+    console.log('[DB] Connexion établie, exécution de la requête:', text);
     const res = await client.query(text, params);
+    console.log('[DB] Requête exécutée avec succès,', res.rows.length, 'lignes retournées');
     return res.rows;
+  } catch (error) {
+    console.error('[DB] Erreur lors de l\'exécution de la requête:', error);
+    throw error;
   } finally {
     client.release();
+    console.log('[DB] Connexion fermée');
   }
 }
 
@@ -126,16 +133,33 @@ app.get('/api/countries-geo', async (req, res) => {
 // Récupérer les détails d'un pays
 app.get('/api/countries/:id/details', async (req, res) => {
   try {
-    const countryRow = await query(
-      'SELECT * FROM country WHERE id = $1',
+    // Récupérer les données du pays avec son régime politique actuel
+    const countryData = await query(
+      `SELECT c.*, pr.name as regime_name, pr.description as regime_description,
+              cpr.chef_etat, cpr.date_prise_poste
+       FROM country c 
+       LEFT JOIN country_political_regime cpr ON c.id = cpr.country_id AND cpr.current_regime = true
+       LEFT JOIN political_regime pr ON cpr.regime_id = pr.id 
+       WHERE c.id = $1`,
       [req.params.id]
     );
 
-    if (countryRow.length === 0) {
+    if (countryData.length === 0) {
       return res.status(404).json({ error: 'Pays non trouvé' });
     }
 
-    const country = countryRow[0];
+    const country = countryData[0];
+
+    // Récupérer les organisations du pays
+    const organizations = await query(
+      `SELECT o.id, o.nom, o.type, o.description, o.datecreation, o.siege,
+              co.role, co.dateadhesion, co.datesortie
+       FROM country_organization co
+       JOIN organization o ON co.organizationid = o.id
+       WHERE co.countryid = $1
+       ORDER BY o.type, o.nom`,
+      [req.params.id]
+    );
 
     // Convertir les coordonnées PostGIS en format utilisable
     let coordonnees = null;
@@ -143,6 +167,33 @@ app.get('/api/countries/:id/details', async (req, res) => {
       const coords = country.coordonnees.replace('POINT(', '').replace(')', '').split(' ');
       coordonnees = [parseFloat(coords[0]), parseFloat(coords[1])]; // [lng, lat]
     }
+
+    // Organiser les organisations par type
+    const coalitions = organizations.filter(org => 
+      org.type === 'Alliance militaire' || 
+      org.type === 'Organisation diplomatique' || 
+      org.type === 'Organisation régionale'
+    ).map(org => ({
+      id: org.id,
+      title: org.nom,
+      type: org.type,
+      role: org.role,
+      dateAdhesion: org.dateadhesion,
+      dateSortie: org.datesortie
+    }));
+
+    const accords = organizations.filter(org => 
+      org.type === 'Organisation commerciale' || 
+      org.type === 'Forum économique' || 
+      org.type === 'Organisation économique'
+    ).map(org => ({
+      id: org.id,
+      title: org.nom,
+      type: org.type,
+      role: org.role,
+      dateAdhesion: org.dateadhesion,
+      dateSortie: org.datesortie
+    }));
 
     // Retourner les données avec la nouvelle structure
     const details = {
@@ -156,9 +207,10 @@ app.get('/api/countries/:id/details', async (req, res) => {
       population: country.population,
       revenuMedian: country.revenumedian,
       superficieKm2: country.superficiekm2,
-      regimePolitique: country.regimepolitique,
+      regimePolitique: country.regime_name || 'Non spécifié',
       appartenanceGeographique: country.appartenancegeographique,
-      chefEtat: country.chefetat,
+      chefEtat: country.chef_etat || null,
+      datePrisePoste: country.date_prise_poste || null,
       histoire: country.histoire,
       indiceSouverainete: country.indicesouverainete,
       indiceDependance: country.indicedependance,
@@ -179,7 +231,7 @@ app.get('/api/countries/:id/details', async (req, res) => {
           id: 'politique',
           title: 'Système politique',
           expanded: false,
-          content: `Régime politique: ${country.regimepolitique || 'Non spécifié'}`
+          content: `Régime politique: ${country.regime_name || 'Non spécifié'}`
         },
         {
           id: 'economie',
@@ -194,7 +246,8 @@ app.get('/api/countries/:id/details', async (req, res) => {
           content: `Population: ${country.population ? formatNumber(country.population) : 'Non disponible'}\nRevenu médian: ${country.revenumedian ? formatCurrency(country.revenumedian) : 'Non disponible'}`
         }
       ],
-      coalitions: []
+      coalitions: coalitions,
+      accords: accords
     };
 
     res.json(details);
@@ -204,17 +257,77 @@ app.get('/api/countries/:id/details', async (req, res) => {
   }
 });
 
+// Nouvel endpoint pour récupérer les organisations d'un pays
+app.get('/api/countries/:id/organizations', async (req, res) => {
+  try {
+    const organizations = await query(
+      `SELECT o.id, o.nom, o.type, o.description, o.datecreation, o.siege,
+              co.role, co.dateadhesion, co.datesortie
+       FROM country_organization co
+       JOIN organization o ON co.organizationid = o.id
+       WHERE co.countryid = $1
+       ORDER BY o.type, o.nom`,
+      [req.params.id]
+    );
+
+    // Organiser les organisations par type
+    const coalitions = organizations.filter(org => 
+      org.type === 'Alliance militaire' || 
+      org.type === 'Organisation diplomatique' || 
+      org.type === 'Organisation régionale'
+    ).map(org => ({
+      id: org.id,
+      title: org.nom,
+      type: org.type,
+      role: org.role,
+      dateAdhesion: org.dateadhesion,
+      dateSortie: org.datesortie
+    }));
+
+    const accords = organizations.filter(org => 
+      org.type === 'Organisation commerciale' || 
+      org.type === 'Forum économique' || 
+      org.type === 'Organisation économique'
+    ).map(org => ({
+      id: org.id,
+      title: org.nom,
+      type: org.type,
+      role: org.role,
+      dateAdhesion: org.dateadhesion,
+      dateSortie: org.datesortie
+    }));
+
+    res.json({
+      coalitions: coalitions,
+      accords: accords,
+      all: organizations.map(org => ({
+        id: org.id,
+        title: org.nom,
+        type: org.type,
+        role: org.role,
+        dateAdhesion: org.dateadhesion,
+        dateSortie: org.datesortie
+      }))
+    });
+  } catch (error) {
+    console.error('Erreur lors de la récupération des organisations du pays:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // Récupérer tous les régimes politiques
 app.get('/api/political-regimes', async (req, res) => {
   try {
+    console.log('[API] Tentative de récupération des régimes politiques...');
     const regimes = await query(
-      'SELECT id, name, description, characteristics, examples, continents FROM political_regime ORDER BY name'
+      'SELECT id, name, description FROM political_regime ORDER BY name'
     );
+    console.log('[API] Régimes politiques récupérés:', regimes.length);
     
     res.json(regimes);
   } catch (error) {
     console.error('Erreur lors de la récupération des régimes politiques:', error);
-    res.status(500).json({ error: 'Erreur serveur' });
+    res.status(500).json({ error: 'Erreur serveur', details: error.message });
   }
 });
 
@@ -222,7 +335,12 @@ app.get('/api/political-regimes', async (req, res) => {
 app.get('/api/political-regimes/:id/countries', async (req, res) => {
   try {
     const countries = await query(
-      'SELECT c.id, c.nom, c.drapeau, c.continent, ST_AsText(c.coordonnees) as coordonnees FROM country c WHERE c.current_regime_id = $1 ORDER BY c.nom',
+      `SELECT c.id, c.nom, c.drapeau, c.continent, ST_AsText(c.coordonnees) as coordonnees,
+              cpr.chef_etat, cpr.date_prise_poste
+       FROM country c 
+       INNER JOIN country_political_regime cpr ON c.id = cpr.country_id 
+       WHERE cpr.regime_id = $1 AND cpr.current_regime = true 
+       ORDER BY c.nom`,
       [req.params.id]
     );
     
@@ -231,7 +349,9 @@ app.get('/api/political-regimes/:id/countries', async (req, res) => {
       title: country.nom,
       flag: country.drapeau,
       continent: country.continent,
-      coordonnees: country.coordonnees ? country.coordonnees.replace('POINT(', '').replace(')', '').split(' ').map(coord => parseFloat(coord)) : null
+      coordonnees: country.coordonnees ? country.coordonnees.replace('POINT(', '').replace(')', '').split(' ').map(coord => parseFloat(coord)) : null,
+      chefEtat: country.chef_etat || null,
+      datePrisePoste: country.date_prise_poste || null
     }));
     
     res.json(formattedCountries);
@@ -245,7 +365,13 @@ app.get('/api/political-regimes/:id/countries', async (req, res) => {
 app.get('/api/countries-with-regimes', async (req, res) => {
   try {
     const countries = await query(
-      'SELECT c.id, c.nom, c.drapeau, c.continent, ST_AsText(c.coordonnees) as coordonnees, pr.name as regime_name, pr.characteristics as regime_characteristics FROM country c LEFT JOIN political_regime pr ON c.current_regime_id = pr.id ORDER BY c.nom'
+      `SELECT c.id, c.nom, c.drapeau, c.continent, ST_AsText(c.coordonnees) as coordonnees, 
+              pr.name as regime_name, pr.description as regime_description,
+              cpr.chef_etat, cpr.date_prise_poste
+       FROM country c 
+       LEFT JOIN country_political_regime cpr ON c.id = cpr.country_id AND cpr.current_regime = true
+       LEFT JOIN political_regime pr ON cpr.regime_id = pr.id 
+       ORDER BY c.nom`
     );
     
     const formattedCountries = countries.map(country => ({
@@ -256,8 +382,10 @@ app.get('/api/countries-with-regimes', async (req, res) => {
       coordonnees: country.coordonnees ? country.coordonnees.replace('POINT(', '').replace(')', '').split(' ').map(coord => parseFloat(coord)) : null,
       currentRegime: country.regime_name ? {
         name: country.regime_name,
-        characteristics: country.regime_characteristics
-      } : null
+        description: country.regime_description
+      } : null,
+      chefEtat: country.chef_etat || null,
+      datePrisePoste: country.date_prise_poste || null
     }));
     
     res.json(formattedCountries);
