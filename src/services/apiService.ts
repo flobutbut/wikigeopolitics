@@ -80,6 +80,25 @@ export const navigationApi = {
   }
 };
 
+// Service pour les organisations
+export const organizationApi = {
+  // Récupérer les organisations classées par type
+  async getOrganizationsByType() {
+    console.log('[apiService] Appel getOrganizationsByType...')
+    const result = await apiRequest<any>('/organizations');
+    console.log('[apiService] getOrganizationsByType résultat:', Object.keys(result).length, 'types')
+    return result;
+  },
+
+  // Récupérer les pays membres d'une organisation
+  async getCountriesByOrganization(organizationId: string) {
+    console.log('[apiService] Appel getCountriesByOrganization pour:', organizationId)
+    const result = await apiRequest<any[]>(`/organizations/${organizationId}/countries`);
+    console.log('[apiService] getCountriesByOrganization résultat:', result.length, 'pays')
+    return result;
+  }
+};
+
 // Service pour la santé de l'API
 export const healthApi = {
   // Test de connexion

@@ -4,7 +4,64 @@
 
 **WikiGeopolitics** est une application web de cartographie géopolitique interactive développée avec une architecture moderne et scalable.
 
-**🔄 Mise à jour : Alignement complet avec le schéma cible terminé (Janvier 2025)**
+**🔄 Mise à jour : Navigation dynamique implémentée (Janvier 2025)**
+
+### Navigation dynamique
+
+#### Structure de navigation
+- **Menu principal** : Lecture dynamique depuis `src/data/app/menu.json`
+- **Sous-pages** : Gestion automatique des sous-menus
+- **Données dynamiques** : Intégration avec la base de données pour les régimes politiques et organisations
+
+#### Endpoints API de navigation
+
+```typescript
+// Navigation principale
+GET /api/navigation
+// Retourne les catégories principales et organisations
+
+// Catégories et sous-pages
+GET /api/categories/:id
+// Retourne les données d'une catégorie ou sous-page
+
+// Organisations classées par type
+GET /api/organizations
+// Retourne les organisations groupées par type
+
+// Régimes politiques
+GET /api/political-regimes
+// Retourne tous les régimes politiques
+
+// Pays par régime
+GET /api/political-regimes/:id/countries
+// Retourne les pays d'un régime spécifique
+```
+
+#### Gestion des organisations
+
+```typescript
+// Structure des organisations par type
+interface OrganizationsByType {
+  [type: string]: Array<{
+    id: string;
+    title: string;
+    type: string;
+    description?: string;
+  }>;
+}
+
+// Types d'organisations supportés
+- Alliance militaire
+- Cartel pétrolier
+- Forum économique
+- Institution financière
+- Organisation commerciale
+- Organisation culturelle
+- Organisation diplomatique
+- Organisation régionale
+- Organisation spécialisée
+- Union politique et économique
+```
 
 ## 🏗️ Architecture technique
 
@@ -206,6 +263,68 @@ const findNearestCountry = (point: L.LatLng, countries: Country[]) => {
 ```
 
 ## 📱 Interface utilisateur
+
+### Navigation dynamique
+
+L'application utilise maintenant un système de navigation dynamique qui lit les données depuis le fichier `src/data/app/menu.json` via l'API backend.
+
+#### Architecture de navigation
+
+```typescript
+// API Backend - Lecture dynamique du menu.json
+app.get('/api/navigation', async (req, res) => {
+  const menuPath = path.join(__dirname, '../src/data/app/menu.json');
+  const menuData = JSON.parse(fs.readFileSync(menuPath, 'utf8'));
+  const mainNavigation = menuData.applicationStructure.mainNavigation;
+  
+  const categories = mainNavigation.map(category => ({
+    id: category.id,
+    title: category.title,
+    items: category.items || []
+  }));
+  
+  res.json({ categories, organizations });
+});
+```
+
+#### Structure du fichier menu.json
+
+```json
+{
+  "applicationStructure": {
+    "mainNavigation": [
+      {
+        "id": "politique-et-regimes",
+        "title": "Politique et Régimes",
+        "type": "mainCategory",
+        "items": [
+          {
+            "id": "regime-des-etats",
+            "title": "Régime des états",
+            "hasSubmenu": true
+          }
+        ]
+      }
+    ],
+    "subPages": {
+      "regime-des-etats": {
+        "title": "Régime des états",
+        "searchEnabled": true,
+        "hasReturnButton": true,
+        "items": [...]
+      }
+    }
+  }
+}
+```
+
+#### Avantages de la navigation dynamique
+
+- ✅ **Modifications instantanées** : Les changements dans `menu.json` se reflètent immédiatement
+- ✅ **Pas de redéploiement** : Aucun redémarrage du serveur nécessaire
+- ✅ **Gestion centralisée** : Toute la navigation dans un seul fichier
+- ✅ **Flexibilité** : Ajout/suppression de catégories sans code
+- ✅ **Organisations dynamiques** : Récupération depuis la base de données
 
 ### Structure des composants
 

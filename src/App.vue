@@ -11,7 +11,7 @@
       <main class="main-content">
         <MapComponent 
           ref="mapComponent"
-          :countriesData="countryStore.countriesData"
+          :countriesData="countriesForMap"
           @map-click="handleMapClick"
           @map-ready="handleMapReady"
           @country-selected="handleCountrySelected"
@@ -33,7 +33,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, watch } from 'vue'
+import { defineComponent, ref, onMounted, watch, computed } from 'vue'
 import AsideNav from '@components/aside/aside.vue'
 import MapComponent from '@components/map/Map.vue'
 import HeaderNav from '@components/header/header.vue'
@@ -41,6 +41,8 @@ import FloatingDetailPanel from '@components/panels/FloatingDetailPanel.vue'
 import type { LatLng } from 'leaflet'
 import { useCountrySelectionStore } from '@/stores/countrySelectionStore'
 import { useAsideStore } from '@/stores/asideStore'
+import { useMapStore } from '@/stores/mapStore'
+import { storeToRefs } from 'pinia'
 
 export default defineComponent({
   name: 'App',
@@ -59,6 +61,21 @@ export default defineComponent({
     // Utiliser les stores
     const countryStore = useCountrySelectionStore()
     const asideStore = useAsideStore()
+    const mapStore = useMapStore()
+    const { selectedCountries } = storeToRefs(mapStore)
+    
+    // Computed pour les pays à afficher sur la carte
+    const countriesForMap = computed(() => {
+      // Si aucune sélection, retourner tous les pays
+      if (selectedCountries.value.length === 0) {
+        return countryStore.countriesData
+      }
+      
+      // Sinon, retourner seulement les pays sélectionnés
+      return countryStore.countriesData.filter(country => 
+        selectedCountries.value.includes(country.id)
+      )
+    })
     
     // Initialiser les données depuis la base de données
     const initializeData = async () => {
@@ -128,6 +145,7 @@ export default defineComponent({
       mapComponent,
       isLoading,
       countryStore,
+      countriesForMap,
       handleMapClick,
       handleMapReady,
       handleCountrySelected,

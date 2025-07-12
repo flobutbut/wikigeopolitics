@@ -7,7 +7,6 @@
     "mainNavigation": [
       {
         "id": "tous-les-pays",
-        "title": "Tous les pays",
         "type": "mainCategory",
         "toggleOptions": [
           {
@@ -18,12 +17,12 @@
           {
             "id": "fondieres-administratives",
             "title": "Fondières administratives",
-            "enabled": true
+            "enabled": false
           },
           {
             "id": "frontieres-naturelles",
             "title": "Frontières naturelles",
-            "enabled": true
+            "enabled": false
           }
         ]
       },
@@ -82,6 +81,11 @@
             "hasSubmenu": true
           },
           {
+            "id": "production-agricole",
+            "title": "Production agricole",
+            "hasSubmenu": true
+          },
+          {
             "id": "transport-de-marchandise",
             "title": "Transport de marchandise",
             "hasSubmenu": true
@@ -93,11 +97,6 @@
         "title": "Agriculture et Environnement",
         "type": "mainCategory",
         "items": [
-          {
-            "id": "production-agricole",
-            "title": "Production agricole",
-            "hasSubmenu": true
-          },
           {
             "id": "gestion-des-ressources-naturelles",
             "title": "Gestion des ressources naturelles et...",
@@ -146,54 +145,15 @@
       }
     ],
     "subPages": {
+      "regime-des-etats": {
+        "title": "Régime des états",
+        "searchEnabled": true,
+        "hasReturnButton": true
+      },
       "relations-internationales": {
         "title": "Relations internationales",
         "searchEnabled": true,
-        "hasReturnButton": true,
-        "items": [
-          {
-            "id": "alliances-militaires",
-            "title": "Alliances militaires"
-          },
-          {
-            "id": "accords-de-libres-echanges",
-            "title": "Accords de libres échanges"
-          },
-          {
-            "id": "sanctions-internationales",
-            "title": "Sanctions internationales"
-          }
-        ]
-      },
-      "accords-de-libre-echanges": {
-        "title": "Accords de libre échanges",
-        "searchEnabled": true,
-        "hasReturnButton": true,
-        "organizations": [
-          { "id": "alena", "title": "Alena" },
-          { "id": "aleac", "title": "Aleac" },
-          { "id": "cacm", "title": "CACM" },
-          { "id": "caricom", "title": "Caricom" },
-          { "id": "aladi", "title": "Aladi" },
-          { "id": "can", "title": "CAN" },
-          { "id": "mercosur", "title": "Mercosur" },
-          { "id": "salvador-honduras-taiwan", "title": "Salvador-Honduras-Taïwan" },
-          { "id": "aele", "title": "AELE" },
-          { "id": "union-europeenne", "title": "Union Européenne" },
-          { "id": "eee", "title": "EEE" },
-          { "id": "uemoa", "title": "Uemoa" },
-          { "id": "cedeao", "title": "Cedeao" },
-          { "id": "cemac", "title": "Cemac" },
-          { "id": "cae", "title": "CAE" },
-          { "id": "cdaa", "title": "CDAA" },
-          { "id": "comesa", "title": "Comesa" },
-          { "id": "panarabe", "title": "Panarabe" },
-          { "id": "ccg", "title": "CCG" },
-          { "id": "oce", "title": "OCE" },
-          { "id": "safta", "title": "Safta" },
-          { "id": "asacr", "title": "Asacr" },
-          { "id": "sacu", "title": "SACU" }
-        ]
+        "hasReturnButton": true
       },
       "conflits-armes": {
         "title": "Conflits armés",
@@ -207,29 +167,6 @@
           {
             "id": "position-des-groupes-terroristes",
             "title": "Position des groupes terroristes"
-          }
-        ]
-      },
-      "regime-des-etats": {
-        "title": "Régime des états",
-        "searchEnabled": true,
-        "hasReturnButton": true,
-        "items": [
-          {
-            "id": "republiques",
-            "title": "Républiques"
-          },
-          {
-            "id": "monarchies",
-            "title": "Monarchies"
-          },
-          {
-            "id": "federations",
-            "title": "Fédérations"
-          },
-          {
-            "id": "etats-unitaires",
-            "title": "États unitaires"
           }
         ]
       },

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getAllCountries, getNavigationData, getCategoryData, getAllPoliticalRegimes, getCountriesByRegime } from '@/services/readService'
+import { getAllCountries, getNavigationData, getCategoryData, getAllPoliticalRegimes, getCountriesByRegime, getOrganizationsByType, getCountriesByOrganization } from '@/services/readService'
 
 // Définir les interfaces pour le typage
 interface AppData {
@@ -10,6 +10,7 @@ interface AppData {
   mainNavigation: any[];
   countryList: any[];
   politicalRegimeList: any[];
+  organizationList: Record<string, any[]>;
   subPages: Record<string, any>;
   detailPages: Record<string, any>;
 }
@@ -86,15 +87,7 @@ interface CountryDetailData {
 export const useAsideStore = defineStore('aside', {
   // État (state)
   state: () => ({
-    searchQuery: '',
-    appData: {
-      search: { enabled: true, placeholder: "Rechercher" },
-      mainNavigation: [],
-      countryList: [],
-      politicalRegimeList: [],
-      subPages: {},
-      detailPages: {}
-    } as AppData,
+    // Vue actuelle
     currentView: {
       type: 'main',
       id: 'main',
@@ -102,37 +95,37 @@ export const useAsideStore = defineStore('aside', {
       searchEnabled: true,
       hasReturnButton: false,
       items: [],
-      organizations: null,
-      previousView: undefined
+      organizations: null
     } as CurrentView,
-    currentDetailData: {
-      id: '',
-      title: '',
-      drapeau: '',
-      capitale: '',
-      langue: '',
-      monnaie: '',
-      pib: undefined,
-      population: undefined,
-      revenuMedian: undefined,
-      superficieKm2: undefined,
-      regimePolitique: '',
-      appartenanceGeographique: '',
-      chefEtat: '',
-      datePrisePoste: '',
-      histoire: '',
-      indiceSouverainete: undefined,
-      indiceDependance: undefined,
-      statutStrategique: '',
-      dateCreation: '',
-      dateDerniereMiseAJour: '',
-      sections: [],
-      collapsibleSections: [] as CollapsibleSection[],
-      coalitions: [],
-      accords: []
-    } as CountryDetailData,
-    // Ajouter un cache pour les données chargées
+    
+    // Données de l'application
+    appData: {
+      search: {
+        enabled: true,
+        placeholder: 'Rechercher...'
+      },
+      mainNavigation: [],
+      countryList: [],
+      politicalRegimeList: [],
+      organizationList: {},
+      subPages: {},
+      detailPages: {}
+    } as AppData,
+    
+    // Données détaillées du pays sélectionné
+    currentDetailData: null as CountryDetailData | null,
+    
+    // États de sélection
+    selectedCountryId: null as string | null,
+    selectedOrganizationId: null as string | null,
+    selectedPoliticalRegimeId: null as string | null,
+    
+    // Cache des données
     dataCache: {} as Record<string, any>,
+    
+    // Requête de recherche
+    searchQuery: '',
+    
     // État de chargement
     isLoading: false,
     error: null as string | null
@@ -140,6 +133,11 @@ export const useAsideStore = defineStore('aside', {
 
   // Getters (équivalent aux computed)
   getters: {
+    // Getters pour les états de sélection
+    isCountrySelected: (state) => (countryId: string) => state.selectedCountryId === countryId,
+    isOrganizationSelected: (state) => (orgId: string) => state.selectedOrganizationId === orgId,
+    isPoliticalRegimeSelected: (state) => (regimeId: string) => state.selectedPoliticalRegimeId === regimeId,
+    
     searchPlaceholder: (state) => {
       return state.appData.search?.placeholder || "Rechercher"
     },
@@ -235,8 +233,6 @@ export const useAsideStore = defineStore('aside', {
         this.appData.countryList = countries || []
         this.appData.mainNavigation = navigationData?.categories || []
         this.appData.politicalRegimeList = politicalRegimes || []
-        
-        console.log(`[asideStore] Données initialisées: ${this.appData.countryList.length} pays, ${this.appData.politicalRegimeList.length} régimes politiques`)
         
       } catch (error) {
         console.error('Erreur lors de l\'initialisation des données:', error)
@@ -422,43 +418,74 @@ export const useAsideStore = defineStore('aside', {
     // Navigation vers un sous-menu (mise à jour)
     async navigateToSubmenu(id: string) {
       console.log('Navigating to submenu:', id)
-      
       // Vérifier si c'est la liste des pays
       if (id === 'pays-du-monde-list') {
         this.navigateToCountryList()
         return
       }
-      
-      // Vérifier si c'est la liste des régimes politiques
+      // Vérifier si c'est la liste des régimes politiques (ancien ID)
       if (id === 'regimes-politiques') {
         this.navigateToPoliticalRegimeList()
         return
       }
+      // Vérifier si c'est "Régime des états" - utiliser la liste des régimes politiques
+      if (id === 'regime-des-etats') {
+        this.navigateToPoliticalRegimeList()
+        return
+      }
+      // Vérifier si c'est "Relations internationales" - utiliser la liste des organisations
+      if (id === 'relations-internationales') {
+        this.navigateToOrganizationsList()
+        return
+      }
+      // Sauvegarder la vue précédente
+      this.currentView.previousView = { ...this.currentView }
       
       // Charger les données de la sous-page si nécessaire
+      let response
       if (!this.appData.subPages[id]) {
-        await this.loadSubPageData(id)
+        response = await this.loadSubPageData(id)
+      } else {
+        response = this.appData.subPages[id]
       }
-      
-      // Chercher le sous-menu dans les subPages
-      const subPage = this.appData.subPages[id]
-      if (subPage) {
-        this.currentView.type = 'submenu'
-        this.currentView.id = id
-        this.currentView.title = subPage.title
-        this.currentView.searchEnabled = subPage.searchEnabled !== false
-        this.currentView.hasReturnButton = subPage.hasReturnButton !== false
-        this.currentView.items = subPage.items || []
-        this.currentView.organizations = subPage.organizations || null
-        
-        // Réinitialiser la recherche
-        this.searchQuery = ''
+      // Appel direct à l'API pour obtenir la structure complète (catégorie ou sous-page)
+      try {
+        const categoryData = await getCategoryData(id)
+        // Cas sous-page : forcer l'affichage du sous-menu
+        if (categoryData && categoryData.category && categoryData.category.isSubPage) {
+          this.currentView.type = 'submenu'
+          this.currentView.id = categoryData.category.id
+          this.currentView.title = categoryData.category.title
+          this.currentView.searchEnabled = categoryData.category.searchEnabled !== false
+          this.currentView.hasReturnButton = categoryData.category.hasReturnButton !== false
+          this.currentView.items = categoryData.items || []
+          this.currentView.organizations = categoryData.organizations || null
+          this.searchQuery = ''
+          return
+        }
+        // Cas normal (catégorie principale)
+        if (categoryData) {
+          this.currentView.type = 'submenu'
+          this.currentView.id = categoryData.category.id
+          this.currentView.title = categoryData.category.title
+          this.currentView.searchEnabled = categoryData.category.searchEnabled !== false
+          this.currentView.hasReturnButton = categoryData.category.hasReturnButton !== false
+          this.currentView.items = categoryData.items || []
+          this.currentView.organizations = categoryData.organizations || null
+          this.searchQuery = ''
+        }
+      } catch (error) {
+        console.error('Erreur lors de la navigation vers le sous-menu:', error)
       }
     },
     
     // Navigation vers la liste des pays
     navigateToCountryList() {
       console.log('Navigating to country list')
+      
+      // Sauvegarder la vue précédente
+      this.currentView.previousView = { ...this.currentView }
+      
       this.currentView.type = 'countryList'
       this.currentView.id = 'country-list'
       this.currentView.title = 'Pays du monde'
@@ -489,9 +516,37 @@ export const useAsideStore = defineStore('aside', {
       // Réinitialiser la recherche
       this.searchQuery = ''
     },
+
+    // Navigation vers la liste des organisations
+    async navigateToOrganizationsList() {
+      console.log('Navigating to organizations list')
+
+      // Sauvegarder la vue précédente
+      this.currentView.previousView = { ...this.currentView }
+
+      this.currentView.type = 'organizationsList'
+      this.currentView.id = 'organizations-list'
+      this.currentView.title = 'Organisations internationales'
+      this.currentView.searchEnabled = true
+      this.currentView.hasReturnButton = true
+      this.currentView.items = []
+      this.currentView.organizations = null
+
+      // Réinitialiser la recherche
+      this.searchQuery = ''
+
+      try {
+        const organizations = await getOrganizationsByType()
+        // Stocker les organisations dans appData comme les autres listes
+        this.appData.organizationList = organizations || {}
+      } catch (error) {
+        console.error('Erreur lors du chargement des organisations internationales:', error)
+        this.error = 'Erreur lors du chargement des organisations'
+      }
+    },
     
     // Retour à la vue principale
-    returnToMainView() {
+    async returnToMainView() {
       console.log('Returning to main view')
       this.currentView.type = 'main'
       this.currentView.id = 'main'
@@ -500,6 +555,14 @@ export const useAsideStore = defineStore('aside', {
       this.currentView.hasReturnButton = false
       this.currentView.items = []
       this.currentView.organizations = null
+      
+      // Effacer toutes les sélections
+      this.clearAllSelections()
+      
+      // Effacer les sélections sur la carte
+      const { useMapStore } = await import('@/stores/mapStore')
+      const mapStore = useMapStore()
+      mapStore.clearSelectedCountries()
       
       // Réinitialiser la recherche
       this.searchQuery = ''
@@ -515,6 +578,11 @@ export const useAsideStore = defineStore('aside', {
     async selectCountry(id: string) {
       console.log('Country selected:', id)
       
+      // Mettre à jour l'état de sélection
+      this.selectedCountryId = id
+      this.selectedOrganizationId = null
+      this.selectedPoliticalRegimeId = null
+      
       // Charger les données du pays pour le panneau flottant
       await this.loadCountryData(id)
       
@@ -523,14 +591,58 @@ export const useAsideStore = defineStore('aside', {
     },
     
     // Sélection d'une organisation
-    selectOrganization(id: string) {
+    async selectOrganization(id: string) {
       console.log('Organization selected:', id)
-      // Logique pour sélectionner une organisation
+      
+      // Mettre à jour l'état de sélection
+      this.selectedOrganizationId = id
+      this.selectedCountryId = null
+      this.selectedPoliticalRegimeId = null
+      
+      try {
+        // Trouver le nom de l'organisation
+        let organizationName = 'Organisation'
+        if (this.appData.organizationList) {
+          for (const type in this.appData.organizationList) {
+            const org = this.appData.organizationList[type].find((o: any) => o.id === id)
+            if (org) {
+              organizationName = org.title
+              break
+            }
+          }
+        }
+        
+        // Charger les pays membres de cette organisation
+        const countries = await getCountriesByOrganization(id)
+        
+        // Mettre à jour les marqueurs sur la carte
+        const { useMapStore } = await import('@/stores/mapStore')
+        const mapStore = useMapStore()
+        
+        // Extraire les IDs des pays membres
+        const countryIds = countries.map(country => country.id)
+        console.log('Pays membres de l\'organisation:', countryIds)
+        
+        // Sélectionner ces pays sur la carte
+        mapStore.selectMultipleCountries(countryIds)
+        
+        // NE PAS changer la vue - l'utilisateur reste sur la liste des organisations
+        // Les données sont disponibles pour le panneau flottant si nécessaire
+        
+      } catch (error) {
+        console.error('Erreur lors du chargement des pays par organisation:', error)
+        this.error = 'Erreur lors du chargement des pays'
+      }
     },
 
     // Sélection d'un régime politique
     async selectPoliticalRegime(id: string) {
       console.log('Political regime selected:', id)
+      
+      // Mettre à jour l'état de sélection
+      this.selectedPoliticalRegimeId = id
+      this.selectedCountryId = null
+      this.selectedOrganizationId = null
       
       try {
         // Sauvegarder la vue précédente
@@ -555,6 +667,17 @@ export const useAsideStore = defineStore('aside', {
         // Mettre à jour la liste des pays filtrés pour ce régime
         this.appData.countryList = countries || []
         
+        // Mettre à jour les marqueurs sur la carte
+        const { useMapStore } = await import('@/stores/mapStore')
+        const mapStore = useMapStore()
+        
+        // Extraire les IDs des pays membres
+        const countryIds = countries.map(country => country.id)
+        console.log('Pays avec ce régime politique:', countryIds)
+        
+        // Sélectionner ces pays sur la carte
+        mapStore.selectMultipleCountries(countryIds)
+        
         // Réinitialiser la recherche
         this.searchQuery = ''
         
@@ -562,6 +685,26 @@ export const useAsideStore = defineStore('aside', {
         console.error('Erreur lors du chargement des pays par régime:', error)
         this.error = 'Erreur lors du chargement des pays'
       }
+    },
+    
+    // Actions pour effacer les sélections
+    clearCountrySelection() {
+      this.selectedCountryId = null
+    },
+    
+    clearOrganizationSelection() {
+      this.selectedOrganizationId = null
+    },
+    
+    clearPoliticalRegimeSelection() {
+      this.selectedPoliticalRegimeId = null
+    },
+    
+    // Effacer toutes les sélections
+    clearAllSelections() {
+      this.selectedCountryId = null
+      this.selectedOrganizationId = null
+      this.selectedPoliticalRegimeId = null
     },
     
     // Gestion de la recherche
@@ -574,21 +717,33 @@ export const useAsideStore = defineStore('aside', {
       // Logique pour gérer le changement d'état d'une option
     },
     
-    // Retour à la vue précédente
-    returnToPreviousView() {
+    // Retour à la vue précédente (navigation hiérarchique)
+    async returnToPreviousView() {
+      console.log('Returning to previous view, current type:', this.currentView.type)
+      
+      // Utiliser la vue précédente sauvegardée pour remonter d'un niveau
       if (this.currentView.previousView) {
-        if (this.currentView.previousView.type === 'main') {
-          this.returnToMainView()
-        } else if (this.currentView.previousView.type === 'submenu') {
-          this.navigateToSubmenu(this.currentView.previousView.id)
-        } else if (this.currentView.previousView.type === 'countryList') {
-          this.navigateToCountryList()
-        } else if (this.currentView.previousView.type === 'politicalRegimeList') {
-          this.navigateToPoliticalRegimeList()
+        console.log('Returning to previous view:', this.currentView.previousView.type)
+        
+        // Restaurer la vue précédente
+        this.currentView = { ...this.currentView.previousView }
+        
+        // Nettoyer la vue précédente pour éviter les références circulaires
+        this.currentView.previousView = undefined
+        
+        // Effacer les sélections sur la carte si on retourne au menu principal
+        if (this.currentView.type === 'main') {
+          const { useMapStore } = await import('@/stores/mapStore')
+          const mapStore = useMapStore()
+          mapStore.clearSelectedCountries()
         }
+        
+        // Réinitialiser la recherche
+        this.searchQuery = ''
       } else {
-        // Par défaut, retour à la vue principale
-        this.returnToMainView()
+        // Si pas de vue précédente, retourner au menu principal
+        console.log('No previous view, returning to main')
+        await this.returnToMainView()
       }
     },
 

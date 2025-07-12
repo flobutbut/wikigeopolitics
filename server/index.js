@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -315,6 +317,65 @@ app.get('/api/countries/:id/organizations', async (req, res) => {
   }
 });
 
+// Récupérer les organisations groupées par type
+app.get('/api/organizations', async (req, res) => {
+  try {
+    console.log('[API] Tentative de récupération des organisations...');
+    const organizations = await query(
+      'SELECT id, nom as title, type, description FROM organization ORDER BY type, nom'
+    );
+    console.log('[API] Organisations récupérées:', organizations.length);
+    
+    // Grouper les organisations par type
+    const groupedOrganizations = {};
+    organizations.forEach(org => {
+      if (!groupedOrganizations[org.type]) {
+        groupedOrganizations[org.type] = [];
+      }
+      groupedOrganizations[org.type].push(org);
+    });
+    
+    res.json(groupedOrganizations);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des organisations:', error);
+    res.status(500).json({ error: 'Erreur serveur', details: error.message });
+  }
+});
+
+// Récupérer les pays membres d'une organisation
+app.get('/api/organizations/:id/countries', async (req, res) => {
+  try {
+    console.log('[API] Tentative de récupération des pays membres de l\'organisation:', req.params.id);
+    
+    const countries = await query(
+      `SELECT c.id, c.nom, c.drapeau, c.continent, ST_AsText(c.coordonnees) as coordonnees,
+              co.role, co.dateadhesion, co.datesortie
+       FROM country c 
+       INNER JOIN country_organization co ON c.id = co.countryid
+       WHERE co.organizationid = $1
+       ORDER BY c.nom`,
+      [req.params.id]
+    );
+    
+    const formattedCountries = countries.map(country => ({
+      id: country.id,
+      title: country.nom,
+      flag: country.drapeau,
+      continent: country.continent,
+      coordonnees: country.coordonnees ? country.coordonnees.replace('POINT(', '').replace(')', '').split(' ').map(coord => parseFloat(coord)) : null,
+      role: country.role || null,
+      dateAdhesion: country.dateadhesion || null,
+      dateSortie: country.datesortie || null
+    }));
+    
+    console.log('[API] Pays membres récupérés:', formattedCountries.length);
+    res.json(formattedCountries);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des pays membres:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // Récupérer tous les régimes politiques
 app.get('/api/political-regimes', async (req, res) => {
   try {
@@ -398,146 +459,32 @@ app.get('/api/countries-with-regimes', async (req, res) => {
 // Récupérer les données de navigation
 app.get('/api/navigation', async (req, res) => {
   try {
-    // Utiliser les données JSON statiques au lieu de la base de données
+    // Lire le fichier menu.json dynamiquement
+    const menuPath = path.join(__dirname, '../src/data/app/menu.json');
+    
+    if (!fs.existsSync(menuPath)) {
+      console.error('Fichier menu.json non trouvé:', menuPath);
+      return res.status(500).json({ error: 'Fichier de navigation non trouvé' });
+    }
+
+    const menuData = JSON.parse(fs.readFileSync(menuPath, 'utf8'));
+    const mainNavigation = menuData.applicationStructure.mainNavigation;
+
+    // Transformer les données du menu.json en format attendu par le frontend
+    const categories = mainNavigation.map(category => ({
+      id: category.id,
+      title: category.title,
+      items: category.items || []
+    }));
+
+    // Récupérer les organisations depuis la base de données
+    const organizations = await query(
+      'SELECT id, nom as title, type FROM organization ORDER BY nom'
+    );
+
     const navigationData = {
-      categories: [
-        {
-          id: "pays",
-          title: "Pays du monde",
-          items: [
-            {
-              id: "pays-du-monde-list",
-              title: "Tous les pays",
-              hasSubmenu: true
-            }
-          ]
-        },
-        {
-          id: "politics",
-          title: "Politique et Régimes",
-          items: [
-            {
-              id: "regimes-politiques",
-              title: "Régimes politiques",
-              hasSubmenu: true
-            },
-            {
-              id: "relations-internationales",
-              title: "Relations internationales",
-              hasSubmenu: true
-            }
-          ]
-        },
-        {
-          id: "economy",
-          title: "Économie et Ressources",
-          items: [
-            {
-              id: "commerce-international",
-              title: "Commerce international",
-              hasSubmenu: true
-            },
-            {
-              id: "ressources-naturelles",
-              title: "Ressources naturelles",
-              hasSubmenu: true
-            }
-          ]
-        },
-        {
-          id: "technology",
-          title: "Technologie et Innovation",
-          items: [
-            {
-              id: "developpement-technologique",
-              title: "Développement technologique",
-              hasSubmenu: true
-            }
-          ]
-        },
-        {
-          id: "demographics",
-          title: "Démographie et Société",
-          items: [
-            {
-              id: "population",
-              title: "Population",
-              hasSubmenu: true
-            }
-          ]
-        },
-        {
-          id: "conflicts",
-          title: "Conflits et Sécurité",
-          items: [
-            {
-              id: "conflits-armes",
-              title: "Conflits armés",
-              hasSubmenu: true
-            }
-          ]
-        },
-        {
-          id: "resources",
-          title: "Ressources Naturelles",
-          items: [
-            {
-              id: "ressources-minerales",
-              title: "Ressources minérales",
-              hasSubmenu: true
-            }
-          ]
-        },
-        {
-          id: "industry",
-          title: "Industrie et Production",
-          items: [
-            {
-              id: "production-industrielle",
-              title: "Production industrielle",
-              hasSubmenu: true
-            }
-          ]
-        },
-        {
-          id: "transport",
-          title: "Transport et Logistique",
-          items: [
-            {
-              id: "transport-marchandises",
-              title: "Transport de marchandises",
-              hasSubmenu: true
-            }
-          ]
-        }
-      ],
-      organizations: [
-        {
-          id: "onu",
-          title: "Organisation des Nations Unies",
-          type: "Organisation internationale"
-        },
-        {
-          id: "otan",
-          title: "Organisation du Traité de l'Atlantique Nord",
-          type: "Alliance militaire"
-        },
-        {
-          id: "ue",
-          title: "Union européenne",
-          type: "Union politique et économique"
-        },
-        {
-          id: "g7",
-          title: "Groupe des Sept",
-          type: "Forum économique"
-        },
-        {
-          id: "g20",
-          title: "Groupe des Vingt",
-          type: "Forum économique"
-        }
-      ]
+      categories: categories,
+      organizations: organizations
     };
 
     res.json(navigationData);
@@ -547,93 +494,62 @@ app.get('/api/navigation', async (req, res) => {
   }
 });
 
-// Récupérer les données d'une catégorie
+// Récupérer les données d'une catégorie ou sous-page
 app.get('/api/categories/:id', async (req, res) => {
   try {
-    // Définir les données de catégorie statiquement
-    const categoryData = {
-      politics: {
-        id: "politics",
-        title: "Politique et Régimes",
-        description: "Régimes politiques et relations internationales"
-      },
-      economy: {
-        id: "economy", 
-        title: "Économie et Ressources",
-        description: "Commerce international et ressources naturelles"
-      },
-      technology: {
-        id: "technology",
-        title: "Technologie et Innovation", 
-        description: "Développement technologique"
-      },
-      demographics: {
-        id: "demographics",
-        title: "Démographie et Société",
-        description: "Population et indicateurs sociaux"
-      },
-      conflicts: {
-        id: "conflicts",
-        title: "Conflits et Sécurité",
-        description: "Conflits armés et tensions géopolitiques"
-      },
-      resources: {
-        id: "resources",
-        title: "Ressources Naturelles",
-        description: "Ressources minérales et énergétiques"
-      },
-      industry: {
-        id: "industry",
-        title: "Industrie et Production",
-        description: "Production industrielle et manufacturière"
-      },
-      transport: {
-        id: "transport",
-        title: "Transport et Logistique",
-        description: "Transport de marchandises et infrastructure"
-      }
-    };
-
-    const category = categoryData[req.params.id];
+    // Lire le fichier menu.json dynamiquement
+    const menuPath = path.join(__dirname, '../src/data/app/menu.json');
     
-    if (!category) {
-      return res.status(404).json({ error: 'Catégorie non trouvée' });
+    if (!fs.existsSync(menuPath)) {
+      console.error('Fichier menu.json non trouvé:', menuPath);
+      return res.status(500).json({ error: 'Fichier de navigation non trouvé' });
     }
 
-    // Pour l'instant, retourner des données statiques au lieu de requêter la base
-    const staticData = {
-      politics: [
-        { id: "republique", title: "République", description: "Régime républicain" },
-        { id: "monarchie", title: "Monarchie", description: "Régime monarchique" },
-        { id: "democratie", title: "Démocratie", description: "Régime démocratique" }
-      ],
-      economy: [
-        { id: "commerce", title: "Commerce international", description: "Échanges commerciaux" },
-        { id: "ressources", title: "Ressources naturelles", description: "Ressources énergétiques" }
-      ],
-      technology: [
-        { id: "innovation", title: "Innovation technologique", description: "Développement technologique" }
-      ],
-      demographics: [
-        { id: "population", title: "Population", description: "Données démographiques" }
-      ],
-      conflicts: [
-        { id: "conflits", title: "Conflits armés", description: "Conflits et tensions" }
-      ],
-      resources: [
-        { id: "mineraux", title: "Ressources minérales", description: "Minerais et métaux" }
-      ],
-      industry: [
-        { id: "production", title: "Production industrielle", description: "Industrie manufacturière" }
-      ],
-      transport: [
-        { id: "logistique", title: "Transport de marchandises", description: "Logistique et transport" }
-      ]
-    };
+    const menuData = JSON.parse(fs.readFileSync(menuPath, 'utf8'));
+    const mainNavigation = menuData.applicationStructure.mainNavigation;
+    const subPages = menuData.applicationStructure.subPages;
+
+    // D'abord chercher dans les catégories principales
+    let category = mainNavigation.find(cat => cat.id === req.params.id);
+    let isSubPage = false;
+    
+    // Si pas trouvé, chercher dans les sous-pages
+    if (!category) {
+      const subPage = subPages[req.params.id];
+      if (subPage) {
+        category = {
+          id: req.params.id,
+          title: subPage.title,
+          items: subPage.items || []
+        };
+        isSubPage = true;
+      }
+    }
+    
+    if (!category) {
+      return res.status(404).json({ error: 'Catégorie ou sous-page non trouvée' });
+    }
+
+    // Si c'est une catégorie principale, récupérer ses sous-pages
+    let subPagesData = {};
+    if (!isSubPage) {
+      const categoryData = category.items || [];
+      categoryData.forEach(item => {
+        if (subPages[item.id]) {
+          subPagesData[item.id] = subPages[item.id];
+        }
+      });
+    }
 
     res.json({
-      category: category,
-      data: staticData[req.params.id] || []
+      category: {
+        id: category.id,
+        title: category.title,
+        description: `Données pour ${category.title}`,
+        isSubPage: isSubPage
+      },
+      items: category.items || [],
+      subPages: subPagesData
     });
   } catch (error) {
     console.error('Erreur lors de la récupération des données de catégorie:', error);

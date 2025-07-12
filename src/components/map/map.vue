@@ -69,7 +69,10 @@ export default defineComponent({
     
     // Créer les marqueurs pour tous les pays
     const createCountryMarkers = () => {
-      if (!map || !props.countriesData) return
+      if (!map || !props.countriesData) {
+        clearMarkers()
+        return
+      }
       
       clearMarkers()
       
@@ -145,16 +148,11 @@ export default defineComponent({
       // Attendre que Vue ait terminé ses mises à jour
       await nextTick()
       
-      if (map && newData && newData.length > 0) {
+      if (map) {
+        // Toujours recréer les marqueurs, même si pas de données (pour les effacer)
         createCountryMarkers()
-      } else if (!map) {
-        setTimeout(() => {
-          if (map && newData && newData.length > 0) {
-            createCountryMarkers()
-          }
-        }, 100)
       }
-    }, { immediate: true })
+    }, { immediate: true, deep: true })
     
     // Méthodes exposées pour interagir avec la carte
     const addMarker = (position: L.LatLngExpression, popupContent?: string) => {

@@ -1,5 +1,5 @@
 <template>
-  <li class="menu-item" :class="{ 'menu-item--active': isActive }">
+  <li class="menu-item" :class="{ 'menu-item--active': isActive, 'menu-item--selected': selected }">
     <template v-if="isLayer">
       <label class="menu-item__layer">
         <span class="menu-item__title">
@@ -79,6 +79,10 @@ export default defineComponent({
     depth: {
       type: Number,
       default: 0
+    },
+    selected: {
+      type: Boolean,
+      default: false
     }
   },
 
@@ -151,6 +155,16 @@ export default defineComponent({
 .menu-item--active .menu-item__link {
   background-color: rgba(46, 67, 255, 0.1);
   color: var(--primary-color);
+}
+
+.menu-item--selected .menu-item__link {
+  background-color: rgba(46, 67, 255, 0.15);
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+.menu-item--selected .menu-item__link:hover {
+  background-color: rgba(46, 67, 255, 0.2);
 }
 
 .menu-item__title {

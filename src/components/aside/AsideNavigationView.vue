@@ -3,7 +3,7 @@
     <div class="aside__section">
       <ReturnButton @click="returnToPreviousView" />
       
-      <SectionTitle level="1" size="large">{{ currentView.title }}</SectionTitle>
+      <SectionTitle :level="1" size="large">{{ currentView.title }}</SectionTitle>
       
       <!-- Vue de sous-menu standard -->
       <template v-if="currentView.type === 'submenu'">
@@ -38,6 +38,7 @@
               v-for="country in countriesByRegime"
               :key="country.id"
               :title="country.title"
+              :selected="isCountrySelected(country.id)"
               @click="selectCountry(country.id)"
             >
               <template #prepend>
@@ -56,6 +57,7 @@
                 v-for="country in continents[c.key]"
                 :key="country.id"
                 :title="country.title"
+                :selected="isCountrySelected(country.id)"
                 @click="selectCountry(country.id)"
               >
                 <template #prepend>
@@ -74,6 +76,7 @@
             v-for="regime in filteredPoliticalRegimes"
             :key="regime.id"
             :title="regime.name"
+            :selected="isPoliticalRegimeSelected(regime.id)"
             @click="selectPoliticalRegime(regime.id)"
           >
             <template #prepend>
@@ -81,6 +84,26 @@
             </template>
           </MenuItem>
         </ul>
+      </template>
+
+      <!-- Vue de liste d'organisations -->
+      <template v-if="currentView.type === 'organizationsList'">
+        <div v-for="(organizations, type) in organizationsByType" :key="type" class="organization-type-section">
+          <SectionTitle :level="2" size="default">{{ type }}</SectionTitle>
+          <ul class="aside__menu">
+            <MenuItem
+              v-for="org in organizations"
+              :key="org.id"
+              :title="org.title"
+              :selected="isOrganizationSelected(org.id)"
+              @click="selectOrganization(org.id)"
+            >
+              <template #prepend>
+                <span class="organization-icon">🏢</span>
+              </template>
+            </MenuItem>
+          </ul>
+        </div>
       </template>
     </div>
   </div>
@@ -109,6 +132,11 @@ export default defineComponent({
     
     // Vue actuelle
     const currentView = computed(() => asideStore.currentView)
+    
+    // Getters pour les sélections
+    const isCountrySelected = (countryId) => asideStore.isCountrySelected(countryId)
+    const isOrganizationSelected = (orgId) => asideStore.isOrganizationSelected(orgId)
+    const isPoliticalRegimeSelected = (regimeId) => asideStore.isPoliticalRegimeSelected(regimeId)
     
     // Éléments filtrés
     const filteredItems = computed(() => {
@@ -158,10 +186,58 @@ export default defineComponent({
     
     // Pays par régime politique (pour la vue simple)
     const countriesByRegime = computed(() => {
+      console.log('AsideNavigationView: countriesByRegime computed')
+      console.log('AsideNavigationView: appData.countryList:', asideStore.appData.countryList)
+      console.log('AsideNavigationView: appData.countryList.length:', asideStore.appData.countryList?.length || 0)
       return asideStore.appData.countryList || []
     })
     
-    // Mapping des clés internes vers les labels français
+    // Organisations classées par type
+    const organizationsByType = computed(() => {
+      if (!asideStore.appData.organizationList) {
+        return {}
+      }
+      
+      const organizations = asideStore.appData.organizationList
+      
+      if (!asideStore.searchQuery) {
+        return organizations
+      }
+      
+      const query = asideStore.searchQuery.toLowerCase()
+      const filtered = {}
+      
+      Object.keys(organizations).forEach(type => {
+        const filteredOrgs = organizations[type].filter(org => 
+          org.title.toLowerCase().includes(query) ||
+          org.description?.toLowerCase().includes(query)
+        )
+        if (filteredOrgs.length > 0) {
+          filtered[type] = filteredOrgs
+        }
+      })
+      
+      return filtered
+    })
+    
+    // Continents pour la classification des pays
+    const continents = computed(() => {
+      if (!asideStore.filteredCountries) return {}
+      
+      const result = {}
+      
+      asideStore.filteredCountries.forEach(country => {
+        const continent = country.continent || 'Autres'
+        if (!result[continent]) {
+          result[continent] = []
+        }
+        result[continent].push(country)
+      })
+      
+      return result
+    })
+    
+    // Ordre des continents
     const continentOrder = [
       { key: 'Europe', label: 'Europe' },
       { key: 'Asie', label: 'Asie' },
@@ -172,60 +248,28 @@ export default defineComponent({
       { key: 'Autres', label: 'Autres' }
     ]
     
-    // Organiser les pays par continent (français)
-    const continents = computed(() => {
-      const result = {
-        'Europe': [],
-        'Asie': [],
-        'Afrique': [],
-        'Amérique du Nord': [],
-        'Amérique du Sud': [],
-        'Océanie': [],
-        'Autres': []
-      }
-      if (!asideStore.filteredCountries) return result
-      asideStore.filteredCountries.forEach(country => {
-        const continent = country.continent || 'Autres'
-        if (result[continent]) {
-          result[continent].push(country)
-        } else {
-          result['Autres'].push(country)
-        }
-      })
-      // Trier les pays par ordre alphabétique dans chaque continent
-      Object.keys(result).forEach(continent => {
-        result[continent].sort((a, b) => a.title.localeCompare(b.title))
-      })
-      return result
-    })
-    
-    // Retour à la vue précédente
+    // Méthodes de navigation
     const returnToPreviousView = () => {
-      // Utiliser la logique du store qui gère correctement la navigation
       asideStore.returnToPreviousView()
     }
     
-    // Navigation vers un détail
     const navigateToDetail = (id) => {
       asideStore.navigateToDetail(id)
     }
     
-    // Sélection d'un pays
     const selectCountry = (id) => {
-      // Sélectionner le pays dans le store de sélection
+      console.log('Country selected in AsideNavigationView:', id)
       countryStore.selectCountry(id)
-      
-      // Charger les données du pays pour le panneau flottant
       asideStore.selectCountry(id)
     }
     
-    // Sélection d'une organisation
     const selectOrganization = (id) => {
-      asideStore.navigateToDetail(id)
+      console.log('Organization selected in AsideNavigationView:', id)
+      asideStore.selectOrganization(id)
     }
-
-    // Sélection d'un régime politique
+    
     const selectPoliticalRegime = (id) => {
+      console.log('Political regime selected in AsideNavigationView:', id)
       asideStore.selectPoliticalRegime(id)
     }
     
@@ -234,14 +278,18 @@ export default defineComponent({
       filteredItems,
       filteredOrganizations,
       filteredPoliticalRegimes,
+      countriesByRegime,
+      organizationsByType,
       continents,
       continentOrder,
+      isCountrySelected,
+      isOrganizationSelected,
+      isPoliticalRegimeSelected,
       returnToPreviousView,
       navigateToDetail,
       selectCountry,
       selectOrganization,
-      selectPoliticalRegime,
-      countriesByRegime
+      selectPoliticalRegime
     }
   }
 })
@@ -316,5 +364,14 @@ export default defineComponent({
 .regime-icon {
   margin-right: var(--spacing-xs);
   font-size: var(--font-size-md);
+}
+
+.organization-icon {
+  margin-right: var(--spacing-xs);
+  font-size: var(--font-size-md);
+}
+
+.organization-type-section {
+  margin-bottom: var(--spacing-md);
 }
 </style> 

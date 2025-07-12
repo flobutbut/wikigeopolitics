@@ -51,11 +51,28 @@
 - **Backend** : `http://localhost:3000` ✅
 - **Base de données** : PostgreSQL/PostGIS ✅
 
+### 🔧 Modifications récentes
+
+#### Navigation dynamique implémentée
+- **API Backend** : Modification de `/api/navigation` pour lire dynamiquement `src/data/app/menu.json`
+- **API Backend** : Modification de `/api/categories/:id` pour utiliser les données du menu.json
+- **Avantages** : Modifications instantanées sans redémarrage, gestion centralisée de la navigation
+- **Test** : Validation complète avec script de test - 7 catégories, 35 organisations, correspondance 100%
+
+#### Menu "Relations internationales" implémenté
+- **Nouvel endpoint** : `/api/organizations` - Récupération des organisations classées par type
+- **Store Pinia** : Ajout de `navigateToOrganizationsList()` pour gérer la navigation vers les organisations
+- **Composant Vue** : `AsideNavigationView.vue` - Vue spéciale pour afficher les organisations par type
+- **Types d'organisations** : 12 types supportés (Alliance militaire, Cartel pétrolier, Forum économique, etc.)
+- **Interface** : Affichage organisé par sections avec icônes et recherche intégrée
+- **Données** : 35+ organisations internationales avec descriptions complètes
+- **Correction** : Suivi du même pattern que les autres menus (utilisation de `appData.organizationList`)
+
 ### 📝 Prochaines étapes
-- [ ] Tests utilisateur de la navigation par régime
+- [ ] Tests utilisateur de la navigation dynamique
 - [ ] Optimisation des performances si nécessaire
 - [ ] Ajout de nouvelles fonctionnalités géopolitiques
 
 ---
 
-*Dernière mise à jour : Nettoyage de la base de données - suppression des colonnes obsolètes* 
+*Dernière mise à jour : Navigation dynamique implémentée - lecture du menu.json via API* 
