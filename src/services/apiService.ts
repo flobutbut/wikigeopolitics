@@ -1,108 +1,28 @@
-// Service API pour communiquer avec le serveur backend
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3000/api';
+/**
+ * Service API legacy - migration vers les nouvelles APIs spécialisées
+ * @deprecated Utiliser les APIs spécialisées dans /services/api/ à la place
+ */
 
-// Fonction utilitaire pour les requêtes API
-async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`;
-  
-  try {
-    const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-      ...options,
-    });
+// Re-export des nouvelles APIs pour la compatibilité
+export { countryAPI as countryApi } from './api/countryAPI'
+export { organizationAPI as organizationApi } from './api/organizationAPI'
+export { politicalRegimeAPI as politicalRegimeApi } from './api/politicalRegimeAPI'
+export { armedConflictAPI as armedConflictApi } from './api/armedConflictAPI'
+export { navigationAPI as navigationApi } from './api/navigationAPI'
 
-    if (!response.ok) {
-      throw new Error(`Erreur HTTP: ${response.status}`);
-    }
+// Avertissement pour encourager la migration
+console.warn('⚠️  Utilisation du service API legacy détectée. Veuillez migrer vers les APIs spécialisées dans /services/api/')
 
-    return await response.json();
-  } catch (error) {
-    console.error(`Erreur API pour ${endpoint}:`, error);
-    throw error;
-  }
-}
+import { countryAPI } from './api/countryAPI'
+import { organizationAPI } from './api/organizationAPI'
+import { politicalRegimeAPI } from './api/politicalRegimeAPI'
+import { armedConflictAPI } from './api/armedConflictAPI'
+import { navigationAPI } from './api/navigationAPI'
 
-// Service pour les pays
-export const countryApi = {
-  // Récupérer tous les pays
-  async getAllCountries() {
-    console.log('[apiService] Appel getAllCountries...')
-    const result = await apiRequest<any[]>('/countries');
-    console.log('[apiService] getAllCountries résultat:', result.length, 'pays')
-    return result;
-  },
-
-  // Récupérer un pays par ID
-  async getCountryById(id: string) {
-    return apiRequest<any>(`/countries/${id}`);
-  },
-
-  // Récupérer les données géographiques
-  async getCountriesGeoData() {
-    return apiRequest<any>('/countries-geo');
-  },
-
-  // Récupérer les détails d'un pays
-  async getCountryDetails(id: string) {
-    return apiRequest<any>(`/countries/${id}/details`);
-  }
-};
-
-// Service pour les régimes politiques
-export const politicalRegimeApi = {
-  // Récupérer tous les régimes politiques
-  async getAllPoliticalRegimes() {
-    console.log('[apiService] Appel getAllPoliticalRegimes...')
-    const result = await apiRequest<any[]>('/political-regimes');
-    console.log('[apiService] getAllPoliticalRegimes résultat:', result.length, 'régimes')
-    return result;
-  },
-
-  // Récupérer les pays par régime politique
-  async getCountriesByRegime(regimeId: string) {
-    return apiRequest<any[]>(`/political-regimes/${regimeId}/countries`);
-  }
-};
-
-// Service pour la navigation
-export const navigationApi = {
-  // Récupérer les données de navigation
-  async getNavigationData() {
-    return apiRequest<any>('/navigation');
-  },
-
-  // Récupérer les données d'une catégorie
-  async getCategoryData(categoryId: string) {
-    return apiRequest<any>(`/categories/${categoryId}`);
-  }
-};
-
-// Service pour les organisations
-export const organizationApi = {
-  // Récupérer les organisations classées par type
-  async getOrganizationsByType() {
-    console.log('[apiService] Appel getOrganizationsByType...')
-    const result = await apiRequest<any>('/organizations');
-    console.log('[apiService] getOrganizationsByType résultat:', Object.keys(result).length, 'types')
-    return result;
-  },
-
-  // Récupérer les pays membres d'une organisation
-  async getCountriesByOrganization(organizationId: string) {
-    console.log('[apiService] Appel getCountriesByOrganization pour:', organizationId)
-    const result = await apiRequest<any[]>(`/organizations/${organizationId}/countries`);
-    console.log('[apiService] getCountriesByOrganization résultat:', result.length, 'pays')
-    return result;
-  }
-};
-
-// Service pour la santé de l'API
-export const healthApi = {
-  // Test de connexion
-  async checkHealth() {
-    return apiRequest<any>('/health');
-  }
-}; 
+export default {
+  countries: countryAPI,
+  organizations: organizationAPI,
+  politicalRegimes: politicalRegimeAPI,
+  armedConflicts: armedConflictAPI,
+  navigation: navigationAPI
+} as const

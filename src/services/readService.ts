@@ -1,58 +1,55 @@
-import { countryApi, navigationApi, politicalRegimeApi, organizationApi } from './apiService';
-import { Country } from '@/types/country';
+/**
+ * Service de lecture unifié utilisant les APIs spécialisées
+ */
 
-// Constante API_BASE_URL depuis apiService
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3000/api';
+import { API } from './api'
+import type { Country } from '@/types/country'
 
+// === PAYS ===
 export async function getAllCountries(): Promise<Country[]> {
-  return await countryApi.getAllCountries();
+  return await API.countries.getAll()
 }
 
 export async function getCountryById(id: string): Promise<Country | null> {
   try {
-    return await countryApi.getCountryById(id);
+    return await API.countries.getById(id)
   } catch (error) {
-    console.error(`Erreur lors de la récupération du pays ${id}:`, error);
-    return null;
+    console.error(`Erreur lors de la récupération du pays ${id}:`, error)
+    return null
   }
 }
 
-// Récupérer les données géographiques de tous les pays (pour la carte)
 export async function getCountriesGeoData() {
-  return await countryApi.getCountriesGeoData();
+  return await API.countries.getGeoData()
 }
 
-// Récupérer les données détaillées d'un pays
 export async function getCountryDetails(id: string) {
-  return await countryApi.getCountryDetails(id);
+  return await API.countries.getDetails(id)
 }
 
-// Récupérer les données de navigation (catégories, etc.)
-export async function getNavigationData() {
-  return await navigationApi.getNavigationData();
-}
-
-// Récupérer les données d'une catégorie spécifique
-export async function getCategoryData(categoryId: string) {
-  return await navigationApi.getCategoryData(categoryId);
-}
-
-// Récupérer les organisations classées par type
-export async function getOrganizationsByType() {
-  return await organizationApi.getOrganizationsByType();
-}
-
-// Récupérer tous les régimes politiques
-export async function getAllPoliticalRegimes() {
-  return await politicalRegimeApi.getAllPoliticalRegimes();
-}
-
-// Récupérer les pays par régime politique
 export async function getCountriesByRegime(regimeId: string) {
-  return await politicalRegimeApi.getCountriesByRegime(regimeId);
+  return await API.countries.getByRegime(regimeId)
 }
 
-// Récupérer les pays membres d'une organisation
 export async function getCountriesByOrganization(organizationId: string) {
-  return await organizationApi.getCountriesByOrganization(organizationId);
+  return await API.countries.getByOrganization(organizationId)
+}
+
+// === NAVIGATION ===
+export async function getNavigationData() {
+  return await API.navigation.getNavigationData()
+}
+
+export async function getCategoryData(categoryId: string) {
+  return await API.navigation.getCategoryData(categoryId)
+}
+
+// === ORGANISATIONS ===
+export async function getOrganizationsByType(type?: string) {
+  return await API.organizations.getByType(type)
+}
+
+// === RÉGIMES POLITIQUES ===
+export async function getAllPoliticalRegimes() {
+  return await API.politicalRegimes.getAll()
 } 

@@ -15,10 +15,11 @@
           @map-click="handleMapClick"
           @map-ready="handleMapReady"
           @country-selected="handleCountrySelected"
+          @conflict-selected="handleConflictSelected"
         />
         
-        <!-- Panneau flottant de détails -->
-        <FloatingDetailPanel />
+        <!-- Panneau flottant de détails universel -->
+        <UniversalFloatingPanel />
       </main>
     </div>
 
@@ -37,7 +38,7 @@ import { defineComponent, ref, onMounted, watch, computed } from 'vue'
 import AsideNav from '@components/aside/aside.vue'
 import MapComponent from '@components/map/Map.vue'
 import HeaderNav from '@components/header/header.vue'
-import FloatingDetailPanel from '@components/panels/FloatingDetailPanel.vue'
+import UniversalFloatingPanel from '@components/panels/UniversalFloatingPanel.vue'
 import type { LatLng } from 'leaflet'
 import { useCountrySelectionStore } from '@/stores/countrySelectionStore'
 import { useAsideStore } from '@/stores/asideStore'
@@ -50,7 +51,7 @@ export default defineComponent({
     AsideNav,
     MapComponent,
     HeaderNav,
-    FloatingDetailPanel
+    UniversalFloatingPanel
   },
   
   setup() {
@@ -86,6 +87,8 @@ export default defineComponent({
         await Promise.all([
           countryStore.initializeCountriesData(),
           asideStore.initializeData()
+          // Ne pas charger toutes les zones de combat au démarrage - elles seront chargées à la sélection d'un conflit
+          // mapStore.loadArmedConflicts()
         ])
         
 
@@ -104,20 +107,27 @@ export default defineComponent({
       mapInstance.value = map
     }
     
-    const handleCountrySelected = (country: any) => {
-      console.log(`Pays sélectionné depuis la carte: ${country.name}`)
+    const handleCountrySelected = async (country: any) => {
+      console.log(`🗺️ Pays sélectionné depuis la carte: ${country.title || country.name}`)
       
-      // Sélectionner le pays dans le store
-      countryStore.selectCountry(country.id)
+      // Utiliser UNIQUEMENT la méthode centralisée d'asideStore
+      await asideStore.selectCountry(country.id)
       
       // Zoomer sur le pays sélectionné
       if (mapInstance.value && country.coordinates) {
         const [lng, lat] = country.coordinates
         ;(mapInstance.value as any).setView([lat, lng], 6) // Zoom niveau 6 pour voir le pays
       }
+    }
+    
+    const handleConflictSelected = (conflictId: string) => {
+      console.log(`Conflit sélectionné depuis la carte: ${conflictId}`)
       
-      // Afficher les détails du pays dans le panneau flottant
-      asideStore.selectCountry(country.id)
+      // Sélectionner le conflit dans le mapStore
+      mapStore.selectConflict(conflictId)
+      
+      // Afficher les détails du conflit dans le panneau flottant
+      asideStore.selectArmedConflict(conflictId)
     }
     
     // Méthode pour zoomer sur un pays depuis l'aside
@@ -149,6 +159,7 @@ export default defineComponent({
       handleMapClick,
       handleMapReady,
       handleCountrySelected,
+      handleConflictSelected,
       zoomToCountryFromAside
     }
   }

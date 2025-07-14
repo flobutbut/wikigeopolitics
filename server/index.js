@@ -11,6 +11,9 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// Servir les fichiers statiques depuis le dossier dist
+app.use(express.static(path.join(__dirname, '../dist')));
+
 // Configuration de la base de données
 const pool = new Pool({
   host: process.env.PGHOST || 'localhost',
@@ -557,6 +560,273 @@ app.get('/api/categories/:id', async (req, res) => {
   }
 });
 
+// Récupérer tous les conflits armés (pour l'aside - liste des conflits)
+app.get('/api/armed-conflicts', async (req, res) => {
+  try {
+    console.log('[API] Tentative de récupération des conflits armés...');
+    const conflicts = await query(
+      'SELECT id, name, description, status, startyear, endyear, involvedcountries, ST_AsText(epicenter) as epicenter FROM armed_conflict ORDER BY status DESC, name'
+    );
+    console.log('[API] Conflits armés récupérés:', conflicts.length);
+    
+    // Transformer les conflits pour inclure les coordonnées formatées
+    const formattedConflicts = conflicts.map(conflict => ({
+      ...conflict,
+      epicenter: conflict.epicenter ? conflict.epicenter.replace('POINT(', '').replace(')', '').split(' ').map(coord => parseFloat(coord)) : null
+    }));
+    
+    res.json(formattedConflicts);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des conflits armés:', error);
+    res.status(500).json({ error: 'Erreur serveur', details: error.message });
+  }
+});
+
+// Récupérer toutes les zones de combat (pour la carte - marqueurs explosions)
+app.get('/api/combat-zones', async (req, res) => {
+  try {
+    console.log('[API] Tentative de récupération des zones de combat...');
+    
+    // Récupérer les conflits de base
+    const conflicts = await query(
+      'SELECT id, name, description, status, startyear, endyear, involvedcountries FROM armed_conflict'
+    );
+    
+    // Récupérer toutes les zones de combat
+    const combatZones = await query(
+      `SELECT 
+        conflict_id, 
+        name as zone_name, 
+        ST_AsText(location) as location, 
+        status, 
+        intensity, 
+        zone_type,
+        description as zone_description,
+        civilian_impact
+      FROM armed_conflict_combat_zone 
+      WHERE status = 'active'
+      ORDER BY conflict_id, intensity DESC`
+    );
+    
+    console.log('[API] Zones de combat actives récupérées:', combatZones.length);
+    
+    // Créer un GeoJSON avec toutes les zones de combat
+    const allCombatZones = combatZones.map(zone => {
+      const coords = zone.location ? zone.location.replace('POINT(', '').replace(')', '').split(' ').map(coord => parseFloat(coord)) : null;
+      
+      return {
+        id: `zone-${zone.conflict_id}-${zone.zone_name.replace(/\s+/g, '-').toLowerCase()}`,
+        name: zone.zone_name,
+        description: zone.zone_description,
+        status: zone.status,
+        conflict_id: zone.conflict_id,
+        intensity: zone.intensity,
+        zone_type: zone.zone_type,
+        civilian_impact: zone.civilian_impact,
+        epicenter: coords,
+        // Ajouter les infos du conflit parent
+        conflict_name: conflicts.find(c => c.id === zone.conflict_id)?.name,
+        startyear: conflicts.find(c => c.id === zone.conflict_id)?.startyear,
+        endyear: conflicts.find(c => c.id === zone.conflict_id)?.endyear
+      };
+    });
+    
+    res.json(allCombatZones);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des zones de combat:', error);
+    res.status(500).json({ error: 'Erreur serveur', details: error.message });
+  }
+});
+
+// Récupérer les zones de combat d'un conflit spécifique
+app.get('/api/armed-conflicts/:id/combat-zones', async (req, res) => {
+  try {
+    console.log('[API] Tentative de récupération des zones de combat pour le conflit:', req.params.id);
+    
+    const combatZones = await query(
+      `SELECT 
+        conflict_id, 
+        name as zone_name, 
+        ST_AsText(location) as location, 
+        status, 
+        intensity, 
+        zone_type,
+        description as zone_description,
+        civilian_impact
+      FROM armed_conflict_combat_zone 
+      WHERE conflict_id = $1 AND status = 'active'
+      ORDER BY intensity DESC`,
+      [req.params.id]
+    );
+    
+    console.log('[API] Zones de combat récupérées pour le conflit', req.params.id, ':', combatZones.length);
+    
+    const formattedZones = combatZones.map(zone => {
+      const coords = zone.location ? zone.location.replace('POINT(', '').replace(')', '').split(' ').map(coord => parseFloat(coord)) : null;
+      
+      return {
+        id: `zone-${zone.conflict_id}-${zone.zone_name.replace(/\s+/g, '-').toLowerCase()}`,
+        name: zone.zone_name,
+        description: zone.zone_description,
+        status: zone.status,
+        conflict_id: zone.conflict_id,
+        intensity: zone.intensity,
+        zone_type: zone.zone_type,
+        civilian_impact: zone.civilian_impact,
+        epicenter: coords
+      };
+    });
+    
+    res.json(formattedZones);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des zones de combat:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Récupérer un conflit armé par ID
+app.get('/api/armed-conflicts/:id', async (req, res) => {
+  try {
+    console.log('[API] Tentative de récupération du conflit armé:', req.params.id);
+    
+    const conflicts = await query(
+      'SELECT id, name, description, status, startyear, endyear, involvedcountries, casualtyestimates, geopoliticalimpact, ST_AsText(epicenter) as epicenter FROM armed_conflict WHERE id = $1',
+      [req.params.id]
+    );
+    
+    if (conflicts.length === 0) {
+      return res.status(404).json({ error: 'Conflit non trouvé' });
+    }
+    
+    const conflict = conflicts[0];
+    
+    // Transformer les données pour le frontend
+    const formattedConflict = {
+      id: conflict.id,
+      title: conflict.name,
+      name: conflict.name,
+      description: conflict.description,
+      status: conflict.status,
+      statut: conflict.status === 'active' ? 'En cours' : 'Inactif',
+      startYear: conflict.startyear,
+      endYear: conflict.endyear,
+      dateDebut: conflict.startyear ? `${conflict.startyear}-01-01` : null,
+      dateFin: conflict.endyear ? `${conflict.endyear}-12-31` : null,
+      involvedCountries: conflict.involvedcountries || [],
+      paysImpliques: conflict.involvedcountries || [],
+      casualtyEstimates: conflict.casualtyestimates,
+      victimes: conflict.casualtyestimates,
+      geopoliticalImpact: conflict.geopoliticalimpact,
+      epicenter: conflict.epicenter ? conflict.epicenter.replace('POINT(', '').replace(')', '').split(' ').map(coord => parseFloat(coord)) : null,
+      intensite: 'Haute',
+      localisation: 'Multiple',
+      type: 'Conflit armé'
+    };
+    
+    console.log('[API] Conflit armé récupéré:', formattedConflict.title);
+    res.json(formattedConflict);
+  } catch (error) {
+    console.error('Erreur lors de la récupération du conflit armé:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Récupérer les conflits armés d'un pays spécifique
+app.get('/api/countries/:id/conflicts', async (req, res) => {
+  try {
+    console.log('[API] Tentative de récupération des conflits pour le pays:', req.params.id);
+    
+    // Récupérer les conflits associés à ce pays via la table conflict_country
+    const conflicts = await query(
+      `SELECT ac.id, ac.name, ac.description, ac.status, ac.startyear, ac.endyear, 
+              ac.involvedcountries, ac.casualtyestimates, ac.geopoliticalimpact, 
+              ST_AsText(ac.epicenter) as epicenter,
+              cc.role, cc.dateentree, cc.datesortie
+       FROM armed_conflict ac
+       INNER JOIN conflict_country cc ON ac.id = cc.conflictid::integer
+       WHERE cc.countryid = $1
+       ORDER BY ac.status DESC, ac.startyear DESC`,
+      [req.params.id]
+    );
+    
+    const formattedConflicts = conflicts.map(conflict => ({
+      id: conflict.id,
+      name: conflict.name,
+      title: conflict.name,
+      description: conflict.description,
+      status: conflict.status,
+      statut: conflict.status === 'active' ? 'En cours' : 'Inactif',
+      startYear: conflict.startyear,
+      endYear: conflict.endyear,
+      startDate: conflict.startyear ? `${conflict.startyear}-01-01` : null,
+      endDate: conflict.endyear ? `${conflict.endyear}-12-31` : null,
+      involvedCountries: conflict.involvedcountries || [],
+      casualtyEstimates: conflict.casualtyestimates,
+      geopoliticalImpact: conflict.geopoliticalimpact,
+      epicenter: conflict.epicenter ? conflict.epicenter.replace('POINT(', '').replace(')', '').split(' ').map(coord => parseFloat(coord)) : null,
+      role: conflict.role,
+      dateEntree: conflict.dateentree,
+      dateSortie: conflict.datesortie,
+      type: 'Conflit armé'
+    }));
+    
+    console.log('[API] Conflits récupérés pour le pays', req.params.id, ':', formattedConflicts.length);
+    res.json(formattedConflicts);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des conflits du pays:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Récupérer les pays impliqués dans un conflit armé
+app.get('/api/armed-conflicts/:id/countries', async (req, res) => {
+  try {
+    console.log('[API] Tentative de récupération des pays impliqués dans le conflit:', req.params.id);
+    
+    // Récupérer le conflit et ses pays impliqués
+    const conflictData = await query(
+      'SELECT id, name, description, status, startyear, endyear, involvedcountries FROM armed_conflict WHERE id = $1',
+      [req.params.id]
+    );
+    
+    if (conflictData.length === 0) {
+      return res.status(404).json({ error: 'Conflit non trouvé' });
+    }
+    
+    const conflict = conflictData[0];
+    const involvedCountriesIds = conflict.involvedcountries || [];
+    
+    if (involvedCountriesIds.length === 0) {
+      return res.json([]);
+    }
+    
+    // Récupérer les détails des pays impliqués
+    const placeholders = involvedCountriesIds.map((_, index) => `$${index + 1}`).join(',');
+    const countries = await query(
+      `SELECT c.id, c.nom, c.drapeau, c.continent, ST_AsText(c.coordonnees) as coordonnees
+       FROM country c 
+       WHERE c.id = ANY($1)
+       ORDER BY c.nom`,
+      [involvedCountriesIds]
+    );
+    
+    const formattedCountries = countries.map(country => ({
+      id: country.id,
+      title: country.nom,
+      flag: country.drapeau,
+      continent: country.continent,
+      coordonnees: country.coordonnees ? country.coordonnees.replace('POINT(', '').replace(')', '').split(' ').map(coord => parseFloat(coord)) : null,
+      conflictRole: 'Pays impliqué' // Rôle générique pour les conflits
+    }));
+    
+    console.log('[API] Pays impliqués récupérés:', formattedCountries.length);
+    res.json(formattedCountries);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des pays impliqués:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // Test de connexion
 app.get('/api/health', async (req, res) => {
   try {
@@ -566,6 +836,11 @@ app.get('/api/health', async (req, res) => {
     console.error('Erreur de connexion à la base de données:', error);
     res.status(500).json({ status: 'error', message: 'Erreur de connexion à la base de données' });
   }
+});
+
+// Fallback pour le client-side routing (doit être après toutes les routes API)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 // Démarrage du serveur

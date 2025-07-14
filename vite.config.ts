@@ -4,6 +4,22 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [vue()],
+  server: {
+    port: 5173,
+    host: 'localhost',
+    strictPort: true,
+    hmr: {
+      overlay: false
+    }
+  },
+  build: {
+    rollupOptions: {
+      onwarn(warning, warn) {
+        if (warning.code === 'DUPLICATE_KEY') return
+        warn(warning)
+      }
+    }
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

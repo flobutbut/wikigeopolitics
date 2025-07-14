@@ -105,6 +105,28 @@
           </ul>
         </div>
       </template>
+
+      <!-- Vue de liste des conflits armés -->
+      <template v-if="currentView.type === 'armedConflictsList'">
+        <ul class="aside__menu">
+          <MenuItem
+            v-for="conflict in filteredArmedConflicts"
+            :key="conflict.id"
+            :title="conflict.name"
+            :selected="isArmedConflictSelected(conflict.id)"
+            @click="selectArmedConflict(conflict.id)"
+          >
+            <template #prepend>
+              <span class="conflict-icon">⚔️</span>
+            </template>
+            <template #append>
+              <span class="conflict-status" :class="conflict.status?.toLowerCase().replace(' ', '-')">
+                {{ conflict.status || 'Inconnu' }}
+              </span>
+            </template>
+          </MenuItem>
+        </ul>
+      </template>
     </div>
   </div>
 </template>
@@ -137,6 +159,7 @@ export default defineComponent({
     const isCountrySelected = (countryId) => asideStore.isCountrySelected(countryId)
     const isOrganizationSelected = (orgId) => asideStore.isOrganizationSelected(orgId)
     const isPoliticalRegimeSelected = (regimeId) => asideStore.isPoliticalRegimeSelected(regimeId)
+    const isArmedConflictSelected = (conflictId) => asideStore.isArmedConflictSelected(conflictId)
     
     // Éléments filtrés
     const filteredItems = computed(() => {
@@ -219,6 +242,25 @@ export default defineComponent({
       
       return filtered
     })
+
+    // Conflits armés filtrés
+    const filteredArmedConflicts = computed(() => {
+      if (!asideStore.appData.armedConflictList) {
+        return []
+      }
+      
+      if (!asideStore.searchQuery) {
+        return asideStore.appData.armedConflictList
+      }
+      
+      const query = asideStore.searchQuery.toLowerCase()
+      const filtered = asideStore.appData.armedConflictList.filter(conflict => 
+        conflict.name.toLowerCase().includes(query) || 
+        conflict.description?.toLowerCase().includes(query) ||
+        conflict.status?.toLowerCase().includes(query)
+      )
+      return filtered
+    })
     
     // Continents pour la classification des pays
     const continents = computed(() => {
@@ -257,10 +299,10 @@ export default defineComponent({
       asideStore.navigateToDetail(id)
     }
     
-    const selectCountry = (id) => {
-      console.log('Country selected in AsideNavigationView:', id)
-      countryStore.selectCountry(id)
-      asideStore.selectCountry(id)
+    const selectCountry = async (id) => {
+      console.log('🏳️ Country selected in AsideNavigationView:', id)
+      // Utiliser UNIQUEMENT la méthode centralisée d'asideStore
+      await asideStore.selectCountry(id)
     }
     
     const selectOrganization = (id) => {
@@ -272,12 +314,18 @@ export default defineComponent({
       console.log('Political regime selected in AsideNavigationView:', id)
       asideStore.selectPoliticalRegime(id)
     }
+
+    const selectArmedConflict = (id) => {
+      console.log('🎯 Armed conflict selected in AsideNavigationView:', id)
+      asideStore.selectArmedConflict(id)
+    }
     
     return {
       currentView,
       filteredItems,
       filteredOrganizations,
       filteredPoliticalRegimes,
+      filteredArmedConflicts,
       countriesByRegime,
       organizationsByType,
       continents,
@@ -285,11 +333,13 @@ export default defineComponent({
       isCountrySelected,
       isOrganizationSelected,
       isPoliticalRegimeSelected,
+      isArmedConflictSelected,
       returnToPreviousView,
       navigateToDetail,
       selectCountry,
       selectOrganization,
-      selectPoliticalRegime
+      selectPoliticalRegime,
+      selectArmedConflict
     }
   }
 })
@@ -369,6 +419,35 @@ export default defineComponent({
 .organization-icon {
   margin-right: var(--spacing-xs);
   font-size: var(--font-size-md);
+}
+
+.conflict-icon {
+  margin-right: var(--spacing-xs);
+  font-size: var(--font-size-md);
+}
+
+.conflict-status {
+  font-size: var(--font-size-xs);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  font-weight: 500;
+  background-color: var(--surface-dimmed);
+  color: var(--text-secondary);
+}
+
+.conflict-status.en-cours {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.conflict-status.terminé {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+}
+
+.conflict-status.suspendu {
+  background-color: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
 }
 
 .organization-type-section {

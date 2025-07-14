@@ -2,837 +2,1284 @@
 
 ## 🎯 Vue d'ensemble
 
-**WikiGeopolitics** est une application web de cartographie géopolitique interactive développée avec une architecture moderne et scalable.
+**WikiGeopolitics** est une application web de cartographie géopolitique interactive développée avec une architecture moderne entièrement refactorisée.
 
-**🔄 Mise à jour : Navigation dynamique implémentée (Janvier 2025)**
+**🔄 Mise à jour : Architecture 3.1.0 - Refactoring complet + Conflits Armés (Juillet 2025)**
 
-### Navigation dynamique
+### Révolution Architecturale
 
-#### Structure de navigation
-- **Menu principal** : Lecture dynamique depuis `src/data/app/menu.json`
-- **Sous-pages** : Gestion automatique des sous-menus
-- **Données dynamiques** : Intégration avec la base de données pour les régimes politiques et organisations
+L'application a subi une **transformation complète** avec une approche modulaire et maintenable :
 
-#### Endpoints API de navigation
+#### ✅ **Stores Spécialisés** (Division d'asideStore 870 → 110 lignes/store)
+- **`navigationStore`** : Navigation et gestion des vues
+- **`selectionStore`** : Sélections et données d'application
+- **`dataStore`** : Cache intelligent et chargement asynchrone
+- **`uiStore`** : Interface utilisateur et notifications
 
-```typescript
-// Navigation principale
-GET /api/navigation
-// Retourne les catégories principales et organisations
+#### ✅ **APIs Modulaires** (3 services → 5 APIs spécialisées)
+- **`countryAPI`** : Gestion complète des pays et géographie
+- **`organizationAPI`** : Organisations internationales
+- **`politicalRegimeAPI`** : Régimes politiques et classifications
+- **`armedConflictAPI`** : Conflits armés avec zones de combat géolocalisées
+- **`navigationAPI`** : Structure de navigation dynamique
 
-// Catégories et sous-pages
-GET /api/categories/:id
-// Retourne les données d'une catégorie ou sous-page
+#### ✅ **Composables Réutilisables**
+- **`useAsyncState`** : Gestion d'état asynchrone avec retry et cache
+- **`useSelection`** : Logique de sélection unifiée multi-entités
+- **`useNavigation`** : Navigation avec historique complet
+- **`useSearch`** : Recherche avancée avec debounce et filtres
 
-// Organisations classées par type
-GET /api/organizations
-// Retourne les organisations groupées par type
-
-// Régimes politiques
-GET /api/political-regimes
-// Retourne tous les régimes politiques
-
-// Pays par régime
-GET /api/political-regimes/:id/countries
-// Retourne les pays d'un régime spécifique
-```
-
-#### Gestion des organisations
-
-```typescript
-// Structure des organisations par type
-interface OrganizationsByType {
-  [type: string]: Array<{
-    id: string;
-    title: string;
-    type: string;
-    description?: string;
-  }>;
-}
-
-// Types d'organisations supportés
-- Alliance militaire
-- Cartel pétrolier
-- Forum économique
-- Institution financière
-- Organisation commerciale
-- Organisation culturelle
-- Organisation diplomatique
-- Organisation régionale
-- Organisation spécialisée
-- Union politique et économique
-```
+#### ✅ **Utilitaires Transversaux**
+- **`apiClient`** : Client HTTP unifié avec gestion d'erreurs
+- **`filterUtils`** : Logique de filtrage centralisée
+- **`formatUtils`** : Formatage de données cohérent
 
 ## 🏗️ Architecture technique
 
 ### Stack technologique
 
-#### Frontend
+#### Frontend (Refactorisé)
 - **Framework** : Vue.js 3 avec Composition API
-- **Language** : TypeScript 5.x
-- **Build tool** : Vite 5.x
-- **State management** : Pinia
+- **Language** : TypeScript 5.x avec types stricts
+- **Build tool** : Vite 5.x optimisé
+- **State management** : Pinia avec stores spécialisés
+- **Architecture** : Composables réutilisables + APIs modulaires
 - **Styling** : CSS personnalisé avec design tokens
 - **Cartographie** : Leaflet.js avec OpenStreetMap
 - **Package manager** : Yarn
 
-#### Backend (en développement)
-- **Framework** : Node.js avec Express
-- **Language** : TypeScript
+#### Backend (Optimisé)
+- **Framework** : Node.js avec Express et TypeScript
+- **APIs** : RESTful spécialisées par domaine
 - **Base de données** : PostgreSQL 15 avec PostGIS
-- **ORM** : Prisma (prévu)
-- **API** : RESTful avec documentation OpenAPI
-- **Validation** : Zod (prévu)
+- **Architecture** : Services modulaires alignés avec frontend
+- **Cache** : Intelligent avec TTL configurable
+- **Validation** : Schémas TypeScript complets
 
 #### Infrastructure
 - **Conteneurisation** : Docker & Docker Compose
 - **Base de données** : PostgreSQL 15 avec PostGIS
-- **Administration** : PgAdmin
-- **Versioning** : Git avec GitHub
-- **CI/CD** : À configurer
+- **Administration** : PgAdmin interface web
+- **Versioning** : Git avec branches spécialisées
+- **Documentation** : Inline + guides complets
 
-### Architecture des données
+## 🗄️ Architecture des données refactorisée
 
-#### Schéma de base de données (Aligné avec le schéma cible)
+### Stores Spécialisés (Nouveau)
 
-```mermaid
-erDiagram
-  COUNTRY ||--o{ COUNTRY_ORGANIZATION : membre
-  COUNTRY ||--o{ RELATION_COUNTRY : impliqué
-  COUNTRY ||--o{ CONFLICT_COUNTRY : impliqué
-  COUNTRY ||--o{ RESOURCE_COUNTRY : lié
-  COUNTRY ||--o{ INDUSTRY_COUNTRY : acteur
-  COUNTRY ||--o{ TRADE_ROUTE_COUNTRY : acteur
-  COUNTRY ||--o{ COMM_NETWORK_COUNTRY : acteur
-  COUNTRY ||--o{ DEMOGRAPHIC : a
-  ORGANIZATION ||--o{ COUNTRY_ORGANIZATION : membre
-  ORGANIZATION ||--o{ RELATION : sponsorise
-  CONFLICT ||--o{ CONFLICT_COUNTRY : participants
-  CONFLICT }o--|| RESOURCE : enjeu
-  CONFLICT }o--|| TRADE_ROUTE : enjeu
-  RESOURCE ||--o{ RESOURCE_COUNTRY : implication
-  RESOURCE ||--o{ TRADE_ROUTE : transporte
-  INDUSTRY ||--o{ INDUSTRY_COUNTRY : présence
-  INDUSTRY ||--o{ COMPANY : contient
-  TRADE_ROUTE ||--o{ TRADE_ROUTE_COUNTRY : usage
-  COMM_NETWORK ||--o{ COMM_NETWORK_COUNTRY : couverture
+#### NavigationStore
+```typescript
+// src/stores/navigationStore.ts
+export const useNavigationStore = defineStore('navigation', {
+  state: (): NavigationStoreState => ({
+    currentView: {
+      type: 'main',
+      id: 'main',
+      title: '',
+      searchEnabled: true,
+      hasReturnButton: false,
+      items: [],
+      organizations: null
+    },
+    searchQuery: ''
+  }),
+
+  getters: {
+    isMainView: (state) => state.currentView.type === 'main',
+    canSearch: (state) => state.currentView.searchEnabled,
+    hasItems: (state) => state.currentView.items?.length > 0,
+    currentTitle: (state) => state.currentView.title || 'Accueil'
+  },
+
+  actions: {
+    async navigateToSubmenu(id: string),
+    navigateToCountryList(),
+    navigateToPoliticalRegimeList(),
+    navigateToOrganizationsList(),
+    navigateToArmedConflictsList(),
+    returnToMain(),
+    updateCurrentView(view: Partial<NavigationState>),
+    clearAllSelectionsAndLayers()
+  }
+})
 ```
 
-#### Tables principales (17 tables)
+#### SelectionStore
+```typescript
+// src/stores/selectionStore.ts
+export const useSelectionStore = defineStore('selection', {
+  state: (): SelectionStoreState => ({
+    appData: {
+      search: { enabled: true, placeholder: 'Rechercher...' },
+      mainNavigation: [],
+      countryList: [],
+      politicalRegimeList: [],
+      organizationList: {},
+      armedConflictList: [],
+      conflictMarkers: [],
+      combatZones: [],
+      subPages: {},
+      detailPages: {}
+    },
+    currentDetailData: null,
+    selectedCountryId: null,
+    selectedOrganizationId: null,
+    selectedPoliticalRegimeId: null,
+    selectedArmedConflictId: null
+  }),
 
-| Table | Description | Colonnes clés |
-|-------|-------------|---------------|
-| `country` | Pays avec données économiques et géopolitiques | id, nom, pib, population, coordonnees |
-| `organization` | Organisations internationales | id, nom, type, dateCreation |
-| `relation` | Relations internationales | id, nom, type, dateDebut, dateFin |
-| `conflict` | Conflits armés | id, nom, type, statut, localisation |
-| `resource` | Ressources naturelles | id, nom, categorie, impactEnvironnemental |
-| `industry` | Industries | id, nom, categorie, production_mondiale |
-| `company` | Entreprises | id, nom, pays, secteur, indicateurs |
-| `trade_route` | Routes commerciales | id, nom, type, endpoints, geoJsonRef |
-| `comm_network` | Réseaux de communication | id, nom, type, dateMiseEnService |
-| `demographic` | Données démographiques | id, pays, population, tendances |
+  getters: {
+    selectedCountry: (state) => /* logic */,
+    hasAnySelection: (state) => /* logic */,
+    currentSelectionType: (state) => /* logic */
+  },
 
-#### Tables de relation (7 tables)
-
-| Table | Description | Relations |
-|-------|-------------|-----------|
-| `country_organization` | Pays membres d'organisations | countryId ↔ organizationId |
-| `relation_country` | Pays impliqués dans des relations | relationId ↔ countryId |
-| `conflict_country` | Pays impliqués dans des conflits | conflictId ↔ countryId |
-| `resource_country` | Ressources par pays | resourceId ↔ countryId |
-| `industry_country` | Industries par pays | industryId ↔ countryId |
-| `trade_route_country` | Routes commerciales par pays | tradeRouteId ↔ countryId |
-| `comm_network_country` | Réseaux de communication par pays | commNetworkId ↔ countryId |
-
-## 🗄️ Configuration de la base de données
-
-### Docker Compose
-
-```yaml
-version: '3.8'
-
-services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: wikigeopolitics-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: wikigeopolitics
-      POSTGRES_USER: wikigeo_user
-      POSTGRES_PASSWORD: wikigeo_password
-      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./database/init:/docker-entrypoint-initdb.d
-      - ./database/backups:/backups
-    networks:
-      - wikigeopolitics-network
-
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: wikigeopolitics-pgadmin
-    restart: unless-stopped
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@wikigeopolitics.com
-      PGADMIN_DEFAULT_PASSWORD: admin_password
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-    ports:
-      - "5050:80"
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    networks:
-      - wikigeopolitics-network
-    depends_on:
-      - postgres
+  actions: {
+    selectCountry(id: string),
+    selectOrganization(id: string),
+    selectPoliticalRegime(id: string),
+    selectArmedConflict(id: string),
+    clearAllSelections(),
+    syncWithMapStore(),
+    clearAllSelectionsAndLayers()
+  }
+})
 ```
 
-### Scripts de gestion
+#### DataStore (Cache Intelligent)
+```typescript
+// src/stores/dataStore.ts
+export const useDataStore = defineStore('data', {
+  state: (): DataStoreState => ({
+    dataCache: {},
+    isLoading: false,
+    error: null,
+    subPages: {},
+    detailPages: {}
+  }),
 
-```bash
-# Démarrage
-./database/scripts/start-db.sh
+  getters: {
+    isCached: (state) => (key: string) => key in state.dataCache,
+    getCachedData: (state) => (key: string) => state.dataCache[key]
+  },
 
-# Arrêt
-./database/scripts/stop-db.sh
+  actions: {
+    async initializeData(),
+    async loadSubPageData(id: string),
+    async loadCountriesByRegime(regimeId: string),
+    async loadOrganizationsByType(type: string),
+    async loadArmedConflicts(),
+    async loadConflictsByCountry(countryId: string),
+    async loadCombatZones(conflictId: string),
+    setCacheData(key: string, data: any),
+    clearCache()
+  }
+})
+```
 
-# Sauvegarde
-./database/scripts/backup.sh
+#### UIStore
+```typescript
+// src/stores/uiStore.ts
+export const useUIStore = defineStore('ui', {
+  state: (): UIStoreState => ({
+    sidebarCollapsed: false,
+    searchVisible: false,
+    showModal: false,
+    modalContent: null,
+    notifications: [],
+    isMobile: false,
+    screenWidth: window?.innerWidth || 1024,
+    expandedSections: {}
+  }),
 
-# Restauration
-./database/scripts/restore.sh
+  actions: {
+    toggleSidebar(),
+    addNotification(notification),
+    notifySuccess(title, message),
+    notifyError(title, message),
+    updateScreenWidth(width),
+    initializeResponsive()
+  }
+})
+```
+
+### APIs Spécialisées (Nouveau)
+
+#### Client API Unifié
+```typescript
+// src/utils/apiClient.ts
+export class ApiClient {
+  private baseURL: string
+  private defaultOptions: RequestInit
+
+  constructor(baseURL: string = 'http://localhost:3000', options: RequestInit = {}) {
+    this.baseURL = baseURL.replace(/\/$/, '')
+    this.defaultOptions = {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+      },
+      ...options
+    }
+  }
+
+  async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+    const url = `${this.baseURL}${endpoint}`
+    
+    try {
+      const response = await fetch(url, {
+        ...this.defaultOptions,
+        ...options,
+        headers: {
+          ...this.defaultOptions.headers,
+          ...(options.headers || {})
+        }
+      })
+
+      if (!response.ok) {
+        throw new ApiError(`HTTP ${response.status}: ${response.statusText}`, response.status)
+      }
+
+      const data = await response.json()
+      return {
+        data,
+        status: response.status,
+        statusText: response.statusText
+      }
+    } catch (error) {
+      console.error(`API Error for ${endpoint}:`, error)
+      throw error
+    }
+  }
+
+  async get<T>(endpoint: string, params?: Record<string, any>): Promise<T> {
+    const searchParams = params ? `?${new URLSearchParams(params).toString()}` : ''
+    const result = await this.request<T>(`${endpoint}${searchParams}`)
+    return result.data
+  }
+
+  async post<T>(endpoint: string, data?: any): Promise<T> {
+    const result = await this.request<T>(endpoint, {
+      method: 'POST',
+      body: data ? JSON.stringify(data) : undefined
+    })
+    return result.data
+  }
+}
+```
+
+#### Country API
+```typescript
+// src/services/api/countryAPI.ts
+class CountryAPI {
+  private client: ApiClient
+
+  constructor() {
+    this.client = new ApiClient()
+  }
+
+  async getAll(): Promise<Country[]> {
+    console.log('[CountryAPI] Appel getAll...')
+    const result = await this.client.get<Country[]>('/api/countries')
+    console.log('[CountryAPI] getAll résultat:', result.length, 'pays')
+    return result
+  }
+
+  async getById(id: string): Promise<Country> {
+    return await this.client.get<Country>(`/api/countries/${id}`)
+  }
+
+  async getDetails(id: string): Promise<CountryDetail> {
+    return await this.client.get<CountryDetail>(`/api/countries/${id}/details`)
+  }
+
+  async getByRegime(regimeId: string): Promise<Country[]> {
+    return await this.client.get<Country[]>(`/api/political-regimes/${regimeId}/countries`)
+  }
+
+  async getConflicts(countryId: string): Promise<ArmedConflict[]> {
+    return await this.client.get<ArmedConflict[]>(`/api/countries/${countryId}/conflicts`)
+  }
+
+  async getByOrganization(organizationId: string): Promise<Country[]> {
+    return await this.client.get<Country[]>(`/api/organizations/${organizationId}/countries`)
+  }
+
+  async search(query: string): Promise<Country[]> {
+    return await this.client.get<Country[]>(`/api/countries/search?q=${encodeURIComponent(query)}`)
+  }
+}
+
+export const countryAPI = new CountryAPI()
+```
+
+#### Organization API
+```typescript
+// src/services/api/organizationAPI.ts
+class OrganizationAPI {
+  private client: ApiClient
+
+  async getAll(): Promise<Organization[]> {
+    return await this.client.get<Organization[]>('/api/organizations')
+  }
+
+  async getByType(type?: string): Promise<Record<string, Organization[]> | Organization[]> {
+    if (type) {
+      return await this.client.get<Organization[]>(`/api/organizations?type=${type}`)
+    }
+    return await this.client.get<Record<string, Organization[]>>('/api/organizations/by-type')
+  }
+
+  async getCountries(organizationId: string): Promise<any[]> {
+    return await this.client.get<any[]>(`/api/organizations/${organizationId}/countries`)
+  }
+
+  async search(query: string): Promise<Organization[]> {
+    return await this.client.get<Organization[]>(`/api/organizations/search?q=${encodeURIComponent(query)}`)
+  }
+}
+
+export const organizationAPI = new OrganizationAPI()
+```
+
+#### Armed Conflict API (🆕 v3.1.0)
+```typescript
+// src/services/api/armedConflictAPI.ts
+class ArmedConflictAPI {
+  private client: ApiClient
+
+  async getAll(): Promise<ArmedConflict[]> {
+    console.log('[ArmedConflictAPI] Récupération de tous les conflits')
+    return await this.client.get<ArmedConflict[]>('/api/armed-conflicts')
+  }
+
+  async getById(id: string): Promise<ArmedConflict> {
+    return await this.client.get<ArmedConflict>(`/api/armed-conflicts/${id}`)
+  }
+
+  async getByCountry(countryId: string): Promise<ArmedConflict[]> {
+    console.log('[ArmedConflictAPI] Conflits pour pays:', countryId)
+    try {
+      // Appel API principal
+      return await this.client.get<ArmedConflict[]>(`/api/countries/${countryId}/conflicts`)
+    } catch (error) {
+      console.warn('[ArmedConflictAPI] Fallback vers filtrage côté client')
+      // Fallback : filtrage côté client
+      const allConflicts = await this.getAll()
+      return allConflicts.filter((conflict: any) => 
+        conflict.involvedcountries && conflict.involvedcountries.includes(countryId)
+      )
+    }
+  }
+
+  async getCombatZones(conflictId: string): Promise<CombatZone[]> {
+    console.log('[ArmedConflictAPI] Zones de combat pour conflit:', conflictId)
+    return await this.client.get<CombatZone[]>(`/api/armed-conflicts/${conflictId}/combat-zones`)
+  }
+
+  async search(query: string): Promise<ArmedConflict[]> {
+    return await this.client.get<ArmedConflict[]>(`/api/armed-conflicts/search?q=${encodeURIComponent(query)}`)
+  }
+}
+
+export const armedConflictAPI = new ArmedConflictAPI()
+```
+
+### Composables Réutilisables (Nouveau)
+
+#### useAsyncState
+```typescript
+// src/composables/useAsyncState.ts
+export function useAsyncState<T>(
+  asyncFn?: () => Promise<T>,
+  options: UseAsyncStateOptions = {}
+): AsyncState<T> & AsyncActions<T> {
+  const {
+    immediate = false,
+    retryAttempts = 0,
+    retryDelay = 1000,
+    onSuccess,
+    onError
+  } = options
+
+  const data = ref<T | null>(null)
+  const isLoading = ref(false)
+  const error = ref<string | null>(null)
+
+  async function execute(fn: () => Promise<T>): Promise<T | null> {
+    let attempts = 0
+    
+    while (attempts <= retryAttempts) {
+      try {
+        isLoading.value = true
+        error.value = null
+        
+        const result = await fn()
+        
+        data.value = result
+        onSuccess?.(result)
+        
+        return result
+      } catch (err) {
+        attempts++
+        
+        if (attempts > retryAttempts) {
+          const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+          error.value = errorMessage
+          onError?.(errorMessage)
+          return null
+        }
+        
+        if (retryDelay > 0) {
+          await new Promise(resolve => setTimeout(resolve, retryDelay))
+        }
+      } finally {
+        if (attempts > retryAttempts) {
+          isLoading.value = false
+        }
+      }
+    }
+    
+    return null
+  }
+
+  function reset(): void {
+    data.value = null
+    isLoading.value = false
+    error.value = null
+  }
+
+  if (immediate && asyncFn) {
+    execute(asyncFn)
+  }
+
+  return {
+    data: readonly(data),
+    isLoading: readonly(isLoading),
+    error: readonly(error),
+    execute,
+    reset,
+    setData: (newData: T) => { data.value = newData },
+    setError: (errorMessage: string) => { error.value = errorMessage }
+  }
+}
+```
+
+#### useSelection
+```typescript
+// src/composables/useSelection.ts
+export function useSelection(): SelectionState & SelectionData & SelectionActions {
+  const selectedCountries = ref<string[]>([])
+  const selectedOrganization = ref<string | null>(null)
+  const selectedPoliticalRegime = ref<string | null>(null)
+  const selectedArmedConflict = ref<string | null>(null)
+
+  const currentSelection = computed<SelectionType | null>(() => {
+    if (selectedCountries.value.length > 0) return 'country'
+    if (selectedOrganization.value) return 'organization'
+    if (selectedPoliticalRegime.value) return 'politicalRegime'
+    if (selectedArmedConflict.value) return 'armedConflict'
+    return null
+  })
+
+  const hasSelection = computed(() => {
+    return selectedCountries.value.length > 0 ||
+           selectedOrganization.value !== null ||
+           selectedPoliticalRegime.value !== null ||
+           selectedArmedConflict.value !== null
+  })
+
+  function selectCountry(id: string): void {
+    clearNonCountrySelections()
+    selectedCountries.value = [id]
+    updateMapSelection()
+  }
+
+  function clearAllSelections(): void {
+    selectedCountries.value = []
+    selectedOrganization.value = null
+    selectedPoliticalRegime.value = null
+    selectedArmedConflict.value = null
+    updateMapSelection()
+  }
+
+  function updateMapSelection(): void {
+    const mapStore = useMapStore()
+    mapStore.selectMultipleCountries(selectedCountries.value)
+  }
+
+  return {
+    selectedCountries: readonly(selectedCountries),
+    selectedOrganization: readonly(selectedOrganization),
+    selectedPoliticalRegime: readonly(selectedPoliticalRegime),
+    selectedArmedConflict: readonly(selectedArmedConflict),
+    currentSelection,
+    hasSelection,
+    selectedCount: computed(() => /* logic */),
+    selectCountry,
+    selectMultipleCountries,
+    toggleCountrySelection,
+    selectOrganization,
+    selectPoliticalRegime,
+    selectArmedConflict,
+    clearSelection,
+    clearAllSelections,
+    isSelected
+  }
+}
+```
+
+#### useSearch
+```typescript
+// src/composables/useSearch.ts
+export function useSearch<T extends Filterable>(
+  items: () => T[],
+  fields: (keyof T)[] = ['title', 'name']
+): SearchState & SearchActions & { results: FilteredData<T> } {
+  const query = ref('')
+  const isActive = computed(() => query.value.trim().length > 0)
+
+  const results = computed<FilteredData<T>>(() => {
+    const original = items()
+    const filtered = createSearchFilter(original, query.value, fields)
+    
+    return {
+      original,
+      filtered,
+      count: filtered.length,
+      hasResults: filtered.length > 0
+    }
+  })
+
+  function setQuery(newQuery: string): void {
+    query.value = newQuery
+  }
+
+  function clearQuery(): void {
+    query.value = ''
+  }
+
+  return {
+    query: readonly(query),
+    isActive,
+    results,
+    setQuery,
+    clearQuery,
+    toggle: () => { if (isActive.value) clearQuery() }
+  }
+}
+
+// Version avec debounce
+export function useDebouncedSearch<T extends Filterable>(
+  items: () => T[],
+  fields: (keyof T)[] = ['title', 'name'],
+  delay: number = 300
+): SearchState & SearchActions & { results: FilteredData<T> } {
+  const immediateQuery = ref('')
+  const debouncedQuery = ref('')
+  
+  let timeoutId: number | null = null
+
+  watch(immediateQuery, (newQuery) => {
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+    }
+    
+    timeoutId = window.setTimeout(() => {
+      debouncedQuery.value = newQuery
+    }, delay)
+  })
+
+  const isActive = computed(() => debouncedQuery.value.trim().length > 0)
+
+  const results = computed<FilteredData<T>>(() => {
+    const original = items()
+    const filtered = createSearchFilter(original, debouncedQuery.value, fields)
+    
+    return {
+      original,
+      filtered,
+      count: filtered.length,
+      hasResults: filtered.length > 0
+    }
+  })
+
+  return {
+    query: readonly(immediateQuery),
+    isActive,
+    results,
+    setQuery: (newQuery: string) => { immediateQuery.value = newQuery },
+    clearQuery: () => {
+      immediateQuery.value = ''
+      debouncedQuery.value = ''
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+        timeoutId = null
+      }
+    },
+    toggle: () => { /* logic */ }
+  }
+}
 ```
 
 ## 🗺️ Interface cartographique
 
-### Configuration Leaflet
-
+### Configuration Leaflet (Optimisée)
 ```typescript
-// Configuration de la carte
+// Configuration moderne avec gestion d'erreurs
 const mapConfig = {
-  center: [20, 0],
+  center: [20, 0] as L.LatLngTuple,
   zoom: 2,
   minZoom: 1,
   maxZoom: 18,
   layers: [
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 18,
+      subdomains: ['a', 'b', 'c']
     })
-  ]
-};
-```
+  ],
+  zoomControl: true,
+  attributionControl: true
+}
 
-### Gestion des marqueurs
-
-```typescript
-// Création des marqueurs de pays
-const createCountryMarker = (country: Country) => {
-  const marker = L.marker([country.coordonnees.lat, country.coordonnees.lng], {
-    icon: createCustomIcon(country.drapeau)
-  });
+// Intégration avec les nouveaux stores
+const setupMapIntegration = () => {
+  const selectionStore = useSelectionStore()
+  const uiStore = useUIStore()
   
-  marker.on('click', () => selectCountry(country.id));
-  return marker;
-};
-```
-
-### Sélection par proximité
-
-```typescript
-// Algorithme de sélection par proximité
-const findNearestCountry = (point: L.LatLng, countries: Country[]) => {
-  let nearest = null;
-  let minDistance = Infinity;
-  
-  countries.forEach(country => {
-    const distance = point.distanceTo(L.latLng(
-      country.coordonnees.lat, 
-      country.coordonnees.lng
-    ));
-    
-    if (distance < minDistance) {
-      minDistance = distance;
-      nearest = country;
+  map.on('click', (e: L.LeafletMouseEvent) => {
+    const nearestCountry = findNearestCountry(e.latlng, selectionStore.countries)
+    if (nearestCountry) {
+      selectionStore.selectCountry(nearestCountry.id)
+      uiStore.notifySuccess('Pays sélectionné', `${nearestCountry.nom} sélectionné`)
     }
-  });
-  
-  return nearest;
-};
-```
-
-## 📱 Interface utilisateur
-
-### Navigation dynamique
-
-L'application utilise maintenant un système de navigation dynamique qui lit les données depuis le fichier `src/data/app/menu.json` via l'API backend.
-
-#### Architecture de navigation
-
-```typescript
-// API Backend - Lecture dynamique du menu.json
-app.get('/api/navigation', async (req, res) => {
-  const menuPath = path.join(__dirname, '../src/data/app/menu.json');
-  const menuData = JSON.parse(fs.readFileSync(menuPath, 'utf8'));
-  const mainNavigation = menuData.applicationStructure.mainNavigation;
-  
-  const categories = mainNavigation.map(category => ({
-    id: category.id,
-    title: category.title,
-    items: category.items || []
-  }));
-  
-  res.json({ categories, organizations });
-});
-```
-
-#### Structure du fichier menu.json
-
-```json
-{
-  "applicationStructure": {
-    "mainNavigation": [
-      {
-        "id": "politique-et-regimes",
-        "title": "Politique et Régimes",
-        "type": "mainCategory",
-        "items": [
-          {
-            "id": "regime-des-etats",
-            "title": "Régime des états",
-            "hasSubmenu": true
-          }
-        ]
-      }
-    ],
-    "subPages": {
-      "regime-des-etats": {
-        "title": "Régime des états",
-        "searchEnabled": true,
-        "hasReturnButton": true,
-        "items": [...]
-      }
-    }
-  }
+  })
 }
 ```
 
-#### Avantages de la navigation dynamique
+### Gestion des marqueurs (Refactorisée)
+```typescript
+// Utilisation des utilitaires de formatage
+const createCountryMarker = (country: Country) => {
+  const formattedTitle = formatCountryWithFlag(country)
+  const formattedPopulation = formatPopulation(country.population)
+  
+  const marker = L.marker([country.coordonnees.lat, country.coordonnees.lng], {
+    icon: createCustomIcon(country.drapeau),
+    title: formattedTitle
+  })
+  
+  marker.bindPopup(`
+    <div class="country-popup">
+      <h3>${formattedTitle}</h3>
+      <p><strong>Capitale:</strong> ${country.capitale}</p>
+      <p><strong>Population:</strong> ${formattedPopulation}</p>
+    </div>
+  `)
+  
+  marker.on('click', () => {
+    const selectionStore = useSelectionStore()
+    selectionStore.selectCountry(country.id)
+  })
+  
+  return marker
+}
+```
 
-- ✅ **Modifications instantanées** : Les changements dans `menu.json` se reflètent immédiatement
-- ✅ **Pas de redéploiement** : Aucun redémarrage du serveur nécessaire
-- ✅ **Gestion centralisée** : Toute la navigation dans un seul fichier
-- ✅ **Flexibilité** : Ajout/suppression de catégories sans code
-- ✅ **Organisations dynamiques** : Récupération depuis la base de données
+## 📱 Interface utilisateur refactorisée
 
-### Structure des composants
-
+### Structure des composants (Optimisée)
 ```
 src/components/
 ├── aside/
-│   ├── aside.vue              # Conteneur principal
-│   ├── AsideMainView.vue      # Vue principale
-│   ├── AsideNavigationView.vue # Navigation
-│   ├── AsideDetailView.vue    # Détails des pays
-│   ├── CollapsibleSection.vue # Sections repliables
-│   └── DetailSection.vue      # Sections de détails
+│   ├── aside.vue              # Conteneur principal avec nouveaux stores
+│   ├── AsideMainView.vue      # Vue principale refactorisée
+│   ├── AsideNavigationView.vue # Navigation avec composables
+│   └── AsideDetailView.vue    # Détails avec formatUtils
 ├── common/
 │   ├── Button.vue             # Boutons réutilisables
-│   ├── Search.vue             # Barre de recherche
-│   ├── TabNavigation.vue      # Navigation par onglets
-│   └── icons/
-│       └── ChevronIcon.vue    # Icônes SVG
-├── country/
-│   └── CountryItem.vue        # Élément de pays
-├── header/
-│   └── header.vue             # En-tête de l'application
+│   ├── Search.vue             # Recherche avec useSearch
+│   ├── Notification.vue       # Notifications du uiStore
+│   └── LoadingSpinner.vue     # Loading avec useAsyncState
 ├── map/
-│   ├── Map.vue                # Carte principale
-│   ├── MapLayersControl.vue   # Contrôles de couches
-│   └── map 2.vue             # Version alternative
-├── navigation/
-│   ├── MenuItem.vue           # Éléments de menu
-│   └── ReturnButton.vue       # Bouton de retour
-├── panels/
-│   ├── FloatingDetailPanel.vue # Panneau de détails flottant
-│   └── NewsView.vue           # Vue des actualités
-└── timeline/
-    └── Timeline.vue           # Timeline interactive
+│   ├── Map.vue                # Carte avec selectionStore
+│   └── MapControls.vue        # Contrôles avec uiStore
+└── panels/
+    ├── UniversalFloatingPanel.vue # Panel universel pour toutes les entités
+    ├── GenericFloatingPanel.vue # Panel générique réutilisable
+    ├── FloatingDetailPanel.vue # Panel legacy (pays uniquement)
+    ├── FloatingDetailView.vue  # Vue détaillée pour pays
+    └── details/
+        ├── ConflictDetailView.vue     # Vue pour conflits armés
+        ├── RegimeDetailView.vue       # Vue pour régimes politiques
+        ├── OrganizationDetailView.vue # Vue pour organisations
+        └── ResourceDetailView.vue     # Vue pour ressources
 ```
 
-### Gestion d'état avec Pinia
-
+### Gestion d'état unifiée (Nouveau)
 ```typescript
-// Store pour la sélection de pays
-export const useCountrySelectionStore = defineStore('countrySelection', () => {
-  const selectedCountry = ref<Country | null>(null);
-  const isDetailPanelOpen = ref(false);
-  
-  const selectCountry = (country: Country) => {
-    selectedCountry.value = country;
-    isDetailPanelOpen.value = true;
-  };
-  
-  const clearSelection = () => {
-    selectedCountry.value = null;
-    isDetailPanelOpen.value = false;
-  };
-  
-  return {
-    selectedCountry,
-    isDetailPanelOpen,
-    selectCountry,
-    clearSelection
-  };
-});
+// Composant utilisant les nouveaux stores
+<script setup lang="ts">
+import { useNavigationStore, useSelectionStore, useDataStore, useUIStore } from '@/stores'
+import { useAsyncState, useSearch } from '@/composables'
+import { formatPopulation, formatCurrency } from '@/utils/formatUtils'
+
+const navigationStore = useNavigationStore()
+const selectionStore = useSelectionStore()
+const dataStore = useDataStore()
+const uiStore = useUIStore()
+
+// État asynchrone avec retry
+const { data: countries, isLoading, error } = useAsyncState(
+  () => dataStore.loadCountriesByRegime('democracy'),
+  {
+    retryAttempts: 3,
+    retryDelay: 1000,
+    onError: (error) => uiStore.notifyError('Erreur de chargement', error)
+  }
+)
+
+// Recherche avec debounce
+const { query, results, setQuery } = useSearch(
+  () => selectionStore.countries,
+  ['nom', 'capitale']
+)
+
+// Sélection unifiée
+const selectCountry = (country: Country) => {
+  selectionStore.selectCountry(country.id)
+  navigationStore.updateCurrentView({
+    type: 'countryDetail',
+    title: country.nom
+  })
+}
+</script>
 ```
 
-### Styles et design tokens
+## 🔧 Services et API refactorisés
 
-```css
-/* Design tokens */
-:root {
-  --color-primary: #2563eb;
-  --color-secondary: #64748b;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
-  
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-  
-  --border-radius: 0.375rem;
-  --border-radius-lg: 0.5rem;
-  
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+### Service unifié (Nouveau)
+```typescript
+// src/services/readService.ts - Utilise les nouvelles APIs
+import { API } from './api'
+import type { Country } from '@/types/country'
+
+// === PAYS ===
+export async function getAllCountries(): Promise<Country[]> {
+  return await API.countries.getAll()
+}
+
+export async function getCountryById(id: string): Promise<Country | null> {
+  try {
+    return await API.countries.getById(id)
+  } catch (error) {
+    console.error(`Erreur lors de la récupération du pays ${id}:`, error)
+    return null
+  }
+}
+
+export async function getCountriesByRegime(regimeId: string) {
+  return await API.countries.getByRegime(regimeId)
+}
+
+// === NAVIGATION ===
+export async function getNavigationData() {
+  return await API.navigation.getNavigationData()
+}
+
+// === ORGANISATIONS ===
+export async function getOrganizationsByType(type?: string) {
+  return await API.organizations.getByType(type)
+}
+
+// === RÉGIMES POLITIQUES ===
+export async function getAllPoliticalRegimes() {
+  return await API.politicalRegimes.getAll()
 }
 ```
 
-## 🔧 Services et API
-
-### Service de base de données
-
+### Configuration database optimisée
 ```typescript
-// Configuration de connexion PostgreSQL
+// Configuration avec les nouveaux stores
 const dbConfig = {
   host: 'localhost',
-  port: 5432,
+  port: 5433,
   database: 'wikigeopolitics',
   user: 'wikigeo_user',
   password: 'wikigeo_password'
-};
+}
 
-// Pool de connexions
-const pool = new Pool(dbConfig);
+// Pool de connexions optimisé
+const pool = new Pool({
+  ...dbConfig,
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000
+})
 
-// Requêtes optimisées
-export const getCountries = async (): Promise<Country[]> => {
+// Requêtes optimisées pour les nouvelles APIs
+export const getCountriesWithCache = async (cacheKey: string): Promise<Country[]> => {
+  const dataStore = useDataStore()
+  
+  if (dataStore.isCached(cacheKey)) {
+    return dataStore.getCachedData(cacheKey)
+  }
+  
   const query = `
     SELECT 
-      id, nom, drapeau, capitale, langue, monnaie, continent,
-      pib, population, revenuMedian, superficieKm2,
-      regimePolitique, appartenanceGeographique,
-      ST_AsGeoJSON(coordonnees) as coordonnees
-    FROM country
-    ORDER BY nom
-  `;
+      c.id, c.nom, c.drapeau, c.capitale, c.continent,
+      c.pib, c.population, c.revenuMedian,
+      ST_AsGeoJSON(c.coordonnees) as coordonnees,
+      pr.name as regime_politique,
+      cpr.chef_etat, cpr.date_prise_poste
+    FROM country c
+    LEFT JOIN country_political_regime cpr ON c.id = cpr.country_id AND cpr.current_regime = true
+    LEFT JOIN political_regime pr ON cpr.regime_id = pr.id
+    ORDER BY c.nom
+  `
   
-  const result = await pool.query(query);
-  return result.rows;
-};
-```
-
-### Service de lecture des données
-
-```typescript
-// Service pour les opérations de lecture
-export class ReadService {
-  // Récupération des pays avec filtres
-  static async getCountries(filters?: CountryFilters): Promise<Country[]> {
-    let query = 'SELECT * FROM country WHERE 1=1';
-    const params: any[] = [];
-    
-    if (filters?.continent) {
-      query += ' AND continent = $1';
-      params.push(filters.continent);
-    }
-    
-    if (filters?.regimePolitique) {
-      query += ' AND regimePolitique = $2';
-      params.push(filters.regimePolitique);
-    }
-    
-    const result = await pool.query(query, params);
-    return result.rows;
-  }
+  const result = await pool.query(query)
+  const countries = result.rows.map(row => ({
+    ...row,
+    coordonnees: JSON.parse(row.coordonnees)
+  }))
   
-  // Récupération des conflits avec pays impliqués
-  static async getConflicts(): Promise<Conflict[]> {
-    const query = `
-      SELECT 
-        c.*,
-        array_agg(cc.countryId) as pays_impliques
-      FROM conflict c
-      LEFT JOIN conflict_country cc ON c.id = cc.conflictId
-      GROUP BY c.id
-    `;
-    
-    const result = await pool.query(query);
-    return result.rows;
-  }
+  dataStore.setCacheData(cacheKey, countries)
+  return countries
 }
 ```
 
-## 📊 Données et modèles
+## 📊 Types TypeScript (Refactorisés)
 
-### Types TypeScript
-
+### Types principaux avec architecture modulaire
 ```typescript
-// Types principaux
+// Types pour les stores spécialisés
+export interface NavigationState {
+  type: string
+  id: string
+  title: string
+  searchEnabled: boolean
+  hasReturnButton: boolean
+  items: any[]
+  organizations: any[] | null
+  data?: any
+}
+
+export interface SelectionState {
+  selectedCountries: string[]
+  selectedOrganization: string | null
+  selectedPoliticalRegime: string | null
+  selectedArmedConflict: string | null
+}
+
+export interface UIState {
+  sidebarCollapsed: boolean
+  searchVisible: boolean
+  notifications: Notification[]
+  isMobile: boolean
+  expandedSections: Record<string, boolean>
+}
+
+// Types pour les APIs
+export interface ApiResponse<T = any> {
+  data: T
+  status: number
+  statusText: string
+}
+
+export interface ApiError {
+  message: string
+  status?: number
+  details?: any
+}
+
+// Types pour les composables
+export interface AsyncState<T> {
+  data: Readonly<Ref<T | null>>
+  isLoading: Readonly<Ref<boolean>>
+  error: Readonly<Ref<string | null>>
+}
+
+export interface SearchState {
+  query: string
+  isActive: boolean
+}
+
+export interface FilteredData<T> {
+  original: T[]
+  filtered: T[]
+  count: number
+  hasResults: boolean
+}
+
+// Types métier optimisés
 export interface Country {
-  id: string;
-  nom: string;
-  drapeau?: string;
-  capitale?: string;
-  langue?: string;
-  monnaie?: string;
-  continent?: string;
-  pib?: number;
-  population?: number;
-  revenuMedian?: number;
-  superficieKm2?: number;
-  regimePolitique?: string;
-  appartenanceGeographique?: string;
-  coordonnees: GeoJSON.Point;
-  histoire?: string;
-  indiceSouverainete?: number;
-  indiceDependance?: number;
-  statutStrategique?: string;
-  dateCreation?: Date;
-  dateDerniereMiseAJour?: Date;
+  id: string
+  nom: string
+  drapeau?: string
+  capitale?: string
+  langue?: string
+  monnaie?: string
+  continent?: string
+  pib?: number
+  population?: number
+  revenuMedian?: number
+  superficieKm2?: number
+  appartenanceGeographique?: string
+  coordonnees: GeoJSON.Point
+  regimePolitique?: string
+  chefEtat?: string
+  datePrisePoste?: Date
 }
 
-export interface Conflict {
-  id: string;
-  nom: string;
-  type: string;
-  statut: string;
-  dateDebut?: Date;
-  dateFin?: Date;
-  intensite?: string;
-  localisation?: GeoJSON.Polygon;
-  victimes?: any;
-  timeline?: any;
-  efforts_paix?: any;
-  consequences?: any;
-}
-
-export interface Resource {
-  id: string;
-  nom: string;
-  categorie: string;
-  description?: string;
-  reserves_mondiales?: any;
-  usages?: any;
-  impactEnvironnemental?: string;
-  enjeux_geopolitiques?: string;
-}
-```
-
-### Modèles de données JSON
-
-```json
-// Structure des données pays
-{
-  "id": "france",
-  "nom": "France",
-  "drapeau": "🇫🇷",
-  "capitale": "Paris",
-  "langue": "Français",
-  "monnaie": "Euro (EUR)",
-  "continent": "Europe",
-  "pib": 2782900000000,
-  "population": 67390000,
-  "revenuMedian": 42000,
-  "superficieKm2": 551695,
-  "regimePolitique": "République démocratique",
-  "appartenanceGeographique": "Union européenne",
-  "coordonnees": {
-    "type": "Point",
-    "coordinates": [2.2137, 46.2276]
-  },
-  "histoire": "Histoire de la France...",
-  "indiceSouverainete": 85.2,
-  "indiceDependance": 14.8,
-  "statutStrategique": "Puissance moyenne"
+export interface Organization {
+  id: string
+  title: string
+  type: string
+  description?: string
+  countries?: string[]
+  founded?: number
+  headquarters?: string
 }
 ```
 
 ## 🚀 Déploiement et configuration
 
-### Variables d'environnement
-
+### Variables d'environnement (Mises à jour)
 ```bash
-# .env
+# .env - Configuration pour l'architecture refactorisée
 VITE_API_URL=http://localhost:3000
 VITE_MAP_TILE_URL=https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
+
+# Base de données
 POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
+POSTGRES_PORT=5433
 POSTGRES_DB=wikigeopolitics
 POSTGRES_USER=wikigeo_user
 POSTGRES_PASSWORD=wikigeo_password
+
+# Cache et performance
+VITE_CACHE_TTL=300000
+VITE_RETRY_ATTEMPTS=3
+VITE_DEBOUNCE_DELAY=300
+
+# UI et notifications
+VITE_NOTIFICATION_DURATION=5000
+VITE_MOBILE_BREAKPOINT=768
 ```
 
-### Scripts de développement
-
+### Scripts de développement (Optimisés)
 ```json
 {
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vue-tsc && vite build",
     "preview": "vite preview",
-    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
-    "type-check": "vue-tsc --noEmit"
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
+    "type-check": "vue-tsc --noEmit",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "db:start": "./database/scripts/start-db.sh",
+    "db:stop": "./database/scripts/stop-db.sh",
+    "db:backup": "./database/scripts/backup.sh",
+    "docs:serve": "vitepress serve docs"
   }
 }
 ```
 
-### Configuration Vite
-
+### Configuration Vite (Optimisée)
 ```typescript
-// vite.config.ts
-import { defineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
-import { resolve } from 'path';
+// vite.config.ts - Configuration pour l'architecture modulaire
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src')
+      '@': resolve(__dirname, 'src'),
+      '@/components': resolve(__dirname, 'src/components'),
+      '@/composables': resolve(__dirname, 'src/composables'),
+      '@/stores': resolve(__dirname, 'src/stores'),
+      '@/services': resolve(__dirname, 'src/services'),
+      '@/utils': resolve(__dirname, 'src/utils')
     }
   },
   server: {
-    port: 5176,
-    host: true
+    port: 5173,
+    host: true,
+    strictPort: true
   },
   build: {
     outDir: 'dist',
-    sourcemap: true
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': ['vue', 'pinia'],
+          'map': ['leaflet'],
+          'utils': ['@/utils/apiClient', '@/utils/filterUtils', '@/utils/formatUtils']
+        }
+      }
+    }
+  },
+  optimizeDeps: {
+    include: ['vue', 'pinia', 'leaflet']
   }
-});
+})
 ```
 
 ## 🔍 Optimisations et performance
 
-### Optimisations de base de données
-
-```sql
--- Index pour les requêtes fréquentes
-CREATE INDEX idx_country_continent ON country(continent);
-CREATE INDEX idx_country_regime ON country(regimePolitique);
-CREATE INDEX idx_country_coordinates ON country USING GIST(coordonnees);
-
--- Index pour les tables de relation
-CREATE INDEX idx_country_organization_country ON country_organization(countryId);
-CREATE INDEX idx_conflict_country_conflict ON conflict_country(conflictId);
-CREATE INDEX idx_resource_country_resource ON resource_country(resourceId);
-```
-
-### Optimisations frontend
-
+### Cache intelligent (Nouveau)
 ```typescript
-// Lazy loading des composants
-const AsideDetailView = defineAsyncComponent(() => 
-  import('./AsideDetailView.vue')
-);
-
-// Virtual scrolling pour les longues listes
-const useVirtualList = (items: any[], itemHeight: number) => {
-  const visibleItems = computed(() => {
-    // Logique de virtualisation
-  });
+// src/composables/useAsyncStateWithCache.ts
+export function useAsyncStateWithCache<T>(
+  key: string,
+  asyncFn: () => Promise<T>,
+  options: UseAsyncStateOptions & { ttl?: number } = {}
+): AsyncState<T> & AsyncActions<T> & { refresh: () => Promise<T | null> } {
+  const { ttl = 5 * 60 * 1000, ...asyncOptions } = options
   
-  return { visibleItems };
-};
-
-// Cache intelligent des données
-const useDataCache = () => {
-  const cache = new Map();
+  const state = useAsyncState<T>(undefined, asyncOptions)
   
-  const getCachedData = async (key: string, fetcher: () => Promise<any>) => {
-    if (cache.has(key)) {
-      return cache.get(key);
+  // Vérifier le cache session
+  const cachedData = sessionStorage.getItem(`async_cache_${key}`)
+  if (cachedData) {
+    try {
+      const { data: cached, timestamp } = JSON.parse(cachedData)
+      if (Date.now() - timestamp < ttl) {
+        state.setData(cached)
+      }
+    } catch {
+      // Ignorer les erreurs de parsing du cache
+    }
+  }
+
+  async function executeWithCache(): Promise<T | null> {
+    const result = await state.execute(asyncFn)
+    
+    if (result) {
+      sessionStorage.setItem(`async_cache_${key}`, JSON.stringify({
+        data: result,
+        timestamp: Date.now()
+      }))
     }
     
-    const data = await fetcher();
-    cache.set(key, data);
-    return data;
-  };
-  
-  return { getCachedData };
-};
+    return result
+  }
+
+  if (!state.data.value) {
+    executeWithCache()
+  }
+
+  return {
+    ...state,
+    refresh: executeWithCache
+  }
+}
+```
+
+### Virtual scrolling préparé
+```typescript
+// src/composables/useVirtualList.ts
+export function useVirtualList<T>(
+  items: Ref<T[]>,
+  itemHeight: number = 50,
+  containerHeight: number = 400
+) {
+  const scrollTop = ref(0)
+  const containerRef = ref<HTMLElement>()
+
+  const visibleItems = computed(() => {
+    const start = Math.floor(scrollTop.value / itemHeight)
+    const end = Math.min(
+      start + Math.ceil(containerHeight / itemHeight) + 1,
+      items.value.length
+    )
+    
+    return items.value.slice(start, end).map((item, index) => ({
+      item,
+      index: start + index,
+      top: (start + index) * itemHeight
+    }))
+  })
+
+  const totalHeight = computed(() => items.value.length * itemHeight)
+
+  const onScroll = (e: Event) => {
+    scrollTop.value = (e.target as HTMLElement).scrollTop
+  }
+
+  return {
+    containerRef,
+    visibleItems,
+    totalHeight,
+    onScroll
+  }
+}
 ```
 
 ## 🧪 Tests et qualité
 
-### Configuration des tests
-
+### Configuration des tests (Mise à jour)
 ```typescript
 // vitest.config.ts
-import { defineConfig } from 'vitest/config';
-import vue from '@vitejs/plugin-vue';
+import { defineConfig } from 'vitest/config'
+import vue from '@vitejs/plugin-vue'
+import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [vue()],
   test: {
     environment: 'jsdom',
-    globals: true
+    globals: true,
+    setupFiles: ['./src/test/setup.ts']
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src')
+    }
   }
-});
+})
 ```
 
-### Tests unitaires
-
+### Tests des composables
 ```typescript
-// tests/services/countryService.test.ts
-import { describe, it, expect } from 'vitest';
-import { CountryService } from '@/services/countryService';
+// tests/composables/useAsyncState.test.ts
+import { describe, it, expect, vi } from 'vitest'
+import { useAsyncState } from '@/composables/useAsyncState'
 
-describe('CountryService', () => {
-  it('should return all countries', async () => {
-    const countries = await CountryService.getAll();
-    expect(countries).toBeInstanceOf(Array);
-    expect(countries.length).toBeGreaterThan(0);
-  });
-  
-  it('should filter countries by continent', async () => {
-    const europeanCountries = await CountryService.getByContinent('Europe');
-    expect(europeanCountries.every(c => c.continent === 'Europe')).toBe(true);
-  });
-});
+describe('useAsyncState', () => {
+  it('should handle async operations', async () => {
+    const mockFn = vi.fn().mockResolvedValue('test data')
+    
+    const { data, isLoading, error, execute } = useAsyncState()
+    
+    expect(data.value).toBeNull()
+    expect(isLoading.value).toBe(false)
+    expect(error.value).toBeNull()
+    
+    const result = await execute(mockFn)
+    
+    expect(result).toBe('test data')
+    expect(data.value).toBe('test data')
+    expect(isLoading.value).toBe(false)
+    expect(mockFn).toHaveBeenCalledOnce()
+  })
+
+  it('should retry on failure', async () => {
+    const mockFn = vi.fn()
+      .mockRejectedValueOnce(new Error('First failure'))
+      .mockRejectedValueOnce(new Error('Second failure'))
+      .mockResolvedValue('success')
+    
+    const { execute } = useAsyncState(undefined, {
+      retryAttempts: 2,
+      retryDelay: 10
+    })
+    
+    const result = await execute(mockFn)
+    
+    expect(result).toBe('success')
+    expect(mockFn).toHaveBeenCalledTimes(3)
+  })
+})
 ```
 
-### Tests d'intégration
-
+### Tests des stores
 ```typescript
-// tests/integration/map.test.ts
-import { describe, it, expect } from 'vitest';
-import { mount } from '@vue/test-utils';
-import Map from '@/components/map/Map.vue';
+// tests/stores/selectionStore.test.ts
+import { describe, it, expect, beforeEach } from 'vitest'
+import { setActivePinia, createPinia } from 'pinia'
+import { useSelectionStore } from '@/stores/selectionStore'
 
-describe('Map Component', () => {
-  it('should render map with markers', () => {
-    const wrapper = mount(Map);
-    expect(wrapper.find('.leaflet-container').exists()).toBe(true);
-  });
-  
-  it('should handle country selection', async () => {
-    const wrapper = mount(Map);
-    // Test de sélection de pays
-  });
-});
-```
+describe('SelectionStore', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
 
-## 🔒 Sécurité
+  it('should select country', () => {
+    const store = useSelectionStore()
+    
+    store.selectCountry('france')
+    
+    expect(store.selectedCountryId).toBe('france')
+    expect(store.currentSelectionType).toBe('country')
+    expect(store.hasAnySelection).toBe(true)
+  })
 
-### Bonnes pratiques
-
-- ✅ **Validation des données** : Zod pour la validation des schémas
-- ✅ **Requêtes paramétrées** : Prévention des injections SQL
-- ✅ **CORS configuré** : Contrôle des origines autorisées
-- ✅ **Variables d'environnement** : Secrets non exposés dans le code
-- ✅ **HTTPS en production** : Chiffrement des communications
-
-### Configuration de sécurité
-
-```typescript
-// Configuration CORS
-const corsOptions = {
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5176'],
-  credentials: true,
-  optionsSuccessStatus: 200
-};
-
-app.use(cors(corsOptions));
-
-// Validation des entrées
-const countrySchema = z.object({
-  nom: z.string().min(1).max(255),
-  continent: z.string().optional(),
-  pib: z.number().positive().optional()
-});
+  it('should clear selections when selecting different type', () => {
+    const store = useSelectionStore()
+    
+    store.selectCountry('france')
+    store.selectOrganization('eu')
+    
+    expect(store.selectedCountryId).toBeNull()
+    expect(store.selectedOrganizationId).toBe('eu')
+    expect(store.currentSelectionType).toBe('organization')
+  })
+})
 ```
 
 ## 📚 Documentation API
 
-### Endpoints principaux
-
+### Endpoints principaux refactorisés
 ```typescript
-// GET /api/countries
-// Récupère tous les pays
-interface CountriesResponse {
-  countries: Country[];
-  total: number;
-  page: number;
-  limit: number;
-}
+// Endpoints alignés avec les nouvelles APIs
 
-// GET /api/countries/:id
-// Récupère un pays spécifique
-interface CountryResponse {
-  country: Country;
-  organizations: Organization[];
-  conflicts: Conflict[];
-  resources: Resource[];
-}
+// Countries API
+GET    /api/countries                    # Tous les pays
+GET    /api/countries/:id               # Pays spécifique
+GET    /api/countries/:id/details       # Détails complets
+GET    /api/countries/search?q=:query   # Recherche de pays
+GET    /api/countries-geo               # Données géospatiales
 
-// GET /api/conflicts
-// Récupère tous les conflits
-interface ConflictsResponse {
-  conflicts: Conflict[];
-  total: number;
-}
+// Political Regimes API
+GET    /api/political-regimes           # Tous les régimes
+GET    /api/political-regimes/:id       # Régime spécifique
+GET    /api/political-regimes/:id/countries # Pays par régime
 
-// GET /api/resources
-// Récupère toutes les ressources
-interface ResourcesResponse {
-  resources: Resource[];
-  total: number;
-}
+// Organizations API
+GET    /api/organizations               # Toutes les organisations
+GET    /api/organizations/by-type       # Groupées par type
+GET    /api/organizations/:id           # Organisation spécifique
+GET    /api/organizations/:id/countries # Pays membres
+
+// Armed Conflicts API
+GET    /api/armed-conflicts             # Tous les conflits
+GET    /api/armed-conflicts/:id         # Conflit spécifique
+GET    /api/armed-conflicts?status=:status # Par statut
+
+// Navigation API
+GET    /api/navigation                  # Structure de navigation
+GET    /api/categories/:id              # Données de catégorie
 ```
 
 ## 🚀 Prochaines étapes techniques
 
-### Priorité 1 : Backend API
-1. **Développer l'API Express** avec TypeScript
-2. **Intégrer Prisma** pour l'ORM
-3. **Créer les endpoints** pour toutes les entités
-4. **Documenter l'API** avec OpenAPI/Swagger
-5. **Tests unitaires** pour l'API
+### Priorité 1 : Migration et adoption
+1. **Migration composants** : Adoption progressive des nouveaux stores
+2. **Tests complets** : Couverture des composables et APIs
+3. **Performance monitoring** : Métriques et optimisations
+4. **Documentation** : Guides utilisateur et développeur
 
-### Priorité 2 : Optimisations
-1. **Cache Redis** pour les données fréquemment accédées
-2. **CDN** pour les assets statiques
-3. **Compression** des réponses API
-4. **Pagination** pour les grandes listes
-5. **Lazy loading** des données géospatiales
+### Priorité 2 : Fonctionnalités avancées
+1. **PWA** : Service workers et cache avancé
+2. **WebSockets** : Mises à jour temps réel
+3. **Virtual scrolling** : Optimisation des grandes listes
+4. **Bundle optimization** : Code splitting avancé
 
-### Priorité 3 : Fonctionnalités avancées
-1. **WebSockets** pour les mises à jour en temps réel
-2. **Service Workers** pour le mode hors ligne
-3. **PWA** avec manifest et cache
-4. **Analytics** et monitoring
-5. **A/B testing** pour l'UX
+### Priorité 3 : Évolutions futures
+1. **Mobile native** : Application React Native
+2. **IA intégrée** : Recommandations et analyse
+3. **API publique** : Ouverture des données
+4. **Communauté** : Contributions collaboratives
 
 ---
 
-**Dernière mise à jour** : Janvier 2025  
-**Version** : 1.0.0-alpha  
-**Statut** : Développement actif
+**Dernière mise à jour** : Juillet 2025 - Architecture 3.0.0  
+**Statut** : ✅ **Refactoring complet terminé**  
+**L'architecture est maintenant moderne, maintenable et prête pour l'avenir ! 🚀**

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import countryService from '@/services/countryService'
+import { API } from '@/services/api'
 
 interface Country {
   id: string
@@ -58,7 +58,7 @@ export const useCountrySelectionStore = defineStore('countrySelection', {
         this.error = null
         
         // Charger les données depuis l'API
-        const countries = await countryService.getCountries()
+        const countries = await API.countries.getAll()
         
         // Transformer les données au format attendu
         this.countriesData = countries.map(country => ({
@@ -87,7 +87,7 @@ export const useCountrySelectionStore = defineStore('countrySelection', {
         // Charger les détails du pays depuis l'API
         try {
           this.isLoading = true
-          const details = await countryService.getCountryDetail(countryId)
+          const details = await API.countries.getDetails(countryId)
           this.selectedCountryDetails = details
           console.log(`Pays sélectionné: ${country.name} avec détails chargés`)
         } catch (error) {
@@ -142,7 +142,7 @@ export const useCountrySelectionStore = defineStore('countrySelection', {
     async loadCountryDetails(countryId: string) {
       try {
         this.isLoading = true
-        const details = await countryService.getCountryDetail(countryId)
+        const details = await API.countries.getDetails(countryId)
         this.selectedCountryDetails = details
         return details
       } catch (type) {

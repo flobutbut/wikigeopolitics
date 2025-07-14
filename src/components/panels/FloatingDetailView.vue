@@ -73,6 +73,37 @@
             </div>
           </div>
         </CollapsibleSection>
+
+        <!-- Conflits armés -->
+        <CollapsibleSection
+          title="Conflits armés"
+          :expanded="conflictsExpanded"
+          @toggle="toggleConflicts"
+        >
+          <div class="conflicts-list">
+            <div 
+              v-for="conflict in detailData.conflitsArmes" 
+              :key="conflict.id" 
+              class="conflict-item"
+              @click="selectConflict(conflict.id)"
+            >
+              <div class="conflict-title">{{ conflict.name }}</div>
+              <div v-if="conflict.status" class="conflict-status">{{ conflict.status }}</div>
+              <div v-if="conflict.startDate" class="conflict-date">
+                Début: {{ formatDate(conflict.startDate) }}
+              </div>
+              <div v-if="conflict.endDate" class="conflict-date">
+                Fin: {{ formatDate(conflict.endDate) }}
+              </div>
+              <div v-if="conflict.description" class="conflict-description">
+                {{ conflict.description }}
+              </div>
+            </div>
+            <div v-if="!detailData.conflitsArmes || detailData.conflitsArmes.length === 0" class="no-data">
+              Aucun conflit armé disponible.
+            </div>
+          </div>
+        </CollapsibleSection>
       </div>
     </div>
   </div>
@@ -97,6 +128,7 @@ export default defineComponent({
     const coalitionsExpanded = ref(true)
     const tradeAgreementsExpanded = ref(true)
     const historyExpanded = ref(true) // Added for history section
+    const conflictsExpanded = ref(true) // Added for conflicts section
     
     // Label dynamique pour le chef d'État
     const chefEtatLabel = computed(() => {
@@ -162,8 +194,22 @@ export default defineComponent({
     
     // Toggle pour les sections collapsibles
     const toggleSection = (sectionId: string, expanded: boolean) => {
-      // TODO: Implémenter la logique de toggle si nécessaire
-      console.log('Toggle section:', sectionId, expanded)
+      switch (sectionId) {
+        case 'coalitions':
+          coalitionsExpanded.value = expanded
+          break
+        case 'trade-agreements':
+          tradeAgreementsExpanded.value = expanded
+          break
+        case 'history':
+          historyExpanded.value = expanded
+          break
+        case 'conflicts':
+          conflictsExpanded.value = expanded
+          break
+        default:
+          console.log('Section inconnue:', sectionId)
+      }
     }
     
     // Toggle pour les coalitions
@@ -180,12 +226,24 @@ export default defineComponent({
     const toggleHistory = () => {
       historyExpanded.value = !historyExpanded.value
     }
+
+    // Toggle pour les conflits armés
+    const toggleConflicts = () => {
+      conflictsExpanded.value = !conflictsExpanded.value
+    }
+
+    // Sélectionner un conflit
+    const selectConflict = (conflictId: string) => {
+      console.log('🔥 Sélection conflit depuis fiche pays:', conflictId)
+      asideStore.selectConflictFromCountryDetail(conflictId)
+    }
     
     return {
       detailData: computed(() => asideStore.currentDetailData),
       coalitionsExpanded,
       tradeAgreementsExpanded,
       historyExpanded, // Added to return
+      conflictsExpanded, // Added for conflicts
       chefEtatLabel,
       chefEtatInfo,
       datePrisePosteInfo,
@@ -197,7 +255,9 @@ export default defineComponent({
       toggleSection,
       toggleCoalitions,
       toggleTradeAgreements,
-      toggleHistory // Added to return
+      toggleHistory, // Added to return
+      toggleConflicts, // Added for conflicts
+      selectConflict // Added for conflict selection
     }
   }
 })
@@ -287,5 +347,54 @@ export default defineComponent({
   color: var(--text-muted);
   font-style: italic;
   text-align: center;
+}
+
+/* Styles pour les conflits armés */
+.conflicts-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.conflict-item {
+  background-color: var(--surface-dimmed);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-xs);
+  transition: background-color var(--transition-speed) var(--transition-function);
+  cursor: pointer;
+  border-left: 3px solid #ff4444;
+}
+
+.conflict-item:hover {
+  background-color: var(--surface-hover);
+  transform: translateX(2px);
+}
+
+.conflict-title {
+  font-weight: var(--font-weight-medium);
+  color: #d32f2f;
+}
+
+.conflict-status {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-xs);
+  color: var(--text-muted);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+}
+
+.conflict-date {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-xs);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.conflict-description {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-xs);
+  color: var(--text-muted);
+  margin-top: var(--spacing-xs);
 }
 </style> 
