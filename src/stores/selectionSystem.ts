@@ -25,6 +25,12 @@ export interface SelectionState {
   // Zones de combat visibles
   conflictZonesVisible: boolean
   
+  // Contexte parent pour navigation contextuelle
+  parentContext: {
+    type: 'regime' | 'organization' | 'conflict' | 'initial'
+    id: string | null
+  }
+  
   // Historique pour navigation
   history: Array<{
     state: SelectionState
@@ -52,6 +58,11 @@ export const useSelectionSystem = defineStore('selectionSystem', {
     highlightedCountries: [],
     
     conflictZonesVisible: false,
+    
+    parentContext: {
+      type: 'initial',
+      id: null
+    },
     
     history: []
   }),
@@ -110,6 +121,12 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       this.highlightedCountries = []
       this.conflictZonesVisible = false
       
+      // Reset du contexte parent
+      this.parentContext = {
+        type: 'initial',
+        id: null
+      }
+      
       // Synchroniser avec les autres stores
       await this.syncWithStores()
     },
@@ -136,9 +153,7 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       // Nouvelle sélection de pays
       this.type = 'country'
       this.selectedCountry = countryId
-      this.selectedConflict = null
-      this.selectedOrganization = null
-      this.selectedRegime = null
+      // Conserver le contexte parent (regime/organization) pour le retour
       
       this.floatingPanelOpen = true
       this.floatingPanelType = 'country'
@@ -245,11 +260,7 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       this.floatingPanelOpen = false
       this.floatingPanelType = null
       
-      // Logique de fermeture du panel :
-      // - Si on a sélectionné un conflit DEPUIS l'aside (menu conflits), on garde le contexte conflit
-      // - Si on a sélectionné un conflit DEPUIS la fiche d'un pays, on revient à l'état initial
-      // - Dans tous les autres cas, on revient à l'état initial
-      
+      // Logique de fermeture du panel avec contexte parent
       if (this.type === 'country_conflict' && this.selectedConflict) {
         // Vérifier si le conflit a été sélectionné depuis l'aside (menu conflits)
         const asideStore = useAsideStore()
@@ -265,10 +276,71 @@ export const useSelectionSystem = defineStore('selectionSystem', {
           await this.resetToInitial()
           return // resetToInitial() appelle déjà syncWithStores()
         }
+      } else if (this.type === 'country' && this.parentContext.type !== 'initial') {
+        // Retour au contexte parent (regime/organization)
+        await this.returnToParentContext()
+        return // returnToParentContext() appelle déjà syncWithStores()
       } else {
         // Retour à l'état initial dans tous les autres cas
         await this.resetToInitial()
         return // resetToInitial() appelle déjà syncWithStores()
+      }
+      
+      // Synchroniser avec les autres stores
+      await this.syncWithStores()
+    },
+
+    /**
+     * Retour au contexte parent (regime/organization)
+     */
+    async returnToParentContext() {
+      console.log(`[SelectionSystem] 🔄 Retour au contexte parent: ${this.parentContext.type} ${this.parentContext.id}`)
+      
+      // Sauvegarder l'état actuel
+      this.saveCurrentState()
+      
+      // Désélectionner le pays
+      this.selectedCountry = null
+      this.floatingPanelOpen = false
+      this.floatingPanelType = null
+      
+      // Retourner au contexte parent
+      if (this.parentContext.type === 'regime') {
+        this.type = 'regime'
+        this.selectedRegime = this.parentContext.id
+        this.selectedOrganization = null
+        this.selectedConflict = null
+        
+        // Recharger les pays du régime
+        const { politicalRegimeAPI } = await import('@/services/api/politicalRegimeAPI')
+        try {
+          const countries = await politicalRegimeAPI.getCountries(this.parentContext.id!)
+          this.visibleCountries = countries.map((c: any) => c.id)
+          this.highlightedCountries = []
+        } catch (error) {
+          console.error('[SelectionSystem] Erreur rechargement pays régime:', error)
+          this.visibleCountries = []
+        }
+      } else if (this.parentContext.type === 'organization') {
+        this.type = 'organization'
+        this.selectedOrganization = this.parentContext.id
+        this.selectedRegime = null
+        this.selectedConflict = null
+        
+        // Recharger les pays de l'organisation
+        const { organizationAPI } = await import('@/services/api/organizationAPI')
+        try {
+          const countries = await organizationAPI.getCountries(this.parentContext.id!)
+          this.visibleCountries = countries.map((c: any) => c.id)
+          this.highlightedCountries = []
+        } catch (error) {
+          console.error('[SelectionSystem] Erreur rechargement pays organisation:', error)
+          this.visibleCountries = []
+        }
+      } else {
+        // Fallback vers l'état initial
+        await this.resetToInitial()
+        return
       }
       
       // Synchroniser avec les autres stores
@@ -308,6 +380,10 @@ export const useSelectionSystem = defineStore('selectionSystem', {
           await this.resetToInitial()
           return // resetToInitial() appelle déjà syncWithStores()
         }
+      } else if (this.type === 'country' && this.parentContext.type !== 'initial') {
+        // Retour au contexte parent (regime/organization)
+        await this.returnToParentContext()
+        return // returnToParentContext() appelle déjà syncWithStores()
       } else {
         // Retour à l'état initial dans tous les autres cas
         await this.resetToInitial()
@@ -338,6 +414,12 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       this.floatingPanelType = source === 'panel' ? 'country' : 'regime'
       
       this.conflictZonesVisible = false
+      
+      // Définir le contexte parent
+      this.parentContext = {
+        type: 'regime',
+        id: regimeId
+      }
       
       // Charger les pays de ce régime
       const { politicalRegimeAPI } = await import('@/services/api/politicalRegimeAPI')
@@ -383,6 +465,12 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       this.floatingPanelType = source === 'panel' ? 'country' : 'organization'
       
       this.conflictZonesVisible = false
+      
+      // Définir le contexte parent
+      this.parentContext = {
+        type: 'organization',
+        id: organizationId
+      }
       
       // Charger les pays membres de cette organisation
       const { organizationAPI } = await import('@/services/api/organizationAPI')
