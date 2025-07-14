@@ -182,23 +182,24 @@ export function useUnifiedMarkers(map: L.Map | null) {
   const calculateMarkerStates = (markerData: MarkerData) => {
     const { id, type } = markerData
     
+    // État de sélection : seulement si le pays est explicitement sélectionné
     const isSelected = type === 'country' 
       ? selectionSystem.isCountrySelected(id) 
       : type === 'conflict' 
       ? selectionSystem.isConflictSelected(id)
       : false
     
+    // État de mise en évidence : seulement si le pays est dans la liste des pays mis en évidence
     const isHighlighted = type === 'country' 
       ? selectionSystem.shouldHighlightCountry(id)
       : false
     
+    // État de visibilité : selon le contexte (régime, organisation, conflit, etc.)
     const isVisible = type === 'country' 
       ? selectionSystem.shouldShowCountry(id)
       : type === 'conflict' 
       ? selectionSystem.conflictZonesVisible
       : true
-    
-    
     
     return { isSelected, isHighlighted, isVisible }
   }

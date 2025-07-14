@@ -114,9 +114,22 @@ export default defineComponent({
     }
     
     // Gérer les clics sur la carte (pas sur les marqueurs)
-    const handleMapClick = (event: L.LeafletMouseEvent) => {
-      // Si on clique sur la carte (pas sur un marqueur), on pourrait déselectionner
-      // Pour l'instant, on ne fait rien
+    const handleMapClick = async (event: L.LeafletMouseEvent) => {
+      console.log('🗺️ Clic sur la carte:', event.latlng)
+      
+      // Vérifier si on a cliqué sur un marqueur (éviter la déselection)
+      const target = event.originalEvent?.target as HTMLElement
+      if (target && (target.closest('.country-marker') || target.closest('.conflict-marker'))) {
+        console.log('🗺️ Clic sur un marqueur, pas de déselection')
+        return
+      }
+      
+      // Déselectionner selon le contexte actuel
+      try {
+        await selectionSystem.deselectOnMapClick()
+      } catch (error) {
+        console.error('Erreur lors de la déselection:', error)
+      }
     }
     
     // Lifecycle

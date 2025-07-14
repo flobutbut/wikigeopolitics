@@ -117,7 +117,7 @@ export const useSelectionSystem = defineStore('selectionSystem', {
     /**
      * UC2, UC3, UC4 - Sélection d'un pays
      */
-    async selectCountry(countryId: string, source: 'map' | 'aside' = 'map') {
+    async selectCountry(countryId: string, source: 'map' | 'aside' = 'map'): Promise<void> {
       // Si on est en mode conflit et que la sélection vient de l'aside
       // on revient à l'état initial puis on sélectionne le pays
       if (this.selectedConflict && source === 'aside') {
@@ -158,7 +158,7 @@ export const useSelectionSystem = defineStore('selectionSystem', {
     /**
      * UC8 - Sélection contextuelle d'un pays (conflit actif)
      */
-    async selectCountryInContext(countryId: string) {
+    async selectCountryInContext(countryId: string): Promise<void> {
       console.log(`[SelectionSystem] 🎯 Sélection contextuelle pays ${countryId}`)
       
       if (!this.selectedConflict) {
@@ -276,6 +276,139 @@ export const useSelectionSystem = defineStore('selectionSystem', {
     },
 
     /**
+     * UC11 - Déselection lors d'un clic sur la carte
+     */
+    async deselectOnMapClick() {
+      console.log('[SelectionSystem] 🗺️ Déselection depuis clic sur la carte')
+      
+      // Utiliser la même logique que closeFloatingPanel() pour tous les cas
+      if (this.type === 'initial') {
+        // État initial, rien à faire
+        console.log('[SelectionSystem] Aucune sélection active à désélectionner')
+        return
+      }
+      
+      // Simuler la fermeture du panel pour tous les cas de sélection
+      this.floatingPanelOpen = false
+      this.floatingPanelType = null
+      
+      // Utiliser la logique existante de closeFloatingPanel()
+      if (this.type === 'country_conflict' && this.selectedConflict) {
+        // Vérifier si le conflit a été sélectionné depuis l'aside (menu conflits)
+        const asideStore = useAsideStore()
+        const isInConflictMenu = asideStore.currentView?.type === 'armedConflictsList'
+        
+        if (isInConflictMenu) {
+          // Garder le contexte conflit mais désélectionner le pays
+          this.type = 'conflict'
+          this.selectedCountry = null
+          this.highlightedCountries = this.visibleCountries
+        } else {
+          // Retour à l'état initial car le conflit venait de la fiche d'un pays
+          await this.resetToInitial()
+          return // resetToInitial() appelle déjà syncWithStores()
+        }
+      } else {
+        // Retour à l'état initial dans tous les autres cas
+        await this.resetToInitial()
+        return // resetToInitial() appelle déjà syncWithStores()
+      }
+      
+      // Synchroniser avec les autres stores
+      await this.syncWithStores()
+    },
+
+    /**
+     * UC9 - Sélection d'un régime politique
+     */
+    async selectRegime(regimeId: string, source: 'aside' | 'panel' = 'aside') {
+      console.log(`[SelectionSystem] ⚖️ Sélection régime ${regimeId} depuis ${source}`)
+      
+      // Sauvegarder l'état actuel
+      this.saveCurrentState()
+      
+      // Nouvelle sélection de régime
+      this.type = 'regime'
+      this.selectedRegime = regimeId
+      this.selectedCountry = null
+      this.selectedConflict = null
+      this.selectedOrganization = null
+      
+      this.floatingPanelOpen = source === 'panel'
+      this.floatingPanelType = source === 'panel' ? 'country' : 'regime'
+      
+      this.conflictZonesVisible = false
+      
+      // Charger les pays de ce régime
+      const { politicalRegimeAPI } = await import('@/services/api/politicalRegimeAPI')
+      try {
+        const countries = await politicalRegimeAPI.getCountries(regimeId)
+        this.visibleCountries = countries.map((c: any) => c.id)
+        
+        // Pour les régimes, on ne met pas les pays en évidence par défaut
+        // Ils restent en état normal, juste visibles
+        this.highlightedCountries = []
+      } catch (error) {
+        console.error('[SelectionSystem] Erreur chargement pays régime:', error)
+        this.visibleCountries = []
+      }
+      
+      // Charger les données du régime si nécessaire
+      if (source === 'aside') {
+        const asideStore = useAsideStore()
+        await asideStore.loadRegimeData(regimeId)
+      }
+      
+      // Synchroniser avec les autres stores
+      await this.syncWithStores()
+    },
+
+    /**
+     * UC10 - Sélection d'une organisation
+     */
+    async selectOrganization(organizationId: string, source: 'aside' | 'panel' = 'aside') {
+      console.log(`[SelectionSystem] 🏢 Sélection organisation ${organizationId} depuis ${source}`)
+      
+      // Sauvegarder l'état actuel
+      this.saveCurrentState()
+      
+      // Nouvelle sélection d'organisation
+      this.type = 'organization'
+      this.selectedOrganization = organizationId
+      this.selectedCountry = null
+      this.selectedConflict = null
+      this.selectedRegime = null
+      
+      this.floatingPanelOpen = source === 'panel'
+      this.floatingPanelType = source === 'panel' ? 'country' : 'organization'
+      
+      this.conflictZonesVisible = false
+      
+      // Charger les pays membres de cette organisation
+      const { organizationAPI } = await import('@/services/api/organizationAPI')
+      try {
+        const countries = await organizationAPI.getCountries(organizationId)
+        this.visibleCountries = countries.map((c: any) => c.id)
+        
+        // Pour les organisations, on ne met pas les pays en évidence par défaut
+        // Ils restent en état normal, juste visibles
+        this.highlightedCountries = []
+      } catch (error) {
+        console.error('[SelectionSystem] Erreur chargement pays organisation:', error)
+        this.visibleCountries = []
+      }
+      
+      // Charger les données de l'organisation si nécessaire
+      if (source === 'aside') {
+        const asideStore = useAsideStore()
+        await asideStore.loadOrganizationData(organizationId)
+      }
+      
+      // Synchroniser avec les autres stores
+      await this.syncWithStores()
+    },
+
+    /**
      * Synchronisation avec mapStore et asideStore
      */
     async syncWithStores() {
@@ -295,6 +428,13 @@ export const useSelectionSystem = defineStore('selectionSystem', {
         mapStore.visibleLayers.armedConflicts = true
         await mapStore.loadConflictZones(this.selectedConflict)
       } else {
+        mapStore.visibleLayers.armedConflicts = false
+        mapStore.armedConflicts = null
+      }
+      
+      // Synchroniser les couches selon le type de sélection
+      if (this.type === 'regime' || this.type === 'organization') {
+        // Désactiver les zones de combat pour les régimes et organisations
         mapStore.visibleLayers.armedConflicts = false
         mapStore.armedConflicts = null
       }
@@ -362,10 +502,12 @@ export const useSelectionSystem = defineStore('selectionSystem', {
         case 'conflict':
           return this.selectConflict(id, source as 'aside' | 'panel')
         case 'organization':
-          // TODO: Implémenter
-          break
+          return this.selectOrganization(id, source as 'aside' | 'panel')
         case 'regime':
-          // TODO: Implémenter
+          return this.selectRegime(id, source as 'aside' | 'panel')
+        case 'resource':
+          // TODO: Implémenter pour les ressources
+          console.warn('[SelectionSystem] Sélection de ressource non implémentée')
           break
       }
     }
