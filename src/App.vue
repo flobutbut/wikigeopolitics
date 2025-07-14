@@ -43,6 +43,7 @@ import type { LatLng } from 'leaflet'
 import { useCountrySelectionStore } from '@/stores/countrySelectionStore'
 import { useAsideStore } from '@/stores/asideStore'
 import { useMapStore } from '@/stores/mapStore'
+import { useSelectionSystem } from '@/stores/selectionSystem'
 import { storeToRefs } from 'pinia'
 
 export default defineComponent({
@@ -63,6 +64,7 @@ export default defineComponent({
     const countryStore = useCountrySelectionStore()
     const asideStore = useAsideStore()
     const mapStore = useMapStore()
+    const selectionSystem = useSelectionSystem()
     const { selectedCountries } = storeToRefs(mapStore)
     
     // Computed pour les pays à afficher sur la carte
@@ -91,6 +93,9 @@ export default defineComponent({
           // mapStore.loadArmedConflicts()
         ])
         
+        // S'assurer que le système de sélection est en état initial
+        await selectionSystem.resetToInitial()
+        
 
       } catch (error) {
         console.error('Erreur lors de l\'initialisation des données:', error)
@@ -110,8 +115,8 @@ export default defineComponent({
     const handleCountrySelected = async (country: any) => {
       console.log(`🗺️ Pays sélectionné depuis la carte: ${country.title || country.name}`)
       
-      // Utiliser UNIQUEMENT la méthode centralisée d'asideStore
-      await asideStore.selectCountry(country.id)
+      // Utiliser le nouveau système de sélection
+      await selectionSystem.selectCountry(country.id, 'map')
       
       // Zoomer sur le pays sélectionné
       if (mapInstance.value && country.coordinates) {
@@ -120,14 +125,11 @@ export default defineComponent({
       }
     }
     
-    const handleConflictSelected = (conflictId: string) => {
+    const handleConflictSelected = async (conflictId: string) => {
       console.log(`Conflit sélectionné depuis la carte: ${conflictId}`)
       
-      // Sélectionner le conflit dans le mapStore
-      mapStore.selectConflict(conflictId)
-      
-      // Afficher les détails du conflit dans le panneau flottant
-      asideStore.selectArmedConflict(conflictId)
+      // Utiliser le nouveau système de sélection
+      await selectionSystem.selectConflict(conflictId, 'aside')
     }
     
     // Méthode pour zoomer sur un pays depuis l'aside

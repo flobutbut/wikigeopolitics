@@ -85,10 +85,12 @@
               v-for="conflict in detailData.conflitsArmes" 
               :key="conflict.id" 
               class="conflict-item"
+              :class="{ 'selected': isConflictSelected(conflict.id) }"
               @click="selectConflict(conflict.id)"
             >
               <div class="conflict-title">{{ conflict.name }}</div>
               <div v-if="conflict.status" class="conflict-status">{{ conflict.status }}</div>
+              <div v-if="isConflictSelected(conflict.id)" class="selection-indicator">✓ Sélectionné</div>
               <div v-if="conflict.startDate" class="conflict-date">
                 Début: {{ formatDate(conflict.startDate) }}
               </div>
@@ -112,6 +114,7 @@
 <script lang="ts">
 import { defineComponent, computed, ref } from 'vue'
 import { useAsideStore } from '@/stores/asideStore'
+import { useSelectionSystem } from '@/stores/selectionSystem'
 import CollapsibleSection from '@/components/aside/CollapsibleSection.vue'
 import DetailSection from '@/components/aside/DetailSection.vue'
 
@@ -125,6 +128,7 @@ export default defineComponent({
   
   setup() {
     const asideStore = useAsideStore()
+    const selectionSystem = useSelectionSystem()
     const coalitionsExpanded = ref(true)
     const tradeAgreementsExpanded = ref(true)
     const historyExpanded = ref(true) // Added for history section
@@ -232,14 +236,22 @@ export default defineComponent({
       conflictsExpanded.value = !conflictsExpanded.value
     }
 
+    // Vérifier si un conflit est sélectionné
+    const isConflictSelected = (conflictId: string) => {
+      return selectionSystem.isConflictSelected(conflictId)
+    }
+
     // Sélectionner un conflit
-    const selectConflict = (conflictId: string) => {
+    const selectConflict = async (conflictId: string) => {
       console.log('🔥 Sélection conflit depuis fiche pays:', conflictId)
-      asideStore.selectConflictFromCountryDetail(conflictId)
+      await selectionSystem.selectConflict(conflictId, 'panel')
     }
     
     return {
-      detailData: computed(() => asideStore.currentDetailData),
+      detailData: computed(() => {
+        // Utiliser les données de l'asideStore (qui reste responsable du chargement des données)
+        return asideStore.currentDetailData
+      }),
       coalitionsExpanded,
       tradeAgreementsExpanded,
       historyExpanded, // Added to return
@@ -257,6 +269,7 @@ export default defineComponent({
       toggleTradeAgreements,
       toggleHistory, // Added to return
       toggleConflicts, // Added for conflicts
+      isConflictSelected, // Added for conflict selection status
       selectConflict // Added for conflict selection
     }
   }
@@ -361,14 +374,21 @@ export default defineComponent({
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
   margin-bottom: var(--spacing-xs);
-  transition: background-color var(--transition-speed) var(--transition-function);
+  transition: all var(--transition-speed) var(--transition-function);
   cursor: pointer;
   border-left: 3px solid #ff4444;
+  padding: var(--spacing-sm);
 }
 
 .conflict-item:hover {
   background-color: var(--surface-hover);
   transform: translateX(2px);
+}
+
+.conflict-item.selected {
+  background-color: rgba(255, 68, 68, 0.1);
+  border-left: 3px solid #ff4444;
+  box-shadow: 0 2px 8px rgba(255, 68, 68, 0.2);
 }
 
 .conflict-title {
@@ -395,6 +415,13 @@ export default defineComponent({
   font-size: var(--font-size-xs);
   line-height: var(--line-height-xs);
   color: var(--text-muted);
+  margin-top: var(--spacing-xs);
+}
+
+.selection-indicator {
+  font-size: var(--font-size-xs);
+  color: #22c55e;
+  font-weight: var(--font-weight-medium);
   margin-top: var(--spacing-xs);
 }
 </style> 

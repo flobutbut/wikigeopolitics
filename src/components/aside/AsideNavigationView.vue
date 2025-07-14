@@ -137,7 +137,7 @@ import MenuItem from '@/components/common/MenuItem.vue'
 import SectionTitle from '@/components/common/SectionTitle.vue'
 import ReturnButton from '@/components/navigation/ReturnButton.vue'
 import { useAsideStore } from '@/stores/asideStore'
-import { useCountrySelectionStore } from '@/stores/countrySelectionStore'
+import { useSelectionSystem } from '@/stores/selectionSystem'
 
 export default defineComponent({
   name: 'AsideNavigationView',
@@ -150,16 +150,16 @@ export default defineComponent({
   
   setup() {
     const asideStore = useAsideStore()
-    const countryStore = useCountrySelectionStore()
+    const selectionSystem = useSelectionSystem()
     
     // Vue actuelle
     const currentView = computed(() => asideStore.currentView)
     
-    // Getters pour les sélections
-    const isCountrySelected = (countryId) => asideStore.isCountrySelected(countryId)
-    const isOrganizationSelected = (orgId) => asideStore.isOrganizationSelected(orgId)
-    const isPoliticalRegimeSelected = (regimeId) => asideStore.isPoliticalRegimeSelected(regimeId)
-    const isArmedConflictSelected = (conflictId) => asideStore.isArmedConflictSelected(conflictId)
+    // Getters pour les sélections - utiliser le nouveau système
+    const isCountrySelected = (countryId) => selectionSystem.isCountrySelected(countryId)
+    const isOrganizationSelected = (orgId) => selectionSystem.selectedOrganization === orgId
+    const isPoliticalRegimeSelected = (regimeId) => selectionSystem.selectedRegime === regimeId
+    const isArmedConflictSelected = (conflictId) => selectionSystem.isConflictSelected(conflictId)
     
     // Éléments filtrés
     const filteredItems = computed(() => {
@@ -291,7 +291,11 @@ export default defineComponent({
     ]
     
     // Méthodes de navigation
-    const returnToPreviousView = () => {
+    const returnToPreviousView = async () => {
+      // Si on retourne à la racine (pas de vue précédente), reset le système de sélection
+      if (!asideStore.currentView?.previousView) {
+        await selectionSystem.returnToRoot()
+      }
       asideStore.returnToPreviousView()
     }
     
@@ -301,23 +305,22 @@ export default defineComponent({
     
     const selectCountry = async (id) => {
       console.log('🏳️ Country selected in AsideNavigationView:', id)
-      // Utiliser UNIQUEMENT la méthode centralisée d'asideStore
-      await asideStore.selectCountry(id)
+      await selectionSystem.selectCountry(id, 'aside')
     }
     
-    const selectOrganization = (id) => {
-      console.log('Organization selected in AsideNavigationView:', id)
-      asideStore.selectOrganization(id)
+    const selectOrganization = async (id) => {
+      console.log('🏢 Organization selected in AsideNavigationView:', id)
+      await selectionSystem.selectEntity('organization', id, 'aside')
     }
     
-    const selectPoliticalRegime = (id) => {
-      console.log('Political regime selected in AsideNavigationView:', id)
-      asideStore.selectPoliticalRegime(id)
+    const selectPoliticalRegime = async (id) => {
+      console.log('⚖️ Political regime selected in AsideNavigationView:', id)
+      await selectionSystem.selectEntity('regime', id, 'aside')
     }
 
-    const selectArmedConflict = (id) => {
+    const selectArmedConflict = async (id) => {
       console.log('🎯 Armed conflict selected in AsideNavigationView:', id)
-      asideStore.selectArmedConflict(id)
+      await selectionSystem.selectConflict(id, 'aside')
     }
     
     return {

@@ -281,6 +281,23 @@ export const useMapStore = defineStore('map', {
     // Définir le mode d'affichage des pays
     setCountryDisplayMode(mode: 'all' | 'selected' | 'none') {
       this.countryDisplayMode = mode
+    },
+    
+    // Définir les pays sélectionnés (remplace la méthode selectMultipleCountries)
+    setSelectedCountries(countryIds: string[]) {
+      this.selectedCountries = [...countryIds]
+    },
+    
+    // Ajouter un pays à la sélection (utilise la méthode existante toggleCountrySelection)
+    addSelectedCountry(countryId: string) {
+      if (!this.selectedCountries.includes(countryId)) {
+        this.selectedCountries.push(countryId)
+      }
+    },
+    
+    // Retirer un pays de la sélection
+    removeSelectedCountry(countryId: string) {
+      this.selectedCountries = this.selectedCountries.filter(id => id !== countryId)
     }
   }
 }) 

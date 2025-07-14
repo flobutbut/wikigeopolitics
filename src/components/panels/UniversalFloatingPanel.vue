@@ -1,6 +1,6 @@
 <template>
   <GenericFloatingPanel
-    v-if="asideStore.currentDetailData && asideStore.currentEntityType"
+    v-if="asideStore.currentDetailData && asideStore.currentEntityType && selectionSystem.floatingPanelOpen"
     :entity-data="asideStore.currentDetailData"
     :entity-type="asideStore.currentEntityType"
     :entity-icon="getEntityIcon(asideStore.currentEntityType)"
@@ -47,6 +47,7 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { useAsideStore } from '@/stores/asideStore'
+import { useSelectionSystem } from '@/stores/selectionSystem'
 import GenericFloatingPanel from './GenericFloatingPanel.vue'
 import FloatingDetailView from './FloatingDetailView.vue'
 import ConflictDetailView from './details/ConflictDetailView.vue'
@@ -152,16 +153,9 @@ interface ResourceData {
 }
 
 const asideStore = useAsideStore()
+const selectionSystem = useSelectionSystem()
 
-// Watcher pour déboguer les changements d'entité
-watch([() => asideStore.currentDetailData, () => asideStore.currentEntityType], ([newData, newType], [oldData, oldType]) => {
-  console.log('🔄 Entity data changed:', {
-    newType,
-    oldType,
-    newData: newData?.title,
-    oldData: oldData?.title
-  })
-}, { immediate: true })
+
 
 // Fonctions utilitaires pour les icônes et métadonnées
 const getEntityIcon = (entityType: string) => {
@@ -195,10 +189,11 @@ const getEntityIconTitle = (entityType: string) => {
 
 // Gestion des événements
 const handleTabChange = (tabId: string) => {
-  console.log('Tab changed:', tabId)
+  // Tab changed
 }
 
-const closePanel = () => {
+const closePanel = async () => {
+  await selectionSystem.closeFloatingPanel()
   asideStore.clearCurrentEntity()
 }
 </script>

@@ -225,6 +225,9 @@ export const useAsideStore = defineStore('aside', {
     selectedPoliticalRegimeId: null as string | null,
     selectedArmedConflictId: null as string | null,
     
+    // Pays impliqués dans le conflit actuellement sélectionné
+    conflictCountries: [] as Array<{ id: string; nom: string; flag?: string }>,
+    
     // Cache des données
     dataCache: {} as Record<string, any>,
     
@@ -458,6 +461,9 @@ export const useAsideStore = defineStore('aside', {
     
     // Charger les données d'un pays à la demande depuis la base de données
     async loadCountryData(id: string) {
+      // Définir le type d'entité en premier pour éviter les problèmes de timing
+      this.currentEntityType = 'country'
+      
       // Vérifier si les données sont déjà en cache
       if (this.dataCache[`country-${id}`]) {
         this.currentDetailData = this.dataCache[`country-${id}`]
@@ -823,6 +829,29 @@ export const useAsideStore = defineStore('aside', {
       
       // NE PAS changer la vue actuelle - l'utilisateur reste sur la vue active
       // Les données sont disponibles dans currentDetailData pour le panneau flottant
+    },
+
+    // Sélection d'un pays en préservant le conflit sélectionné
+    async selectCountryWithinConflict(countryId: string) {
+      console.log('🎯 Sélection pays dans contexte conflit:', countryId)
+      
+      // Sauvegarder le conflit actuellement sélectionné
+      const currentConflictId = this.selectedArmedConflictId
+      
+      if (!currentConflictId) {
+        console.warn('⚠️ Aucun conflit sélectionné, utilisation de la sélection normale')
+        return this.selectCountry(countryId)
+      }
+      
+      // Mettre à jour seulement la sélection du pays
+      this.selectedCountryId = countryId
+      // Garder les autres sélections intactes, notamment le conflit
+      // this.selectedArmedConflictId reste inchangé
+      
+      // Charger les données du pays
+      await this.loadCountryData(countryId)
+      
+      console.log('✅ Sélection pays contextuelle terminée:', countryId, 'conflit préservé:', currentConflictId)
     },
 
     // Méthode pour nettoyer toutes les sélections et couches
