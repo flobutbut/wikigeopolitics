@@ -3,7 +3,7 @@ import { useMapStore } from './mapStore'
 import { useAsideStore } from './asideStore'
 
 // Types pour le système de sélection unifié
-export type EntityType = 'country' | 'conflict' | 'organization' | 'regime' | 'resource'
+export type EntityType = 'country' | 'conflict' | 'conflict-epicenter' | 'organization' | 'regime' | 'resource'
 
 export interface SelectionState {
   type: 'initial' | 'country' | 'conflict' | 'country_conflict' | 'organization' | 'regime'
@@ -206,7 +206,7 @@ export const useSelectionSystem = defineStore('selectionSystem', {
     /**
      * UC6, UC7 - Sélection d'un conflit
      */
-    async selectConflict(conflictId: string, source: 'aside' | 'panel' = 'aside') {
+    async selectConflict(conflictId: string, source: 'aside' | 'panel' | 'map' = 'aside') {
       console.log(`[SelectionSystem] ⚔️ Sélection conflit ${conflictId} depuis ${source}`)
       
       // Sauvegarder l'état actuel
@@ -224,10 +224,15 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       this.selectedOrganization = null
       this.selectedRegime = null
       
-      this.floatingPanelOpen = source === 'panel'
+      this.floatingPanelOpen = true
       this.floatingPanelType = source === 'panel' ? 'country' : 'conflict'
       
       this.conflictZonesVisible = true
+      
+      // Garder les marqueurs d'épicentres visibles lors de la sélection d'un conflit
+      const { useMapStore } = await import('@/stores/mapStore')
+      const mapStore = useMapStore()
+      // On garde les épicentres visibles pour permettre la sélection d'autres conflits
       
       // Charger les pays du conflit
       const { armedConflictAPI } = await import('@/services/api/armedConflictAPI')
@@ -243,14 +248,72 @@ export const useSelectionSystem = defineStore('selectionSystem', {
         this.visibleCountries = []
       }
       
-      // Charger les données du conflit si nécessaire
+      // Charger les données du conflit
+      const asideStore = useAsideStore()
       if (source === 'aside') {
-        const asideStore = useAsideStore()
         await asideStore.selectArmedConflict(conflictId)
+      } else if (source === 'map') {
+        // Pour les sélections depuis la map, charger les données du conflit pour le floating panel
+        await asideStore.loadConflictData(conflictId)
+        
+        // Mettre à jour le mode d'affichage des pays
+        const { useMapStore } = await import('@/stores/mapStore')
+        const mapStore = useMapStore()
+        mapStore.setCountryDisplayMode('selected')
       }
       
       // Synchroniser avec les autres stores
       await this.syncWithStores()
+    },
+
+    /**
+     * Retour au menu conflits armés
+     */
+    async returnToConflictMenu() {
+      console.log('[SelectionSystem] 🔄 Retour au menu conflits armés')
+      
+      // Sauvegarder l'état actuel
+      this.saveCurrentState()
+      
+      // Réinitialiser toutes les sélections
+      this.type = 'initial'
+      this.selectedCountry = null
+      this.selectedConflict = null
+      this.selectedOrganization = null
+      this.selectedRegime = null
+      
+      this.floatingPanelOpen = false
+      this.floatingPanelType = null
+      
+      this.visibleCountries = []
+      this.highlightedCountries = []
+      this.conflictZonesVisible = false
+      
+      // Reset du contexte parent
+      this.parentContext = {
+        type: 'initial',
+        id: null
+      }
+      
+      // Configurer l'affichage pour le menu conflits
+      const { useMapStore } = await import('@/stores/mapStore')
+      const mapStore = useMapStore()
+      mapStore.setCountryDisplayMode('none')
+      mapStore.clearSelectedCountries()
+      mapStore.visibleLayers.conflictEpicenters = true
+      mapStore.visibleLayers.armedConflicts = false
+      
+      // S'assurer que les marqueurs d'épicentres sont présents et rechargés
+      if (mapStore.conflictEpicenterMarkers.length === 0) {
+        await mapStore.loadConflictEpicenters()
+      } else {
+        // Forcer le rafraîchissement en réactivant la couche
+        mapStore.visibleLayers.conflictEpicenters = false
+        await new Promise(resolve => setTimeout(resolve, 10))
+        mapStore.visibleLayers.conflictEpicenters = true
+      }
+      
+      // Pas besoin d'appeler syncWithStores() car on configure directement mapStore
     },
 
     /**
@@ -267,12 +330,26 @@ export const useSelectionSystem = defineStore('selectionSystem', {
         const isInConflictMenu = asideStore.currentView?.type === 'armedConflictsList'
         
         if (isInConflictMenu) {
-          // Garder le contexte conflit mais désélectionner le pays
-          this.type = 'conflict'
-          this.selectedCountry = null
-          this.highlightedCountries = this.visibleCountries
+          // Retour au menu conflits (désélectionner le conflit et le pays)
+          console.log('[SelectionSystem] 🔄 closeFloatingPanel: Désélection contextuelle - retour au menu conflits')
+          await this.returnToConflictMenu()
+          return // returnToConflictMenu() configure déjà mapStore
         } else {
           // Retour à l'état initial car le conflit venait de la fiche d'un pays
+          await this.resetToInitial()
+          return // resetToInitial() appelle déjà syncWithStores()
+        }
+      } else if (this.type === 'conflict' && this.selectedConflict) {
+        // Vérifier si on est dans le menu conflits
+        const asideStore = useAsideStore()
+        const isInConflictMenu = asideStore.currentView?.type === 'armedConflictsList'
+        
+        if (isInConflictMenu) {
+          // Retour au menu conflits (désélectionner le conflit)
+          await this.returnToConflictMenu()
+          return // returnToConflictMenu() appelle déjà syncWithStores()
+        } else {
+          // Retour à l'état initial dans les autres cas
           await this.resetToInitial()
           return // resetToInitial() appelle déjà syncWithStores()
         }
@@ -371,12 +448,26 @@ export const useSelectionSystem = defineStore('selectionSystem', {
         const isInConflictMenu = asideStore.currentView?.type === 'armedConflictsList'
         
         if (isInConflictMenu) {
-          // Garder le contexte conflit mais désélectionner le pays
-          this.type = 'conflict'
-          this.selectedCountry = null
-          this.highlightedCountries = this.visibleCountries
+          // Retour au menu conflits (désélectionner le conflit et le pays)
+          console.log('[SelectionSystem] 🔄 deselectOnMapClick: Désélection contextuelle - retour au menu conflits')
+          await this.returnToConflictMenu()
+          return // returnToConflictMenu() configure déjà mapStore
         } else {
           // Retour à l'état initial car le conflit venait de la fiche d'un pays
+          await this.resetToInitial()
+          return // resetToInitial() appelle déjà syncWithStores()
+        }
+      } else if (this.type === 'conflict' && this.selectedConflict) {
+        // Vérifier si on est dans le menu conflits
+        const asideStore = useAsideStore()
+        const isInConflictMenu = asideStore.currentView?.type === 'armedConflictsList'
+        
+        if (isInConflictMenu) {
+          // Retour au menu conflits (désélectionner le conflit)
+          await this.returnToConflictMenu()
+          return // returnToConflictMenu() appelle déjà syncWithStores()
+        } else {
+          // Retour à l'état initial dans les autres cas
           await this.resetToInitial()
           return // resetToInitial() appelle déjà syncWithStores()
         }
@@ -501,11 +592,22 @@ export const useSelectionSystem = defineStore('selectionSystem', {
      */
     async syncWithStores() {
       const mapStore = useMapStore()
+      const asideStore = useAsideStore()
       
       // Synchroniser l'affichage des pays sur la carte
       if (this.type === 'initial') {
-        mapStore.setCountryDisplayMode('all')
-        mapStore.clearSelectedCountries()
+        // Vérifier si on est dans le menu conflits
+        const isInConflictMenu = asideStore.currentView?.type === 'armedConflictsList'
+        
+        if (isInConflictMenu) {
+          // Dans le menu conflits : masquer les pays
+          mapStore.setCountryDisplayMode('none')
+          mapStore.clearSelectedCountries()
+        } else {
+          // Sinon : afficher tous les pays
+          mapStore.setCountryDisplayMode('all')
+          mapStore.clearSelectedCountries()
+        }
       } else {
         mapStore.setCountryDisplayMode('selected')
         mapStore.setSelectedCountries(this.visibleCountries)
@@ -588,7 +690,10 @@ export const useSelectionSystem = defineStore('selectionSystem', {
         case 'country':
           return this.selectCountry(id, source as 'map' | 'aside')
         case 'conflict':
-          return this.selectConflict(id, source as 'aside' | 'panel')
+          return this.selectConflict(id, source as 'aside' | 'panel' | 'map')
+        case 'conflict-epicenter':
+          // Pour les épicentres, sélectionner le conflit parent
+          return this.selectConflict(id, source as 'aside' | 'panel' | 'map')
         case 'organization':
           return this.selectOrganization(id, source as 'aside' | 'panel')
         case 'regime':

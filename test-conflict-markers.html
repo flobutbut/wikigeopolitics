@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Marqueurs Conflits</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Test des Marqueurs de Conflits Armés</h1>
+    
+    <div class="test-section">
+        <h2>1. Test de l'API des conflits armés</h2>
+        <div id="api-test"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Test des épicentres</h2>
+        <div id="epicenter-test"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Instructions de test</h2>
+        <ol>
+            <li>Ouvrez l'application à <a href="http://localhost:5173" target="_blank">http://localhost:5173</a></li>
+            <li>Naviguez vers le menu "Conflits armés"</li>
+            <li>Vérifiez que des marqueurs ⚡️ apparaissent sur la carte aux positions des épicentres</li>
+            <li>Cliquez sur un marqueur pour voir les détails du conflit</li>
+        </ol>
+    </div>
+
+    <script>
+        // Test de l'API
+        async function testAPI() {
+            const apiTestDiv = document.getElementById('api-test');
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/armed-conflicts');
+                const conflicts = await response.json();
+                
+                const conflictsWithEpicenter = conflicts.filter(c => c.epicenter);
+                
+                apiTestDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✅ API fonctionne correctement</h3>
+                        <p>Nombre total de conflits: ${conflicts.length}</p>
+                        <p>Conflits avec épicentre: ${conflictsWithEpicenter.length}</p>
+                        <h4>Exemples de conflits avec épicentre:</h4>
+                        <pre>${JSON.stringify(conflictsWithEpicenter.slice(0, 3), null, 2)}</pre>
+                    </div>
+                `;
+                
+                // Test des épicentres
+                testEpicenters(conflictsWithEpicenter);
+                
+            } catch (error) {
+                apiTestDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Erreur API</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function testEpicenters(conflicts) {
+            const epicenterTestDiv = document.getElementById('epicenter-test');
+            
+            const validEpicenters = conflicts.filter(c => 
+                c.epicenter && 
+                Array.isArray(c.epicenter) && 
+                c.epicenter.length === 2 &&
+                typeof c.epicenter[0] === 'number' &&
+                typeof c.epicenter[1] === 'number'
+            );
+            
+            epicenterTestDiv.innerHTML = `
+                <div class="success">
+                    <h3>✅ Épicentres valides</h3>
+                    <p>Nombre d'épicentres valides: ${validEpicenters.length}</p>
+                    <h4>Coordonnées des épicentres:</h4>
+                    <ul>
+                        ${validEpicenters.map(c => 
+                            `<li><strong>${c.name}</strong>: [${c.epicenter[0]}, ${c.epicenter[1]}]</li>`
+                        ).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+        
+        // Lancer les tests
+        testAPI();
+    </script>
+</body>
+</html> 

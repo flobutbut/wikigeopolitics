@@ -1,6 +1,8 @@
 import { ref, watch, onUnmounted } from 'vue'
 import L from 'leaflet'
 import { useSelectionSystem, type EntityType } from '@/stores/selectionSystem'
+import { useMapStore } from '@/stores/mapStore'
+import { useAsideStore } from '@/stores/asideStore'
 
 export interface MarkerData {
   id: string
@@ -27,6 +29,8 @@ export interface UnifiedMarker {
  */
 export function useUnifiedMarkers(map: L.Map | null) {
   const selectionSystem = useSelectionSystem()
+  const mapStore = useMapStore()
+  const asideStore = useAsideStore()
   
   // État interne
   const markers = ref<Map<string, UnifiedMarker>>(new Map())
@@ -104,6 +108,7 @@ export function useUnifiedMarkers(map: L.Map | null) {
     switch (type) {
       case 'country': return '🏳️'
       case 'conflict': return '💥'
+      case 'conflict-epicenter': return '⚡️'
       case 'organization': return '🏢'
       case 'regime': return '⚖️'
       case 'resource': return '💎'
@@ -196,9 +201,16 @@ export function useUnifiedMarkers(map: L.Map | null) {
     
     // État de visibilité : selon le contexte (régime, organisation, conflit, etc.)
     const isVisible = type === 'country' 
-      ? selectionSystem.shouldShowCountry(id)
+      ? (mapStore.countryDisplayMode === 'none' ? false : 
+         mapStore.countryDisplayMode === 'all' ? true : 
+         selectionSystem.shouldShowCountry(id))
       : type === 'conflict' 
       ? selectionSystem.conflictZonesVisible
+      : type === 'conflict-epicenter'
+      ? (mapStore.visibleLayers.conflictEpicenters && 
+         (asideStore.currentView?.type === 'armedConflictsList' ||
+          selectionSystem.type === 'initial' || 
+          selectionSystem.type === 'conflict'))
       : true
     
     return { isSelected, isHighlighted, isVisible }
@@ -240,7 +252,15 @@ export function useUnifiedMarkers(map: L.Map | null) {
    */
   const handleMarkerClick = async (markerData: MarkerData) => {
     try {
-      await selectionSystem.selectEntity(markerData.type, markerData.id, 'map')
+      if (markerData.type === 'conflict' && markerData.data && markerData.data.conflict_id) {
+        // Pour les zones de combat, utiliser l'ID du conflit parent
+        await selectionSystem.selectEntity('conflict', String(markerData.data.conflict_id), 'map')
+      } else if (markerData.type === 'conflict-epicenter' && markerData.data && markerData.data.id) {
+        // Pour les épicentres de conflits, utiliser l'ID du conflit parent
+        await selectionSystem.selectEntity('conflict-epicenter', String(markerData.data.id), 'map')
+      } else {
+        await selectionSystem.selectEntity(markerData.type, markerData.id, 'map')
+      }
     } catch (error) {
       console.error('[UnifiedMarkers] Erreur lors de la sélection:', error)
     }
@@ -252,6 +272,7 @@ export function useUnifiedMarkers(map: L.Map | null) {
   const getZIndexForType = (type: EntityType): number => {
     switch (type) {
       case 'conflict': return 1500
+      case 'conflict-epicenter': return 1600
       case 'country': return 1000
       case 'organization': return 800
       case 'regime': return 700
@@ -301,6 +322,37 @@ export function useUnifiedMarkers(map: L.Map | null) {
   const refreshAllMarkers = () => {
     markers.value.forEach((unifiedMarker) => {
       updateMarkerAppearance(unifiedMarker)
+    })
+  }
+  
+  /**
+   * Synchroniser les marqueurs d'épicentres depuis mapStore
+   */
+  const syncConflictEpicenters = () => {
+    console.log('[UnifiedMarkers] 🔄 Synchronisation des épicentres')
+    console.log('[UnifiedMarkers] visibleLayers.conflictEpicenters:', mapStore.visibleLayers.conflictEpicenters)
+    console.log('[UnifiedMarkers] conflictEpicenterMarkers count:', mapStore.conflictEpicenterMarkers.length)
+    
+    if (!mapStore.visibleLayers.conflictEpicenters) {
+      // Supprimer tous les marqueurs d'épicentres existants
+      const epicenterMarkers = Array.from(markers.value.keys()).filter(id => id.startsWith('conflict-epicenter-'))
+      console.log('[UnifiedMarkers] Suppression de', epicenterMarkers.length, 'marqueurs d\'épicentres')
+      epicenterMarkers.forEach(id => removeMarker(id))
+      return
+    }
+    
+    // Ajouter/mettre à jour les marqueurs d'épicentres
+    console.log('[UnifiedMarkers] Ajout/mise à jour des marqueurs d\'épicentres')
+    mapStore.conflictEpicenterMarkers.forEach(epicenterData => {
+      const markerData: MarkerData = {
+        id: epicenterData.id,
+        type: epicenterData.type,
+        coordinates: epicenterData.coordinates,
+        icon: epicenterData.icon,
+        name: epicenterData.name,
+        data: epicenterData.data
+      }
+      createOrUpdateMarker(markerData)
     })
   }
   
@@ -355,6 +407,37 @@ export function useUnifiedMarkers(map: L.Map | null) {
     }
   }, { deep: true })
   
+  // Surveiller les changements d'épicentres de conflits
+  watch(() => mapStore.conflictEpicenterMarkers, () => {
+    syncConflictEpicenters()
+  }, { deep: true })
+  
+  // Surveiller la visibilité des épicentres
+  watch(() => mapStore.visibleLayers.conflictEpicenters, () => {
+    syncConflictEpicenters()
+  })
+  
+  // Surveiller le mode d'affichage des pays
+  watch(() => mapStore.countryDisplayMode, () => {
+    if (isInitialized.value) {
+      refreshAllMarkers()
+    }
+  })
+  
+  // Surveiller les changements de vue de l'aside
+  watch(() => asideStore.currentView?.type, () => {
+    if (isInitialized.value) {
+      refreshAllMarkers()
+    }
+  })
+  
+  // Surveiller les changements de type de sélection pour les épicentres
+  watch(() => selectionSystem.type, () => {
+    if (isInitialized.value) {
+      syncConflictEpicenters()
+    }
+  })
+  
   // Nettoyage lors de la destruction
   onUnmounted(() => {
     clearAllMarkers()
@@ -371,6 +454,7 @@ export function useUnifiedMarkers(map: L.Map | null) {
     clearAllMarkers,
     refreshAllMarkers,
     initializeMarkers,
+    syncConflictEpicenters,
     
     // Utilitaires
     validateCoordinates,

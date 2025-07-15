@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "sources_donnees_geopolitiques.md",
+                "file": "synthese_indice_geopolitique.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "sources_donnees_geopolitiques"
+              "title": "synthese_indice_geopolitique"
             }
           }
         ]
@@ -170,6 +170,7 @@
   },
   "active": "83ef058ecfffcddd",
   "lastOpenFiles": [
+    "sources_donnees_geopolitiques.md",
     "indice_protectionnisme.md",
     "indices_geopolitiques.md",
     "indice_stabilite_relation_bilaterale.md",
@@ -177,7 +178,6 @@
     "Télécharger indices_geopolitiques.md",
     "Télécharger indice_protectionnisme.md",
     "synthese_indice_geopolitique.md",
-    "sources_donnees_geopolitiques.md",
     "schema_geopolitique_evolutif.md"
   ]
 }

@@ -722,37 +722,25 @@ export const useAsideStore = defineStore('aside', {
       this.searchQuery = ''
 
       try {
-        // Charger la liste des conflits pour l'aside SEULEMENT
+        // Charger la liste des conflits avec leurs épicentres
         const conflicts = await armedConflictApi.getAll()
         this.appData.armedConflictList = conflicts || []
         console.log('✅ Conflits armés chargés:', this.appData.armedConflictList.length)
         
-        // Charger TOUTES les zones de combat et afficher TOUS les pays avec conflit
+        // Charger et afficher les marqueurs d'épicentres sur la carte
         const { useMapStore } = await import('@/stores/mapStore')
         const mapStore = useMapStore()
         
-        // 1. NE PAS charger toutes les zones - elles seront chargées à la sélection d'un conflit
-        // await mapStore.loadArmedConflicts()
-        
-        // 2. Récupérer tous les pays impliqués dans des conflits
-        const allConflictCountries = new Set<string>()
-        for (const conflict of this.appData.armedConflictList) {
-          try {
-            const countries = await armedConflictApi.getCountries(conflict.id)
-            countries.forEach(country => allConflictCountries.add(country.id))
-          } catch (error) {
-            console.warn(`Erreur lors du chargement des pays pour le conflit ${conflict.id}:`, error)
-          }
-        }
-        
-        // 3. Afficher seulement les pays avec conflit
+        // Masquer les marqueurs de pays pour voir les épicentres
         mapStore.clearSelectedCountries()
-        mapStore.selectMultipleCountries(Array.from(allConflictCountries))
-        mapStore.setCountryDisplayMode('selected')
+        mapStore.setCountryDisplayMode('none')
         
+        // Utiliser la nouvelle méthode pour charger les épicentres
+        await mapStore.loadConflictEpicenters()
+        
+        console.log('✅ Navigation vers la liste des conflits armés terminée')
       } catch (error) {
-        console.error('Erreur lors du chargement des conflits armés:', error)
-        this.error = 'Erreur lors du chargement des conflits armés'
+        console.error('❌ Erreur lors de la navigation vers les conflits armés:', error)
       }
     },
     
@@ -780,7 +768,9 @@ export const useAsideStore = defineStore('aside', {
       
       // Désactiver les couches de conflit pour retourner à la vue normale
       mapStore.visibleLayers.armedConflicts = false
+      mapStore.visibleLayers.conflictEpicenters = false
       mapStore.armedConflicts = null
+      mapStore.clearConflictEpicenterMarkers()
       
       // Réinitialiser la recherche
       this.searchQuery = ''

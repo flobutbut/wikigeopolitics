@@ -190,6 +190,22 @@ export default defineComponent({
       }, { immediate: false }
     )
     
+    // Surveiller les épicentres de conflits
+    watch(() => [
+      mapStore.conflictEpicenterMarkers?.length,
+      mapStore.visibleLayers.conflictEpicenters
+    ], 
+      async ([markersCount, isVisible]) => {
+        await nextTick()
+        
+        // Le système unifié synchronise automatiquement les marqueurs d'épicentres
+        // via les watchers dans useUnifiedMarkers
+        if (unifiedMarkers.value) {
+          unifiedMarkers.value.syncConflictEpicenters()
+        }
+      }, { immediate: false }
+    )
+    
     // Surveiller les demandes de zoom
     watch(() => mapStore.targetZoom, (targetZoom) => {
       if (targetZoom && map.value) {
@@ -312,6 +328,30 @@ export default defineComponent({
   background: rgba(255, 68, 68, 1);
   border-width: 3px;
   box-shadow: 0 0 0 3px rgba(255, 68, 68, 0.3);
+  transform: scale(1.1);
+}
+
+/* Styles pour les marqueurs d'épicentres de conflits */
+:deep(.conflict-epicenter-marker) {
+  background: none;
+  border: none;
+  z-index: 1600 !important;
+}
+
+:deep(.conflict-epicenter-marker .marker-content) {
+  width: 40px;
+  height: 40px;
+  font-size: 24px;
+  background: rgba(255, 193, 7, 0.9);
+  border: 2px solid #ff8f00;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.4);
+}
+
+:deep(.conflict-epicenter-marker.selected .marker-content) {
+  background: rgba(255, 193, 7, 1);
+  border-width: 3px;
+  box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.3);
   transform: scale(1.1);
 }
 
