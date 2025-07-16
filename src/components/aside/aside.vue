@@ -50,6 +50,7 @@ onMounted(() => {
   top: var(--header-height);
   height: calc(100vh - var(--header-height));
   background-color: var(--surface-color);
+  border-right: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   width: var(--aside-width);
   /* overflow-y est géré par la directive */

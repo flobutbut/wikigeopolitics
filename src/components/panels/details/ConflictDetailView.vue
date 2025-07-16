@@ -2,20 +2,12 @@
   <div class="conflict-detail-view">
     <!-- Informations principales -->
     <DetailSection
-      :sections="[
-        { title: 'Type de conflit', value: data.type || 'Non spécifié' },
-        { title: 'Statut', value: formatStatus(data.statut) },
-        { title: 'Intensité', value: data.intensite || 'Non spécifiée' },
-        { title: 'Période', value: formatPeriod(data.dateDebut, data.dateFin) }
-      ]"
+      :sections="mainSections"
     />
 
     <!-- Informations géographiques -->
     <DetailSection
-      :sections="[
-        { title: 'Localisation', value: data.localisation || 'Non spécifiée' },
-        { title: 'Zones affectées', value: formatZones(data.zones) }
-      ].filter(section => section.value && section.value !== 'Non spécifiée')"
+      :sections="geoSections"
     />
 
     <!-- Victimes et impact -->
@@ -114,49 +106,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import DetailSection from '@/components/aside/DetailSection.vue'
 import CollapsibleSection from '@/components/aside/CollapsibleSection.vue'
 import { formatDate } from '@/utils/formatUtils'
+import type { ConflictDetailData } from '@/types/conflict'
 
-interface ConflictData {
-  id: string
-  title: string
-  type?: string
-  statut?: string
-  intensite?: string
-  dateDebut?: string
-  dateFin?: string
-  localisation?: string
-  zones?: string[]
-  victimes?: Record<string, any>
-  paysImpliques?: Array<{
-    id: string
-    nom: string
-    flag?: string
-    role?: string
-    dateEntree?: string
-  }>
-  timeline?: Array<{
-    id: string
-    date: string
-    titre: string
-    description?: string
-  }>
-  effortsPaix?: Array<{
-    id: string
-    type: string
-    description: string
-    date?: string
-  }>
-  consequences?: Array<{
-    type: string
-    description: string
-  }>
-}
-
-defineProps<{
-  data: ConflictData
+const props = defineProps<{
+  data: ConflictDetailData
 }>()
 
 // États des sections collapsibles
@@ -165,6 +122,20 @@ const countriesExpanded = ref(true)
 const timelineExpanded = ref(false)
 const peaceExpanded = ref(false)
 const consequencesExpanded = ref(false)
+
+// Computed pour les sections principales
+const mainSections = computed(() => [
+  { title: 'Type de conflit', value: props.data.type || 'Non spécifié' },
+  { title: 'Statut', value: formatStatus(props.data.statut) },
+  { title: 'Intensité', value: props.data.intensite || 'Non spécifiée' },
+  { title: 'Période', value: formatPeriod(props.data.dateDebut, props.data.dateFin) }
+].filter(section => section.value && section.value !== 'Non spécifié'))
+
+// Computed pour les sections géographiques
+const geoSections = computed(() => [
+  { title: 'Localisation', value: props.data.localisation || 'Non spécifiée' },
+  { title: 'Zones affectées', value: formatZones(props.data.zones) }
+].filter(section => section.value && section.value !== 'Non spécifiée'))
 
 // Fonctions de toggle
 const toggleVictims = () => { victimsExpanded.value = !victimsExpanded.value }
@@ -193,7 +164,7 @@ const formatPeriod = (startDate?: string, endDate?: string) => {
 }
 
 const formatZones = (zones?: string[]) => {
-  if (!zones || zones.length === 0) return undefined
+  if (!zones || zones.length === 0) return 'Non spécifiée'
   return zones.join(', ')
 }
 
@@ -220,13 +191,13 @@ const formatVictimValue = (value: any) => {
 .conflict-detail-view {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
 }
 
 .victims-info {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
 }
 
 .victim-stat {
@@ -288,7 +259,7 @@ const formatVictimValue = (value: any) => {
 .timeline {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
 }
 
 .timeline-event {
@@ -317,7 +288,7 @@ const formatVictimValue = (value: any) => {
 .peace-efforts, .consequences {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
 }
 
 .peace-effort, .consequence-item {

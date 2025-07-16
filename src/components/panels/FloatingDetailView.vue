@@ -75,37 +75,13 @@
         </CollapsibleSection>
 
         <!-- Conflits armés -->
-        <CollapsibleSection
-          title="Conflits armés"
+        <ConflictsSection
+          :conflicts="detailData.conflitsArmes || []"
           :expanded="conflictsExpanded"
+          :is-conflict-selected="isConflictSelected"
           @toggle="toggleConflicts"
-        >
-          <div class="conflicts-list">
-            <div 
-              v-for="conflict in detailData.conflitsArmes" 
-              :key="conflict.id" 
-              class="conflict-item"
-              :class="{ 'selected': isConflictSelected(conflict.id) }"
-              @click="selectConflict(conflict.id)"
-            >
-              <div class="conflict-title">{{ conflict.name }}</div>
-              <div v-if="conflict.status" class="conflict-status">{{ conflict.status }}</div>
-              <div v-if="isConflictSelected(conflict.id)" class="selection-indicator">✓ Sélectionné</div>
-              <div v-if="conflict.startDate" class="conflict-date">
-                Début: {{ formatDate(conflict.startDate) }}
-              </div>
-              <div v-if="conflict.endDate" class="conflict-date">
-                Fin: {{ formatDate(conflict.endDate) }}
-              </div>
-              <div v-if="conflict.description" class="conflict-description">
-                {{ conflict.description }}
-              </div>
-            </div>
-            <div v-if="!detailData.conflitsArmes || detailData.conflitsArmes.length === 0" class="no-data">
-              Aucun conflit armé disponible.
-            </div>
-          </div>
-        </CollapsibleSection>
+          @select="selectConflict"
+        />
       </div>
     </div>
   </div>
@@ -117,13 +93,15 @@ import { useAsideStore } from '@/stores/asideStore'
 import { useSelectionSystem } from '@/stores/selectionSystem'
 import CollapsibleSection from '@/components/aside/CollapsibleSection.vue'
 import DetailSection from '@/components/aside/DetailSection.vue'
+import ConflictsSection from '@/components/panels/details/ConflictsSection.vue'
 
 export default defineComponent({
   name: 'FloatingDetailView',
   
   components: {
     CollapsibleSection,
-    DetailSection
+    DetailSection,
+    ConflictsSection
   },
   
   setup() {
@@ -362,66 +340,5 @@ export default defineComponent({
   text-align: center;
 }
 
-/* Styles pour les conflits armés */
-.conflicts-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
 
-.conflict-item {
-  background-color: var(--surface-dimmed);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-sm);
-  margin-bottom: var(--spacing-xs);
-  transition: all var(--transition-speed) var(--transition-function);
-  cursor: pointer;
-  border-left: 3px solid #ff4444;
-  padding: var(--spacing-sm);
-}
-
-.conflict-item:hover {
-  background-color: var(--surface-hover);
-  transform: translateX(2px);
-}
-
-.conflict-item.selected {
-  background-color: rgba(255, 68, 68, 0.1);
-  border-left: 3px solid #ff4444;
-  box-shadow: 0 2px 8px rgba(255, 68, 68, 0.2);
-}
-
-.conflict-title {
-  font-weight: var(--font-weight-medium);
-  color: #d32f2f;
-}
-
-.conflict-status {
-  font-size: var(--font-size-xs);
-  line-height: var(--line-height-xs);
-  color: var(--text-muted);
-  font-weight: var(--font-weight-medium);
-  text-transform: uppercase;
-}
-
-.conflict-date {
-  font-size: var(--font-size-xs);
-  line-height: var(--line-height-xs);
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-.conflict-description {
-  font-size: var(--font-size-xs);
-  line-height: var(--line-height-xs);
-  color: var(--text-muted);
-  margin-top: var(--spacing-xs);
-}
-
-.selection-indicator {
-  font-size: var(--font-size-xs);
-  color: #22c55e;
-  font-weight: var(--font-weight-medium);
-  margin-top: var(--spacing-xs);
-}
 </style> 

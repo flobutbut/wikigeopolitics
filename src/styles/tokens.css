@@ -67,7 +67,8 @@
     
     /* Couleurs de bordure */
     --border-color: var(--color-neutral-300);
-    --border-focus: var(--color-primary-500);
+    --border-hover: var(--color-neutral-500);
+    --border-focus: var(--color-neutral-800);
     
     /* Couleurs d'état */
     --hover-color: var(--color-neutral-200);

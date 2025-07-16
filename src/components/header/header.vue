@@ -86,6 +86,7 @@ export default defineComponent({
   align-items: center;
   padding: 0 var(--spacing-lg);
   background-color: var(--surface-color);
+  border-bottom: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   z-index: 1001;
 }
