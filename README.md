@@ -227,4 +227,4 @@ Un grand merci à tous ceux qui rendent ce projet possible par leurs contributio
 Pour toute question ou suggestion, n'hésitez pas à :
 - Ouvrir une issue sur GitHub
 - Rejoindre notre communauté sur [Discord](https://discord.gg/wikigeopolitics)
-- Suivre l'avancement du projet sur notre [tableau Kanban](https://github.com/orgs/wikigeopolitics/projects)
+- Suivre l'avancement du projet sur notre [tableau Kanban](https://github.com/orgs/wikigeopolitics/projects)# Force Vercel deployment
