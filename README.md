@@ -228,3 +228,4 @@ Pour toute question ou suggestion, n'hésitez pas à :
 - Ouvrir une issue sur GitHub
 - Rejoindre notre communauté sur [Discord](https://discord.gg/wikigeopolitics)
 - Suivre l'avancement du projet sur notre [tableau Kanban](https://github.com/orgs/wikigeopolitics/projects)# Force Vercel deployment
+# Force Vercel to use latest commit with map.vue fix
