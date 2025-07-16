@@ -4,9 +4,6 @@ import App from './App.vue'
 import { useAsideStore } from './stores/asideStore'
 import directives from './directives'
 
-// Import des styles globaux
-import '@styles/global.css'
-
 // Import de Leaflet si nécessaire
 import 'leaflet/dist/leaflet.css'
 
