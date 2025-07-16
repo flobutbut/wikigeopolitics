@@ -36,7 +36,7 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted, watch, computed } from 'vue'
 import AsideNav from '@components/aside/aside.vue'
-import MapComponent from '@components/map/Map.vue'
+import MapComponent from '@components/map/map.vue'
 import HeaderNav from '@components/header/header.vue'
 import UniversalFloatingPanel from '@components/panels/UniversalFloatingPanel.vue'
 import type { LatLng } from 'leaflet'
