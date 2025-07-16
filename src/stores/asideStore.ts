@@ -1128,17 +1128,26 @@ export const useAsideStore = defineStore('aside', {
           mapStore.clearSelectedCountries()
           mapStore.visibleLayers.armedConflicts = false
           mapStore.armedConflicts = null
+          
+          // Si on vient du menu conflits, nettoyer aussi les épicentres
+          if (currentViewType === 'armedConflictsList' || currentViewType.includes('Conflict')) {
+            mapStore.clearConflictEpicenterMarkers()
+            console.log('🧹 Nettoyage des épicentres lors du retour au menu principal depuis les conflits')
+          }
+          
           mapStore.setCountryDisplayMode('all')  // IMPORTANT : remettre l'affichage de tous les pays
           this.currentDetailData = null
           this.clearAllSelections()
           console.log('🚫 Retour au menu principal : tout effacé et affichage de tous les pays restauré')
         } else if (currentViewType === 'armedConflictsList' || currentViewType.includes('Conflict')) {
-          // On sort du menu conflits armés : effacer les zones de combat et déselectionner le conflit
+          // On sort du menu conflits armés : effacer les zones de combat, les épicentres et déselectionner le conflit
+          console.log('🚫 Sortie du menu conflits armés détectée')
           mapStore.visibleLayers.armedConflicts = false
           mapStore.armedConflicts = null  // Forcer la suppression des données
+          mapStore.clearConflictEpicenterMarkers()  // Nettoyer les marqueurs d'épicentres
           this.currentDetailData = null
           this.clearArmedConflictSelection()
-          console.log('🚫 Sortie du menu conflits armés : zones effacées et conflit désélectionné')
+          console.log('🚫 Sortie du menu conflits armés : zones et épicentres effacés, conflit désélectionné')
         } else if (currentViewType === 'countryList' || currentViewType === 'politicalRegimeList' || currentViewType === 'organizationsList') {
           // Sortie d'un autre menu : nettoyer les sélections spécifiques et remettre tous les pays si on retourne au menu principal
           if (this.currentView.type === 'main') {

@@ -300,8 +300,13 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       const mapStore = useMapStore()
       mapStore.setCountryDisplayMode('none')
       mapStore.clearSelectedCountries()
-      mapStore.visibleLayers.conflictEpicenters = true
+      
+      // Nettoyer complètement les marqueurs de conflits/zones de combat
       mapStore.visibleLayers.armedConflicts = false
+      mapStore.armedConflicts = null
+      
+      // Configurer l'affichage des épicentres
+      mapStore.visibleLayers.conflictEpicenters = true
       
       // S'assurer que les marqueurs d'épicentres sont présents et rechargés
       if (mapStore.conflictEpicenterMarkers.length === 0) {

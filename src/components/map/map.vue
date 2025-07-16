@@ -315,9 +315,9 @@ export default defineComponent({
 }
 
 :deep(.conflict-marker .marker-content) {
-  width: 40px;
-  height: 40px;
-  font-size: 24px;
+  width: 30px;
+  height: 30px;
+  font-size: 20px;
   background: rgba(255, 68, 68, 0.9);
   border: 2px solid #d32f2f;
   border-radius: 50%;
@@ -339,9 +339,9 @@ export default defineComponent({
 }
 
 :deep(.conflict-epicenter-marker .marker-content) {
-  width: 40px;
-  height: 40px;
-  font-size: 24px;
+  width: 30px;
+  height: 30px;
+  font-size: 20px;
   background: rgba(255, 193, 7, 0.9);
   border: 2px solid #ff8f00;
   border-radius: 50%;

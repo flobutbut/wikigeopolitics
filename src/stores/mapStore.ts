@@ -370,8 +370,11 @@ export const useMapStore = defineStore('map', {
     
     // Effacer les marqueurs d'épicentres de conflits
     clearConflictEpicenterMarkers() {
-      this.conflictEpicenterMarkers = []
+      console.log('🧹 clearConflictEpicenterMarkers() appelé')
+      console.log('📍 Marqueurs avant nettoyage:', this.conflictEpicenterMarkers.length)
       this.visibleLayers.conflictEpicenters = false
+      this.conflictEpicenterMarkers = []
+      console.log('✅ Marqueurs après nettoyage:', this.conflictEpicenterMarkers.length)
     },
     
     // Forcer l'affichage des marqueurs d'épicentres

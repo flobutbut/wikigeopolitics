@@ -87,7 +87,7 @@ defineExpose({
 }
 
 .explosion-icon {
-  font-size: 24px;
+  font-size: 20px;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
   transition: transform 0.2s ease;
 }
@@ -118,24 +118,24 @@ defineExpose({
 
 /* Styles selon l'intensité */
 .conflict-marker.intensity-very_high .explosion-icon {
-  font-size: 28px;
+  font-size: 20px;
   animation: pulse-intense 1.5s infinite;
   filter: drop-shadow(0 3px 6px rgba(255, 0, 0, 0.6));
 }
 
 .conflict-marker.intensity-high .explosion-icon {
-  font-size: 26px;
+  font-size: 20px;
   animation: pulse 2s infinite;
   filter: drop-shadow(0 2px 5px rgba(255, 100, 0, 0.5));
 }
 
 .conflict-marker.intensity-medium .explosion-icon {
-  font-size: 24px;
+  font-size: 20px;
   filter: drop-shadow(0 2px 4px rgba(255, 150, 0, 0.4));
 }
 
 .conflict-marker.intensity-low .explosion-icon {
-  font-size: 22px;
+  font-size: 20px;
   opacity: 0.8;
   filter: drop-shadow(0 1px 3px rgba(200, 200, 0, 0.3));
 }
