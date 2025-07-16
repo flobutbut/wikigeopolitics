@@ -92,6 +92,7 @@ sh database/scripts/backup-db.sh
 Les scripts utilisent ces valeurs par défaut :
 - **Base de données** : `wikigeopolitics`
 - **Utilisateur** : `wikigeo_user`
+- **Mot de passe** : `wikigeo_password`
 - **Conteneur** : `wikigeopolitics-db`
 - **Dossier backup** : `database/backup`
 - **Max backups** : 10 (automatiquement nettoyés)

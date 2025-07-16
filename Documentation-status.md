@@ -63,6 +63,14 @@
 - ✅ **Gestion d'erreurs** avancée avec notifications
 - ✅ **Index optimisés** pour les nouvelles APIs
 
+#### 🚀 Migration vers Supabase
+- ✅ **Client Supabase** : `@supabase/supabase-js` installé
+- ✅ **Service Supabase** : `supabaseService.ts` créé
+- ✅ **Types Supabase** : Interfaces complètes définies
+- ✅ **Script de migration** : `migrate-to-supabase.sh` automatisé
+- ✅ **Documentation** : Guide complet de migration
+- 🔄 **En attente** : Configuration projet Supabase
+
 ## 🚀 **Fonctionnalités Métier Stables & Nouvelles Fonctionnalités**
 
 ### 🆕 **Nouvelles Fonctionnalités Implémentées (v3.1.0)**

@@ -51,10 +51,11 @@ L'application a subi une **transformation complète** avec une approche modulair
 #### Backend (Optimisé)
 - **Framework** : Node.js avec Express et TypeScript
 - **APIs** : RESTful spécialisées par domaine
-- **Base de données** : PostgreSQL 15 avec PostGIS
+- **Base de données** : PostgreSQL 15 avec PostGIS (Migration vers Supabase en cours)
 - **Architecture** : Services modulaires alignés avec frontend
 - **Cache** : Intelligent avec TTL configurable
 - **Validation** : Schémas TypeScript complets
+- **Supabase** : Client intégré pour migration cloud
 
 #### Infrastructure
 - **Conteneurisation** : Docker & Docker Compose

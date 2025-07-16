@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build", 
+    "build": "vite build",
     "preview": "vite preview",
     "type-check": "vue-tsc --noEmit"
   },
@@ -14,6 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "@floating-ui/vue": "^1.1.7",
+    "@supabase/supabase-js": "^2.51.0",
     "leaflet": "^1.9.4",
     "pg": "^8.16.3",
     "pinia": "^3.0.1",

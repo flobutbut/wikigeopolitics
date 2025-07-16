@@ -28,5 +28,8 @@ export default defineConfig({
       '@styles': path.resolve(__dirname, './src/styles'),
       '@data': path.resolve(__dirname, './src/data')
     }
+  },
+  define: {
+    'import.meta.env': 'import.meta.env'
   }
 })
