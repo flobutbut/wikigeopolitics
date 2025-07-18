@@ -1,60 +1,103 @@
-# WikiGeopolitics V2
+# WikiGeopolitics V3
 
-[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://semver.org)
+[![Version](https://img.shields.io/badge/version-3.1.0-blue.svg)](https://semver.org)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Vue.js](https://img.shields.io/badge/Vue.js-3.x-brightgreen.svg)](https://vuejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://typescriptlang.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-Cloud-green.svg)](https://supabase.com/)
 [![yarn](https://img.shields.io/badge/package%20manager-yarn-2188b6)](https://yarnpkg.com/)
 
-## Table des matières
-- [Description](#description)
-- [Fonctionnalités](#fonctionnalités)
+## 🚀 Mise à jour majeure - Version 3.1.0
 
-- [Technologies utilisées](#technologies-utilisées)
-- [Installation](#installation)
-- [Utilisation](#utilisation)
-- [Structure du projet](#structure-du-projet)
-- [Architecture](#architecture)
-- [Déploiement](#déploiement)
-- [Tests](#tests)
-- [Roadmap](#roadmap)
-- [FAQ](#faq)
-- [Contribution](#contribution)
-- [Licence](#licence)
-- [Remerciements](#remerciements)
-- [Contact](#contact)
+**WikiGeopolitics** vient de subir une **transformation complète** avec :
+- ✅ **Migration Supabase** pour une architecture cloud moderne
+- ✅ **Conflits armés** avec zones de combat géolocalisées  
+- ✅ **Architecture refactorisée** avec stores spécialisés et composables
+- ✅ **Interface unifiée** pour toutes les entités géopolitiques
+- ✅ **Performance optimisée** avec cache intelligent et requêtes asynchrones
+
+## Table des matières
+- [🎯 Description](#description)
+- [✨ Fonctionnalités](#fonctionnalités)
+- [🔧 Technologies utilisées](#technologies-utilisées)
+- [📦 Installation](#installation)
+- [🚀 Utilisation](#utilisation)
+- [📁 Structure du projet](#structure-du-projet)
+- [🏗️ Architecture](#architecture)
+- [📚 Documentation](#documentation)
+- [🌐 Déploiement](#déploiement)
+- [🧪 Tests](#tests)
+- [🗺️ Roadmap](#roadmap)
+- [❓ FAQ](#faq)
+- [🤝 Contribution](#contribution)
+- [📄 Licence](#licence)
+- [🙏 Remerciements](#remerciements)
+- [📧 Contact](#contact)
 
 ## Description
 WikiGeopolitics est une application web interactive permettant d'explorer les données géopolitiques mondiales. Cette plateforme offre une visualisation cartographique des relations internationales, des conflits, et des données économiques et sociales par pays.
 
-## Fonctionnalités
-- **Carte interactive mondiale** avec visualisation des données par pays
-- **Sélection de pays** avec highlight visuel sur la carte
-- **Navigation intuitive** par pays et par région
-- **Chronologie dynamique** des événements géopolitiques majeurs
-- **Recherche avancée** par mots-clés, régions, périodes et thématiques
-- **Mode clair/sombre** pour une utilisation confortable jour et nuit
-- **Interface utilisateur responsive** avec panneau latéral pour les détails
-- **Données en temps réel** sur les relations internationales et conflits
-- **Profils détaillés** des pays avec indicateurs économiques et sociaux
-- **Export de données** au format CSV, PDF et PNG
-- **Partage facile** des visualisations via URL ou réseaux sociaux
+## ✨ Fonctionnalités
 
-## Technologies utilisées
-- **Frontend**:
-  - Vue.js 3 (Composition API)
-  - TypeScript 5.x
-  - Vite comme bundler
-  - Pinia pour la gestion d'état
-  - Vue Router pour la navigation
-  - CSS personnalisé avec variables
-  - Leaflet.js pour les cartes interactives
-  - D3.js pour les visualisations de données
-  - i18n pour l'internationalisation
-- **Outils de développement**:
-  - ESLint et Prettier pour le linting et le formatage
-  - Vitest pour les tests unitaires
-  - Cypress pour les tests e2e
-  - GitHub Actions pour CI/CD
+### 🗺️ Cartographie avancée
+- **Carte interactive mondiale** avec visualisation multi-couches
+- **Marqueurs géolocalisés** pour pays, conflits et organisations
+- **Zones de combat** en temps réel pour les conflits armés
+- **Épicentres de conflits** avec données précises
+- **Contrôles de couches** pour filtrer les informations
+
+### 🎯 Sélection et navigation
+- **Sélection unifiée** entre carte, menus et panneaux
+- **Navigation contextuelle** par entités (pays, conflits, organisations)
+- **Système de retour** intelligent avec historique
+- **Recherche universelle** avec filtrage temps réel
+
+### 📊 Données géopolitiques
+- **195+ pays** avec données complètes (économie, politique, démographie)
+- **Conflits armés actifs** avec zones de combat géolocalisées
+- **Organisations internationales** et leurs pays membres
+- **Régimes politiques** et leurs classifications
+- **Relations diplomatiques** (coalitions, accords, traités)
+
+### 🎨 Interface moderne
+- **Panneaux flottants** adaptatifs pour tous types d'entités
+- **Composants réutilisables** avec design cohérent
+- **Interface responsive** optimisée mobile et desktop
+- **Architecture modulaire** avec stores spécialisés
+
+### ⚡ Performance
+- **Cache intelligent** avec TTL configurable
+- **Chargement asynchrone** avec gestion d'erreurs
+- **Requêtes optimisées** via Supabase
+- **État réactif** avec Pinia et Vue 3
+
+## 🔧 Technologies utilisées
+
+### 🎨 Frontend
+- **Vue.js 3** (Composition API) - Framework réactif moderne
+- **TypeScript 5.x** - Typage statique et sécurité
+- **Vite** - Build tool ultra-rapide
+- **Pinia** - Gestion d'état modulaire et typée
+- **Leaflet.js** - Cartographie interactive
+- **CSS moderne** - Variables, Grid, Flexbox
+
+### ☁️ Backend & Données  
+- **Supabase** - Backend-as-a-Service avec PostgreSQL
+- **PostGIS** - Extensions géospatiales pour données géographiques
+- **Row Level Security** - Sécurité au niveau des données
+- **Real-time subscriptions** - Mises à jour en temps réel
+
+### 🏗️ Architecture
+- **Stores spécialisés** - asideStore, mapStore, selectionSystem, uiStore
+- **Composables réutilisables** - useAsyncState, useSelection, useSearch
+- **Services modulaires** - API unifiée avec gestion d'erreurs
+- **Types TypeScript** - Interface strictement typée
+
+### 🛠️ Outils de développement
+- **ESLint & Prettier** - Qualité et formatage du code
+- **Vitest** - Tests unitaires rapides 
+- **Vue DevTools** - Debug et inspection
+- **Git hooks** - Validation pré-commit
 
 ## Installation
 
@@ -126,19 +169,41 @@ Une fois l'application lancée, vous pouvez :
 
 ## Architecture
 
-L'application suit une architecture modulaire basée sur les principes SOLID :
+L'application suit une **architecture modulaire moderne** basée sur Vue 3 et Supabase :
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│     Vue.js      │    │     Pinia       │    │      APIs       │
-│   Components    │◄───┤    Stores       │◄───┤   & Services    │
+│   Vue 3 + TS    │    │     Pinia       │    │    Supabase     │
+│   Components    │◄───┤  Stores + Cache │◄───┤   PostgreSQL    │
+│   Composables   │    │   Reactive      │    │    PostGIS      │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
         ▲                      ▲                      ▲
         │                      │                      │
-        └──────────────────────┴──────────────────────┘
+        └─────── Unified Selection System ──────────────┘
 ```
 
-Les données circulent de manière unidirectionnelle, ce qui facilite le debugging et améliore les performances.
+**Avantages** :
+- 🔄 **Réactivité** : Synchronisation automatique entre carte et panneaux
+- 🚀 **Performance** : Cache intelligent et requêtes optimisées  
+- 🧩 **Modularité** : Composants et stores spécialisés
+- 🔒 **Sécurité** : Validation TypeScript et RLS Supabase
+
+## 📚 Documentation
+
+### 📖 Guides complets
+- **[Documentation Technique](./Documentation-technique.md)** - Architecture détaillée
+- **[Guide Supabase](./SUPABASE_INTEGRATION.md)** - Migration et intégration cloud
+- **[Guide Composants](./COMPONENTS_GUIDE.md)** - Utilisation des composants Vue
+- **[Guide Stores](./STORES_GUIDE.md)** - Gestion d'état avec Pinia
+
+### 🗃️ Documentation fonctionnelle  
+- **[Documentation Fonctionnelle](./Documentation-fonctionnelle.md)** - Spécifications métier
+- **[Statut Documentation](./Documentation-status.md)** - État d'avancement
+- **[Schéma BDD](./Documentation-schema-bdd.md)** - Structure de données
+
+### 🛠️ Ressources développeur
+- **[Migration Supabase](./MIGRATION_SUPABASE.md)** - Guide de migration
+- **[Structure Database](./database/STRUCTURE.md)** - Architecture de données
 
 ## Déploiement
 
@@ -169,12 +234,32 @@ Pour exécuter les tests end-to-end :
 yarn test:e2e
 ```
 
-## Roadmap
+## 🗺️ Roadmap
 
-- **Q2 2025** : Ajout de comparaisons côte-à-côte entre pays
-- **Q3 2025** : Intégration de données historiques supplémentaires (avant 1950)
-- **Q4 2025** : Version mobile native avec React Native
-- **Q1 2026** : Intégration d'intelligence artificielle pour l'analyse prédictive
+### ✅ Version 3.1.0 (Juillet 2025) - COMPLÈTE
+- ✅ Migration Supabase complète
+- ✅ Conflits armés avec zones de combat
+- ✅ Architecture refactorisée avec stores spécialisés
+- ✅ Interface unifiée pour toutes les entités
+- ✅ Documentation complète mise à jour
+
+### 🔄 Version 3.2.0 (Q3 2025) - EN COURS
+- 🔄 Authentification utilisateur avec Supabase Auth
+- 🔄 Mode collaboratif avec annotations partagées
+- 🔄 API publique pour développeurs tiers
+- 📋 Notifications temps réel sur les événements géopolitiques
+
+### 📋 Version 3.3.0 (Q4 2025) - PLANIFIÉ
+- 📋 Intelligence artificielle pour l'analyse prédictive
+- 📋 Comparaisons côte-à-côte entre pays
+- 📋 Export avancé (PDF, datasets, API)
+- 📋 Mode offline avec Service Workers
+
+### 🚀 Version 4.0.0 (Q1 2026) - VISION
+- 🚀 Application mobile native (React Native)
+- 🚀 Réalité augmentée pour la visualisation 3D
+- 🚀 Intégration IoT pour données temps réel
+- 🚀 Marketplace de plugins communautaires
 
 ## FAQ
 
@@ -226,6 +311,13 @@ Un grand merci à tous ceux qui rendent ce projet possible par leurs contributio
 
 Pour toute question ou suggestion, n'hésitez pas à :
 - Ouvrir une issue sur GitHub
-- Rejoindre notre communauté sur [Discord](https://discord.gg/wikigeopolitics)
-- Suivre l'avancement du projet sur notre [tableau Kanban](https://github.com/orgs/wikigeopolitics/projects)# Force Vercel deployment
-# Force Vercel to use latest commit with map.vue fix
+- Rejoindre notre communauté sur [Discord](https://discord.gg/wikigeopolitics)  
+- Suivre l'avancement du projet sur notre [tableau Kanban](https://github.com/orgs/wikigeopolitics/projects)
+
+---
+
+## 🎉 WikiGeopolitics V3.1.0 - Transformation réussie !
+
+L'application a été **entièrement modernisée** avec une architecture cloud, des fonctionnalités avancées et une expérience utilisateur optimale. 
+
+**Prochaine étape** : Authentification utilisateur et mode collaboratif pour une expérience encore plus riche ! 🚀

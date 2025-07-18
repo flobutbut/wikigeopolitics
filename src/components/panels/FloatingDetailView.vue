@@ -291,7 +291,6 @@ export default defineComponent({
     // Sélectionner un conflit
     const selectConflict = async (item: any) => {
       const conflictId = item.id
-      console.log('🔥 Sélection conflit depuis fiche pays:', conflictId)
       await selectionSystem.selectConflict(conflictId, 'panel')
     }
     

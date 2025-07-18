@@ -97,7 +97,6 @@ export const supabaseService = {
       .eq('current_regime', true)
       .single()
     
-    console.log('[supabaseService] 🔍 Données complètes regime:', regimeData)
     
     // Récupérer le chef d'état depuis la table country_political_regime
     const chef_etat = regimeData?.chef_etat || 'Non spécifié'
@@ -368,9 +367,6 @@ export const supabaseService = {
     if (error) throw error
     if (!data) return null
 
-    console.log('[supabaseService] ⚔️ Conflit récupéré:', data)
-    console.log('[supabaseService] 📍 Epicenter raw:', data.epicenter)
-    console.log('[supabaseService] 🏳️ Pays impliqués:', data.involvedcountries)
 
     // Récupérer les pays impliqués avec leurs détails
     const paysImpliques = await this.getCountriesByConflict(id)
@@ -464,8 +460,6 @@ export const supabaseService = {
 
   // Récupérer les pays impliqués dans un conflit
   async getCountriesByConflict(conflictId: string): Promise<Country[]> {
-    console.log('[supabaseService] 🏳️ Récupération des pays pour le conflit:', conflictId)
-    
     // Récupérer les IDs des pays impliqués dans ce conflit
     const { data: countryIds, error: idError } = await supabase
       .from('conflict_country')
@@ -477,16 +471,12 @@ export const supabaseService = {
       throw idError
     }
     
-    console.log('[supabaseService] 📊 IDs des pays trouvés:', countryIds?.length || 0, countryIds)
-    
     if (!countryIds || countryIds.length === 0) {
-      console.log('[supabaseService] ⚠️ Aucun pays trouvé pour le conflit:', conflictId)
       return []
     }
     
     // Récupérer les données des pays
     const countryIdsList = countryIds.map(c => c.countryid)
-    console.log('[supabaseService] 🔍 Recherche des pays avec IDs:', countryIdsList)
     
     const { data: countries, error: countryError } = await supabase
       .from('country')
@@ -499,7 +489,6 @@ export const supabaseService = {
       throw countryError
     }
     
-    console.log('[supabaseService] 🏳️ Pays récupérés:', countries?.length || 0, countries?.map(c => c.nom))
     return countries || []
   },
 
@@ -538,8 +527,6 @@ export const supabaseService = {
 
   // Récupérer les zones de combat d'un conflit spécifique
   async getCombatZonesByConflict(conflictId: string): Promise<any[]> {
-    console.log('[supabaseService] Récupération des zones de combat pour le conflit:', conflictId)
-    
     const { data, error } = await supabase
       .from('armed_conflict_combat_zone')
       .select('*')
@@ -551,7 +538,6 @@ export const supabaseService = {
       throw error
     }
     
-    console.log('[supabaseService] Zones de combat trouvées:', data?.length || 0)
     return data || []
   },
 
@@ -624,7 +610,6 @@ export const supabaseService = {
     if (error) throw error
     if (!data) return null
 
-    console.log('[supabaseService] 🌐 Organisation récupérée:', data)
 
     // Récupérer les pays membres
     const paysMembres = await this.getCountriesByOrganization(id)

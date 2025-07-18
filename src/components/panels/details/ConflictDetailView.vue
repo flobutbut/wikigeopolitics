@@ -174,13 +174,23 @@ const formatZones = (zones?: string[]) => {
 
 const formatIntensity = (basicIntensity?: string, detailedIntensity?: any) => {
   if (detailedIntensity && typeof detailedIntensity === 'object') {
-    // Prendre les données les plus importantes
+    // Prendre les données les plus importantes dans l'ordre de priorité
     if (detailedIntensity.total_casualties_2024) {
       return `${detailedIntensity.total_casualties_2024} victimes (2024)`
+    }
+    if (detailedIntensity.total_casualties) {
+      return detailedIntensity.total_casualties
     }
     if (detailedIntensity.total) {
       return detailedIntensity.total
     }
+    // Si aucun champ total, prendre le plus significatif
+    if (detailedIntensity.displaced) {
+      return `${detailedIntensity.displaced} déplacés`
+    }
+    // Sinon compter les champs disponibles
+    const keys = Object.keys(detailedIntensity)
+    return `${keys.length} indicateurs de victimes`
   }
   return basicIntensity || 'Non spécifiée'
 }
