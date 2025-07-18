@@ -325,7 +325,12 @@ app.get('/api/organizations', async (req, res) => {
   try {
     console.log('[API] Tentative de récupération des organisations...');
     const organizations = await query(
-      'SELECT id, nom as title, type, description FROM organization ORDER BY type, nom'
+      `SELECT o.id, o.nom as title, o.type, o.description, o.acronyme,
+              COUNT(co.countryid)::integer as country_count
+       FROM organization o
+       LEFT JOIN country_organization co ON o.id = co.organizationid
+       GROUP BY o.id, o.nom, o.type, o.description, o.acronyme
+       ORDER BY o.type, o.nom`
     );
     console.log('[API] Organisations récupérées:', organizations.length);
     
@@ -487,7 +492,7 @@ app.get('/api/navigation', async (req, res) => {
 
     // Récupérer les organisations depuis la base de données
     const organizations = await query(
-      'SELECT id, nom as title, type FROM organization ORDER BY nom'
+      'SELECT id, nom as title, type, acronyme FROM organization ORDER BY nom'
     );
 
     const navigationData = {

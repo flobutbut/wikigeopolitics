@@ -97,8 +97,11 @@
             <MenuItem
               v-for="org in organizations"
               :key="org.id"
-              :title="org.title"
+              :title="org.acronyme || org.title"
               :selected="isOrganizationSelected(org.id)"
+              :badge-value="org.country_count"
+              :show-badge="true"
+              badge-variant="secondary"
               @click="selectOrganization(org.id)"
             >
               <template #prepend>
