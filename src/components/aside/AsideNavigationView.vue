@@ -51,7 +51,7 @@
         <!-- Vue avec classification par continent pour la liste générale des pays -->
         <template v-else>
           <div v-for="c in continentOrder" :key="c.key" class="continent-section" v-show="continents[c.key] && continents[c.key].length > 0">
-            <SectionTitle level="2" size="default">{{ c.label }}</SectionTitle>
+            <SectionTitle :level="2" size="default">{{ c.label }}</SectionTitle>
             <ul class="aside__menu">
               <MenuItem
                 v-for="country in continents[c.key]"
@@ -75,7 +75,7 @@
           <MenuItem
             v-for="regime in filteredPoliticalRegimes"
             :key="regime.id"
-            :title="regime.name"
+            :title="regime.nom"
             :selected="isPoliticalRegimeSelected(regime.id)"
             :badge-value="regime.country_count"
             :show-badge="true"
@@ -118,7 +118,7 @@
           <MenuItem
             v-for="conflict in filteredArmedConflicts"
             :key="conflict.id"
-            :title="conflict.name"
+            :title="conflict.nom"
             :selected="isArmedConflictSelected(conflict.id)"
             @click="selectArmedConflict(conflict.id)"
           >
@@ -207,7 +207,7 @@ export default defineComponent({
       
       const query = asideStore.searchQuery.toLowerCase()
       const filtered = asideStore.appData.politicalRegimeList.filter(regime => 
-        regime.name.toLowerCase().includes(query) || 
+        regime.nom.toLowerCase().includes(query) || 
         regime.description?.toLowerCase().includes(query)
       )
       return filtered
@@ -261,9 +261,9 @@ export default defineComponent({
       
       const query = asideStore.searchQuery.toLowerCase()
       const filtered = asideStore.appData.armedConflictList.filter(conflict => 
-        conflict.name.toLowerCase().includes(query) || 
+        conflict.nom.toLowerCase().includes(query) || 
         conflict.description?.toLowerCase().includes(query) ||
-        conflict.status?.toLowerCase().includes(query)
+        conflict.type?.toLowerCase().includes(query)
       )
       return filtered
     })

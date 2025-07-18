@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { getAllCountries, getNavigationData, getCategoryData, getAllPoliticalRegimes, getCountriesByRegime, getOrganizationsByType, getCountriesByOrganization } from '@/services/readService'
+import { supabaseService } from '@/services/supabaseService'
 import { armedConflictApi } from '@/services/apiService'
 import { armedConflictAPI } from '@/services/api/armedConflictAPI'
 import AdaptiveApiService from '@/services/adaptiveApiService'
@@ -95,7 +96,7 @@ interface CountryDetailData extends BaseEntityData {
   }>;
   conflitsArmes: Array<{
     id: string;
-    name: string;
+    nom: string;
     status: string;
     startDate?: string;
     endDate?: string;
@@ -302,12 +303,20 @@ export const useAsideStore = defineStore('aside', {
     filteredCountries: (state) => {
       if (!state.appData.countryList) return []
       
-      if (!state.searchQuery) return state.appData.countryList
+      // Transformer les données pour avoir title et flag
+      const transformedCountries = state.appData.countryList.map((country: any) => ({
+        ...country,
+        title: country.nom || country.name || country.title || country.id,
+        flag: country.drapeau || country.flag,
+        continent: country.continent || 'Autres'
+      }))
+      
+      if (!state.searchQuery) return transformedCountries
       
       const query = state.searchQuery.toLowerCase()
-      return state.appData.countryList.filter((country: any) => 
-        country.title.toLowerCase().includes(query) || 
-        country.flag.includes(query)
+      return transformedCountries.filter((country: any) => 
+        (country.title && country.title.toLowerCase().includes(query)) || 
+        (country.flag && country.flag.includes(query))
       )
     },
 
@@ -332,17 +341,24 @@ export const useAsideStore = defineStore('aside', {
         this.isLoading = true
         this.error = null
         
-        // Charger les données depuis la base de données
-        const [countries, navigationData, politicalRegimes] = await Promise.all([
-          getAllCountries(),
-          getNavigationData(),
-          getAllPoliticalRegimes()
+        // Charger les données depuis Supabase
+        const [countries, politicalRegimes] = await Promise.all([
+          supabaseService.getCountries(),
+          supabaseService.getPoliticalRegimes()
         ])
         
         // Mettre à jour l'état avec les données récupérées
         this.appData.countryList = countries || []
-        this.appData.mainNavigation = navigationData?.categories || []
         this.appData.politicalRegimeList = politicalRegimes || []
+        
+        // Debug pour voir si les données sont chargées
+        console.log('🔍 Debug initializeData:')
+        console.log('   Countries loaded:', this.appData.countryList.length)
+        console.log('   Political regimes loaded:', this.appData.politicalRegimeList.length)
+        
+        // Charger le menu original depuis les données statiques
+        const menuData = await import('@/data/app/menu.json')
+        this.appData.mainNavigation = menuData.applicationStructure.mainNavigation
         
       } catch (error) {
         console.error('Erreur lors de l\'initialisation des données:', error)
@@ -371,7 +387,7 @@ export const useAsideStore = defineStore('aside', {
         return
       }
       // Vérifier si c'est "Relations internationales" - utiliser la liste des organisations
-      if (id === 'relations-internationales') {
+      if (id === 'relations-internationales' || id === 'organisations-internationales') {
         this.navigateToOrganizationsList()
         return
       }
@@ -465,74 +481,86 @@ export const useAsideStore = defineStore('aside', {
       // Définir le type d'entité en premier pour éviter les problèmes de timing
       this.currentEntityType = 'country'
       
-      // Vérifier si les données sont déjà en cache
-      if (this.dataCache[`country-${id}`]) {
-        this.currentDetailData = this.dataCache[`country-${id}`]
-        return
-      }
+      // FORCER RELOAD pour test - supprimer le cache
+      delete this.dataCache[`country-${id}`]
+      
+      // if (this.dataCache[`country-${id}`]) {
+      //   this.currentDetailData = this.dataCache[`country-${id}`]
+      //   return
+      // }
       
       try {
         this.isLoading = true
         
-        // Charger les données du pays depuis la base de données
-        const { getCountryDetails } = await import('@/services/readService')
-        const countryData = await getCountryDetails(id)
+        // Charger les données du pays depuis Supabase
+        const { supabaseService } = await import('@/services/supabaseService')
+        const countryData = await supabaseService.getCountryById(id)
+        
+        console.log('[asideStore] 🏳️ Données pays reçues pour', id)
         
         if (countryData) {
           this.currentDetailData = {
             id: countryData.id,
-            title: countryData.title,
+            title: countryData.nom || countryData.title,
             type: 'country',
             drapeau: countryData.drapeau,
             capitale: countryData.capitale,
-            langue: countryData.langue,
-            monnaie: countryData.monnaie,
+            langue: countryData.langue || '',
+            monnaie: countryData.monnaie || '',
             pib: countryData.pib,
             population: countryData.population,
-            revenuMedian: countryData.revenuMedian,
-            superficieKm2: countryData.superficieKm2,
-            regimePolitique: countryData.regimePolitique,
-            appartenanceGeographique: countryData.appartenanceGeographique,
-            chefEtat: countryData.chefEtat,
-            datePrisePoste: countryData.datePrisePoste,
-            histoire: countryData.histoire,
-            indiceSouverainete: countryData.indiceSouverainete,
-            indiceDependance: countryData.indiceDependance,
-            statutStrategique: countryData.statutStrategique,
-            dateCreation: countryData.dateCreation,
-            dateDerniereMiseAJour: countryData.dateDerniereMiseAJour,
-            sections: countryData.sections || [],
+            revenuMedian: countryData.revenumedian || countryData.revenuMedian, // Utiliser le nom réel
+            superficieKm2: countryData.superficie,
+            regimePolitique: countryData.regime_politique || countryData.formeEtat,
+            formeEtat: countryData.formeEtat || countryData.regime_politique || 'Non spécifié',
+            appartenanceGeographique: countryData.continent,
+            chefEtat: countryData.chef_etat,
+            datePrisePoste: countryData.datePrisePoste || '',
+            histoire: countryData.histoire || '',
+            indiceSouverainete: countryData.indicesouverainete || countryData.indiceSouverainete,
+            indiceDependance: countryData.indicedependance || countryData.indiceDependance,
+            statutStrategique: countryData.statutstrategique || countryData.statutStrategique || '',
+            dateCreation: countryData.datecreation || countryData.dateCreation || '',
+            dateDerniereMiseAJour: countryData.datedernieremiseajour || countryData.dateDerniereMiseAJour || '',
+            sections: [],
             collapsibleSections: [
               {
                 id: 'histoire',
                 title: 'Histoire',
                 expanded: false,
-                content: countryData.histoire?.content || 'Aucune information disponible'
+                content: countryData.histoire || 'Aucune information disponible'
               },
               {
                 id: 'politique',
                 title: 'Système politique',
                 expanded: false,
-                content: countryData.politique?.content || 'Aucune information disponible'
+                content: `Régime: ${countryData.regime_politique || 'Non spécifié'}\nChef d'État: ${countryData.chef_etat || 'Non spécifié'}`
               },
               {
                 id: 'economie',
                 title: 'Économie',
                 expanded: false,
-                content: countryData.economie?.content || 'Aucune information disponible'
+                content: `PIB: ${countryData.pib ? countryData.pib.toLocaleString() + ' €' : 'Non spécifié'}\nRevenu médian: ${countryData.revenuMedian ? countryData.revenuMedian.toLocaleString() + ' €' : 'Non spécifié'}`
               },
               {
                 id: 'demographie',
                 title: 'Société et Démographie',
                 expanded: false,
-                content: countryData.demographie?.content || 'Aucune information disponible'
+                content: `Population: ${countryData.population ? countryData.population.toLocaleString() : 'Non spécifiée'}\nSuperficie: ${countryData.superficie ? countryData.superficie.toLocaleString() + ' km²' : 'Non spécifiée'}`
               }
             ] as CollapsibleSection[],
             coalitions: countryData.coalitions || [],
             accords: countryData.accords || [],
-            conflitsArmes: []  // Sera chargé après
+            conflitsArmes: countryData.conflitsArmes || []
           } as CountryDetailData
           this.currentEntityType = 'country'
+          
+          console.log('[asideStore] 🎯 FINAL currentDetailData.regimePolitique:', this.currentDetailData.regimePolitique)
+          console.log('[asideStore] 🎯 FINAL currentDetailData.chefEtat:', this.currentDetailData.chefEtat)
+          console.log('[asideStore] 🎯 FINAL currentDetailData.conflitsArmes.length:', this.currentDetailData.conflitsArmes?.length)
+          
+          // Mettre en cache
+          this.dataCache[`country-${id}`] = this.currentDetailData
         } else {
           // Créer des données par défaut si le pays n'existe pas
           this.currentDetailData = {
@@ -569,16 +597,16 @@ export const useAsideStore = defineStore('aside', {
         // Charger les conflits armés du pays
         try {
           console.log('🔥 Chargement des conflits armés pour le pays:', id)
-          const conflicts = await armedConflictAPI.getByCountry(id)
+          const conflicts = await supabaseService.getConflictsByCountry(id)
           console.log('🔥 Conflits trouvés:', conflicts.length)
           
           if (this.currentDetailData && 'conflitsArmes' in this.currentDetailData) {
             this.currentDetailData.conflitsArmes = conflicts.map(conflict => ({
               id: conflict.id,
-              name: conflict.name,
-              status: conflict.status,
-              startDate: conflict.startDate,
-              endDate: conflict.endDate,
+              nom: conflict.nom, // Utiliser 'nom' au lieu de 'name'
+              status: conflict.type, // Utiliser 'type' au lieu de 'status'
+              startDate: conflict.date_debut,
+              endDate: conflict.date_fin,
               description: conflict.description
             }))
           }
@@ -644,11 +672,36 @@ export const useAsideStore = defineStore('aside', {
       this.currentView.title = 'Pays du monde'
       this.currentView.searchEnabled = true
       this.currentView.hasReturnButton = true
-      this.currentView.items = []
       this.currentView.organizations = null
       
       // Réinitialiser la recherche
       this.searchQuery = ''
+      
+      // Debug pour voir si les données sont présentes
+      console.log('🔍 Debug navigateToCountryList:')
+      console.log('   appData.countryList.length:', this.appData.countryList.length)
+      console.log('   Premier pays:', this.appData.countryList[0])
+      
+      // Charger les pays et les mettre dans items
+      this.currentView.items = this.appData.countryList.map(country => {
+        const title = country.nom || country.name || country.title || country.id
+        const flag = country.drapeau || country.flag
+        
+        // Debug pour comprendre le problème
+        if (!title) {
+          console.warn('⚠️ Pays sans titre:', country)
+        }
+        
+        return {
+          id: country.id,
+          title: title || 'Pays inconnu',  // Fallback pour éviter undefined
+          flag: flag,
+          hasSubmenu: true
+        }
+      }).filter(item => item.title !== 'Pays inconnu') // Filtrer les pays sans nom valide
+      
+      console.log('   currentView.items.length:', this.currentView.items.length)
+      console.log('   Premier item:', this.currentView.items[0])
     },
 
     // Navigation vers la liste des régimes politiques
@@ -666,11 +719,26 @@ export const useAsideStore = defineStore('aside', {
       this.currentView.title = 'Régimes politiques'
       this.currentView.searchEnabled = true
       this.currentView.hasReturnButton = true
-      this.currentView.items = []
       this.currentView.organizations = null
       
       // Réinitialiser la recherche
       this.searchQuery = ''
+      
+      // Debug pour voir les données
+      console.log('🔍 Debug navigateToPoliticalRegimeList:')
+      console.log('   appData.politicalRegimeList.length:', this.appData.politicalRegimeList.length)
+      console.log('   Premier régime:', this.appData.politicalRegimeList[0])
+      
+      // Charger les régimes politiques et les mettre dans items
+      this.currentView.items = this.appData.politicalRegimeList.map(regime => ({
+        id: regime.id,
+        title: regime.nom,
+        badge: regime.country_count ? `${regime.country_count} pays` : '',
+        hasSubmenu: true
+      }))
+      
+      console.log('   currentView.items.length:', this.currentView.items.length)
+      console.log('   Premier item:', this.currentView.items[0])
     },
 
     // Navigation vers la liste des organisations
@@ -695,10 +763,13 @@ export const useAsideStore = defineStore('aside', {
       this.searchQuery = ''
 
       try {
-        const organizations = await getOrganizationsByType()
+        const organizations = await supabaseService.getOrganizationsByType()
         // Stocker les organisations dans appData comme les autres listes
         this.appData.organizationList = organizations || {}
         console.log('✅ Organisations chargées avec données complètes:', Object.keys(organizations || {}).length, 'types')
+        
+        // Mettre les organisations dans currentView.organizations pour l'affichage
+        this.currentView.organizations = organizations
       } catch (error) {
         console.error('Erreur lors du chargement des organisations internationales:', error)
         this.error = 'Erreur lors du chargement des organisations'
@@ -725,9 +796,17 @@ export const useAsideStore = defineStore('aside', {
 
       try {
         // Charger la liste des conflits avec leurs épicentres
-        const conflicts = await armedConflictApi.getAll()
+        const conflicts = await supabaseService.getArmedConflicts()
         this.appData.armedConflictList = conflicts || []
         console.log('✅ Conflits armés chargés:', this.appData.armedConflictList.length)
+        
+        // Mettre les conflits dans currentView.items pour l'affichage
+        this.currentView.items = conflicts.map(conflict => ({
+          id: conflict.id,
+          title: conflict.nom,
+          badge: conflict.type || conflict.intensite || '',
+          hasSubmenu: true
+        }))
         
         // Charger et afficher les marqueurs d'épicentres sur la carte
         const { useMapStore } = await import('@/stores/mapStore')
@@ -896,7 +975,7 @@ export const useAsideStore = defineStore('aside', {
         }
         
         // Charger les pays membres de cette organisation
-        const countries = await getCountriesByOrganization(id)
+        const countries = await supabaseService.getCountriesByOrganization(id)
         
         // Mettre à jour les marqueurs sur la carte
         const { useMapStore } = await import('@/stores/mapStore')
@@ -931,7 +1010,7 @@ export const useAsideStore = defineStore('aside', {
         const regimeName = regime ? regime.name : 'Régime politique'
         
         // Charger les pays associés à ce régime
-        const countries = await getCountriesByRegime(id)
+        const countries = await supabaseService.getCountriesByRegime(id)
         
         // Mettre à jour les marqueurs sur la carte
         const { useMapStore } = await import('@/stores/mapStore')
@@ -979,7 +1058,7 @@ export const useAsideStore = defineStore('aside', {
         await mapStore.loadConflictZones(id)
         
         // 3. Charger les pays impliqués dans ce conflit
-        const countries = await armedConflictApi.getCountries(id)
+        const countries = await supabaseService.getCountriesByConflict(id)
         const countryIds = countries.map(country => country.id)
         console.log('Pays impliqués dans le conflit:', countryIds)
         
@@ -1072,7 +1151,7 @@ export const useAsideStore = defineStore('aside', {
         await mapStore.loadConflictZones(conflictId)
         
         // 4. Charger les pays impliqués dans ce conflit
-        const countries = await armedConflictAPI.getCountries(conflictId)
+        const countries = await supabaseService.getCountriesByConflict(conflictId)
         const countryIds = countries.map((country: any) => country.id)
         console.log('🏳️ Pays impliqués dans le conflit:', countryIds)
         
@@ -1202,12 +1281,13 @@ export const useAsideStore = defineStore('aside', {
       // Convertir l'ID en string pour l'API
       const conflictId = String(id)
       
-      // Vérifier si les données sont déjà en cache
-      if (this.dataCache[`conflict-${conflictId}`]) {
-        this.currentDetailData = this.dataCache[`conflict-${conflictId}`]
-        this.currentEntityType = 'conflict'
-        return
-      }
+      // FORCER le rechargement - ignorer le cache temporairement pour tester
+      console.log('[asideStore] 🔄 FORCE RELOAD - Ignoring cache for conflict:', conflictId)
+      // if (this.dataCache[`conflict-${conflictId}`]) {
+      //   this.currentDetailData = this.dataCache[`conflict-${conflictId}`]
+      //   this.currentEntityType = 'conflict'
+      //   return
+      // }
       
       try {
         this.isLoading = true
@@ -1218,34 +1298,44 @@ export const useAsideStore = defineStore('aside', {
           : `Conflit #${id}`
         const conflict = this.appData.armedConflictList.find(c => String(c.id) === conflictId)
         if (conflict) {
-          conflictName = conflict.name || conflict.title
+          conflictName = conflict.nom || conflict.name || conflict.title
         }
         
         // Essayer de charger les données du conflit depuis l'API
         try {
-          const conflictData = await armedConflictApi.getById(conflictId)
+          const conflictData = await supabaseService.getArmedConflictById(conflictId)
+          
+          console.log('[asideStore] ⚔️ Données conflit reçues:', conflictData)
+        console.log('[asideStore] 🔍 intensiteDetaillee:', conflictData?.intensite_detaillee)
+        console.log('[asideStore] 🔍 paysImpliques:', conflictData?.paysImpliques)
+        console.log('[asideStore] 🔍 victimes:', conflictData?.victimes)
+        console.log('[asideStore] 🔍 timeline:', conflictData?.timeline)
           
           if (conflictData) {
             this.currentDetailData = {
               id: conflictData.id,
-              title: conflictData.title,
+              title: conflictData.nom || conflictData.title,
               type: 'conflict',
               description: conflictData.description,
-              statut: conflictData.statut,
+              statut: conflictData.statut || conflictData.type,
               intensite: conflictData.intensite,
-              dateDebut: conflictData.dateDebut,
-              dateFin: conflictData.dateFin,
+              intensiteDetaillee: conflictData.intensite_detaillee || {},
+              dateDebut: conflictData.date_debut || conflictData.dateDebut,
+              dateFin: conflictData.date_fin || conflictData.dateFin,
+              anneeDebut: conflictData.annee_debut,
+              anneeFin: conflictData.annee_fin,
+              impactGeopolitique: conflictData.impact_geopolitique,
+              paysImpliques: conflictData.paysImpliques || conflictData.pays_impliques || [],
               localisation: conflictData.localisation,
               zones: conflictData.zones,
               victimes: conflictData.victimes,
-              paysImpliques: conflictData.paysImpliques,
               timeline: conflictData.timeline
             } as ConflictDetailData
             this.currentEntityType = 'conflict'
             
             // Charger les pays impliqués séparément
             try {
-              const countries = await armedConflictAPI.getCountries(conflictId)
+              const countries = await supabaseService.getCountriesByConflict(conflictId)
               if (this.currentDetailData && 'paysImpliques' in this.currentDetailData) {
                 this.currentDetailData.paysImpliques = countries.map((country: any) => ({
                   id: country.id || country.countryId,
@@ -1380,10 +1470,20 @@ export const useAsideStore = defineStore('aside', {
           }
         }
         
-        // Charger les données de l'organisation depuis l'API
-        // const organizationData = await organizationApi.getOrganizationDetails(id)
+        // Charger les données de l'organisation depuis Supabase
+        const { supabaseService } = await import('@/services/supabaseService')
+        const organizationData = await supabaseService.getOrganizationById(id)
         
-        // Pour l'instant, créer des données mock avec le vrai nom
+        console.log('[asideStore] 🌐 Données organisation reçues:', organizationData)
+        
+        if (organizationData) {
+          this.currentDetailData = organizationData
+          this.currentEntityType = 'organization'
+          
+          // Mettre en cache
+          this.dataCache[`organization-${id}`] = organizationData
+        } else {
+          // Fallback avec données basiques si pas trouvé dans Supabase
         this.currentDetailData = {
           id: id,
           title: organizationName,
@@ -1413,6 +1513,7 @@ export const useAsideStore = defineStore('aside', {
         this.dataCache[`organization-${id}`] = this.currentDetailData
         
         console.log('✅ Organisation data loaded:', this.currentDetailData)
+        }
         
       } catch (error) {
         console.error(`Error loading organization data for ${id}:`, error)

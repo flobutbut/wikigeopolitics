@@ -101,7 +101,7 @@ interface CountryData {
   }>
   conflitsArmes?: Array<{
     id: string
-    name: string
+    nom: string
     status?: string
     startDate?: string
     endDate?: string
@@ -162,7 +162,7 @@ export default defineComponent({
     }
     
     const conflictsConfig = {
-      titleField: 'name',
+      titleField: 'nom', // Utiliser 'nom' comme dans le menu des conflits
       subtitleField: 'status',
       descriptionField: 'description',
       metadataFields: [
@@ -194,14 +194,14 @@ export default defineComponent({
     // Informations sur le chef d'État
     const chefEtatInfo = computed(() => {
       const chefEtat = asideStore.currentDetailData.chefEtat
-      return chefEtat || 'Data'
+      return chefEtat && chefEtat !== 'Non spécifié' ? chefEtat : 'Non renseigné'
     })
 
     // Informations sur la date de prise de poste
     const datePrisePosteInfo = computed(() => {
       const datePrisePoste = asideStore.currentDetailData.datePrisePoste
       
-      if (!datePrisePoste) return 'Data'
+      if (!datePrisePoste || datePrisePoste === 'Non spécifiée') return 'Non renseignée'
       
       const date = new Date(datePrisePoste)
       return date.toLocaleDateString('fr-FR', {

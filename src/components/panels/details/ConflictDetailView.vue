@@ -16,8 +16,8 @@
       :expanded="victimsExpanded"
       @toggle="toggleVictims"
     >
-      <div v-if="data.victimes" class="victims-info">
-        <div v-for="(value, key) in data.victimes" :key="key" class="victim-stat">
+      <div v-if="getVictimData()" class="victims-info">
+        <div v-for="(value, key) in getVictimData()" :key="key" class="victim-stat">
           <span class="stat-label">{{ formatVictimLabel(key) }}:</span>
           <span class="stat-value">{{ formatVictimValue(value) }}</span>
         </div>
@@ -131,7 +131,7 @@ const countriesConfig = {
 const mainSections = computed(() => [
   { title: 'Type de conflit', value: props.data.type || 'Non spécifié' },
   { title: 'Statut', value: formatStatus(props.data.statut) },
-  { title: 'Intensité', value: props.data.intensite || 'Non spécifiée' },
+  { title: 'Intensité', value: formatIntensity(props.data.intensite, props.data.intensiteDetaillee) },
   { title: 'Période', value: formatPeriod(props.data.dateDebut, props.data.dateFin) }
 ].filter(section => section.value && section.value !== 'Non spécifié'))
 
@@ -172,15 +172,47 @@ const formatZones = (zones?: string[]) => {
   return zones.join(', ')
 }
 
+const formatIntensity = (basicIntensity?: string, detailedIntensity?: any) => {
+  if (detailedIntensity && typeof detailedIntensity === 'object') {
+    // Prendre les données les plus importantes
+    if (detailedIntensity.total_casualties_2024) {
+      return `${detailedIntensity.total_casualties_2024} victimes (2024)`
+    }
+    if (detailedIntensity.total) {
+      return detailedIntensity.total
+    }
+  }
+  return basicIntensity || 'Non spécifiée'
+}
+
 const formatVictimLabel = (key: string) => {
   const labelMap: Record<string, string> = {
+    // Anciennes clés
     'morts': 'Décès',
     'blesses': 'Blessés',
     'deplaces': 'Déplacés',
     'refugies': 'Réfugiés',
-    'disparus': 'Disparus'
+    'disparus': 'Disparus',
+    // Nouvelles clés de votre JSON
+    'prisoners_of_war': 'Prisonniers de guerre',
+    'displaced_refugees': 'Réfugiés déplacés',
+    'internally_displaced': 'Déplacés internes',
+    'total_casualties_2024': 'Total victimes 2024',
+    'russian_civilian_deaths': 'Morts civils russes',
+    'russian_military_deaths': 'Morts militaires russes',
+    'ukrainian_civilian_deaths': 'Morts civils ukrainiens',
+    'ukrainian_military_deaths': 'Morts militaires ukrainiens',
+    'monthly_russian_casualties_2024': 'Victimes russes mensuelles 2024'
   }
-  return labelMap[key] || key
+  return labelMap[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+}
+
+const getVictimData = () => {
+  // Priorité aux données détaillées JSON, sinon fallback vers victimes standard
+  if (props.data.intensiteDetaillee && typeof props.data.intensiteDetaillee === 'object') {
+    return props.data.intensiteDetaillee
+  }
+  return props.data.victimes
 }
 
 const formatVictimValue = (value: any) => {

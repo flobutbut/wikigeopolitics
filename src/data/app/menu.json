@@ -6,27 +6,6 @@
     },
     "mainNavigation": [
       {
-        "id": "tous-les-pays",
-        "type": "mainCategory",
-        "toggleOptions": [
-          {
-            "id": "eaux-internationales",
-            "title": "Eaux internationales",
-            "enabled": false
-          },
-          {
-            "id": "fondieres-administratives",
-            "title": "Fondières administratives",
-            "enabled": false
-          },
-          {
-            "id": "frontieres-naturelles",
-            "title": "Frontières naturelles",
-            "enabled": false
-          }
-        ]
-      },
-      {
         "id": "pays-du-monde",
         "title": "Pays du monde",
         "type": "mainCategory",

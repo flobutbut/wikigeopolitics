@@ -1,4 +1,4 @@
-import { ref, watch, onUnmounted } from 'vue'
+import { ref, watch, onUnmounted, getCurrentInstance } from 'vue'
 import L from 'leaflet'
 import { useSelectionSystem, type EntityType } from '@/stores/selectionSystem'
 import { useMapStore } from '@/stores/mapStore'
@@ -207,10 +207,7 @@ export function useUnifiedMarkers(map: L.Map | null) {
       : type === 'conflict' 
       ? selectionSystem.conflictZonesVisible
       : type === 'conflict-epicenter'
-      ? (mapStore.visibleLayers.conflictEpicenters && 
-         (asideStore.currentView?.type === 'armedConflictsList' ||
-          selectionSystem.type === 'initial' || 
-          selectionSystem.type === 'conflict'))
+      ? mapStore.visibleLayers.conflictEpicenters
       : true
     
     return { isSelected, isHighlighted, isVisible }
@@ -355,6 +352,59 @@ export function useUnifiedMarkers(map: L.Map | null) {
       createOrUpdateMarker(markerData)
     })
   }
+
+  /**
+   * Synchroniser les zones de combat depuis mapStore
+   */
+  const syncConflictZones = () => {
+    console.log('[UnifiedMarkers] 🔄 Synchronisation des zones de combat')
+    console.log('[UnifiedMarkers] visibleLayers.armedConflicts:', mapStore.visibleLayers.armedConflicts)
+    console.log('[UnifiedMarkers] armedConflicts:', mapStore.armedConflicts)
+    console.log('[UnifiedMarkers] armedConflicts features count:', mapStore.armedConflicts?.features?.length || 0)
+    
+    if (!mapStore.visibleLayers.armedConflicts || !mapStore.armedConflicts?.features) {
+      // Supprimer tous les marqueurs de zones de combat existants
+      const combatZoneMarkers = Array.from(markers.value.keys()).filter(id => id.startsWith('combat-zone-'))
+      console.log('[UnifiedMarkers] Suppression de', combatZoneMarkers.length, 'marqueurs de zones de combat')
+      combatZoneMarkers.forEach(id => removeMarker(id))
+      return
+    }
+    
+    // Ajouter/mettre à jour les marqueurs de zones de combat
+    console.log('[UnifiedMarkers] Ajout/mise à jour des marqueurs de zones de combat')
+    console.log('[UnifiedMarkers] Features à traiter:', mapStore.armedConflicts.features)
+    
+    mapStore.armedConflicts.features.forEach((feature, index) => {
+      console.log(`[UnifiedMarkers] Traitement feature ${index}:`, feature)
+      
+      if (feature.geometry?.type === 'Point' && feature.geometry.coordinates) {
+        const coords = feature.geometry.coordinates
+        console.log(`[UnifiedMarkers] Coordonnées trouvées:`, coords)
+        
+        const markerData: MarkerData = {
+          id: feature.properties.id,
+          type: 'conflict',
+          coordinates: [coords[1], coords[0]], // [lat, lng]
+          icon: '💥',
+          name: feature.properties.name,
+          data: feature.properties
+        }
+        
+        console.log(`[UnifiedMarkers] Création marqueur zone de combat:`, markerData)
+        const marker = createOrUpdateMarker(markerData)
+        
+        if (marker) {
+          console.log(`[UnifiedMarkers] ✅ Marqueur zone de combat créé avec succès: ${markerData.id}`)
+        } else {
+          console.log(`[UnifiedMarkers] ❌ Échec création marqueur zone de combat: ${markerData.id}`)
+        }
+      } else {
+        console.log(`[UnifiedMarkers] ⚠️ Feature invalide:`, feature)
+      }
+    })
+    
+    console.log('[UnifiedMarkers] 📊 Total marqueurs après sync:', markers.value.size)
+  }
   
   /**
    * Initialiser les marqueurs selon les données fournies
@@ -416,6 +466,16 @@ export function useUnifiedMarkers(map: L.Map | null) {
   watch(() => mapStore.visibleLayers.conflictEpicenters, () => {
     syncConflictEpicenters()
   })
+
+  // Surveiller les changements des zones de combat
+  watch(() => mapStore.armedConflicts, () => {
+    syncConflictZones()
+  }, { deep: true })
+  
+  // Surveiller la visibilité des zones de combat
+  watch(() => mapStore.visibleLayers.armedConflicts, () => {
+    syncConflictZones()
+  })
   
   // Surveiller le mode d'affichage des pays
   watch(() => mapStore.countryDisplayMode, () => {
@@ -438,10 +498,13 @@ export function useUnifiedMarkers(map: L.Map | null) {
     }
   })
   
-  // Nettoyage lors de la destruction
-  onUnmounted(() => {
-    clearAllMarkers()
-  })
+  // Nettoyage lors de la destruction (seulement si on est dans un contexte de composant)
+  const instance = getCurrentInstance()
+  if (instance) {
+    onUnmounted(() => {
+      clearAllMarkers()
+    })
+  }
   
   return {
     // État

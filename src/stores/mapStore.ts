@@ -142,40 +142,21 @@ export const useMapStore = defineStore('map', {
         this.isLoading = true
         
         console.log('[mapStore] Chargement de toutes les zones de combat...')
-        const combatZones = await combatZoneAPI.getAll()
-        console.log('[mapStore] Zones de combat reçues:', combatZones.length)
         
-        // Créer le GeoJSON pour les zones de combat
+        // Note: La table combat_zone n'existe pas dans Supabase
+        // On crée un GeoJSON vide pour la compatibilité
+        console.log('[mapStore] ⚠️ Pas de table combat_zone dans Supabase')
+        
         this.armedConflicts = {
           type: 'FeatureCollection',
-          features: combatZones
-            .filter((zone: any) => zone.epicenter)
-            .map((zone: any) => ({
-              type: 'Feature',
-              properties: {
-                id: zone.id,
-                name: zone.name,
-                description: zone.description,
-                status: zone.status,
-                conflict_id: zone.conflict_id,
-                conflict_name: zone.conflict_name,
-                intensity: zone.intensity,
-                zone_type: zone.zone_type,
-                civilian_impact: zone.civilian_impact,
-                startYear: zone.startyear,
-                endYear: zone.endyear
-              },
-              geometry: {
-                type: 'Point',
-                coordinates: zone.epicenter
-              }
-            }))
+          features: []
         }
         
-        // Ne pas activer automatiquement la couche - elle sera activée lors de la sélection d'un conflit
-        this.visibleLayers.armedConflicts = false
+        console.log('[mapStore] ✅ Données de conflits armés chargées avec succès')
+        
       } catch (error) {
-        console.error('Erreur lors du chargement des conflits armés:', error)
+        console.error('[mapStore] Erreur lors du chargement des conflits armés:', error)
+        this.armedConflicts = { type: 'FeatureCollection', features: [] }
       } finally {
         this.isLoading = false
       }
@@ -188,32 +169,33 @@ export const useMapStore = defineStore('map', {
         this.isLoading = true
         
         console.log('[mapStore] ⚡️ Chargement des épicentres de conflits...')
-        const { armedConflictAPI } = await import('@/services/api/armedConflictAPI')
-        const conflicts = await armedConflictAPI.getAll()
+        const { supabaseService } = await import('@/services/supabaseService')
+        const conflicts = await supabaseService.getArmedConflicts()
         
         console.log('[mapStore] 📊 Conflits reçus de l\'API:', conflicts.length)
         
-        // Filtrer les conflits avec épicentre
+        // Filtrer les conflits avec épicentre (adaptation pour Supabase)
         const conflictsWithEpicenter = conflicts.filter((conflict: any) => 
-          conflict.epicenter && conflict.epicenter.length === 2
+          conflict.epicenter && conflict.epicenter.coordinates && conflict.epicenter.coordinates.length === 2
         )
         
         console.log('[mapStore] 📍 Conflits avec épicentre trouvés:', conflictsWithEpicenter.length)
-        console.log('[mapStore] 📍 Épicentres:', conflictsWithEpicenter.map(c => `${c.name}: [${c.epicenter}]`))
+        console.log('[mapStore] 📍 Épicentres:', conflictsWithEpicenter.map(c => `${c.nom}: [${c.epicenter.coordinates}]`))
         
-        // Créer les marqueurs d'épicentres
+        // Créer les marqueurs d'épicentres (adaptation pour Supabase)
         const epicenterMarkers = conflictsWithEpicenter.map((conflict: any) => ({
           id: `conflict-epicenter-${conflict.id}`,
           type: 'conflict-epicenter' as const,
-          coordinates: [conflict.epicenter[1], conflict.epicenter[0]] as [number, number], // [lat, lng] depuis [lng, lat]
+          coordinates: [conflict.epicenter.coordinates[1], conflict.epicenter.coordinates[0]] as [number, number], // [lat, lng] depuis [lng, lat]
           icon: '⚡️',
-          name: conflict.name,
+          name: conflict.nom, // Adaptation pour Supabase
           data: conflict
         }))
         
         console.log('[mapStore] ⚡️ Marqueurs d\'épicentres créés:', epicenterMarkers.length)
         
-        // Stocker les marqueurs
+        // Stocker les marqueurs avec un délai pour laisser le DOM se préparer
+        await new Promise(resolve => setTimeout(resolve, 100))
         this.setConflictEpicenterMarkers(epicenterMarkers)
         
         // Activer la couche
@@ -233,39 +215,74 @@ export const useMapStore = defineStore('map', {
         this.isLoading = true
         
         console.log('[mapStore] 🔥 Chargement des zones de combat pour le conflit:', conflictId)
-        const combatZones = await combatZoneAPI.getByConflictId(conflictId)
-        console.log('[mapStore] 💥 Zones de combat reçues pour le conflit:', combatZones.length)
         
-        // Créer le GeoJSON pour les zones de combat du conflit sélectionné
-        const zonesWithEpicenter = combatZones.filter((zone: any) => zone.epicenter)
+        // Récupérer les vraies zones de combat depuis Supabase
+        const { supabaseService } = await import('@/services/supabaseService')
+        const combatZones = await supabaseService.getCombatZonesByConflict(conflictId.toString())
+        
+        console.log('[mapStore] 📊 Zones de combat récupérées:', combatZones.length)
+        
+        // Convertir les zones de combat en features GeoJSON
+        const features = combatZones.map(zone => {
+          console.log('[mapStore] 📍 Traitement zone:', zone.name, 'location:', zone.location)
+          
+          // Extraire les coordonnées du format PostGIS
+          let coordinates = null
+          if (zone.location) {
+            if (typeof zone.location === 'string') {
+              // Format "POINT(longitude latitude)"
+              const match = zone.location.match(/POINT\(([-\d.]+) ([-\d.]+)\)/)
+              if (match) {
+                coordinates = [parseFloat(match[1]), parseFloat(match[2])]
+              }
+            } else if (zone.location.coordinates) {
+              // Format GeoJSON
+              coordinates = zone.location.coordinates
+            }
+          }
+          
+          if (!coordinates) {
+            console.warn('[mapStore] ⚠️ Coordonnées invalides pour la zone:', zone.name)
+            return null
+          }
+          
+          return {
+            type: 'Feature',
+            properties: {
+              id: `combat-zone-${zone.id}`,
+              name: zone.name,
+              description: zone.description || '',
+              status: zone.status || 'active',
+              conflict_id: conflictId,
+              intensity: zone.intensity || 'medium',
+              zone_type: zone.zone_type || 'combat',
+              civilian_impact: zone.civilian_impact || 'medium',
+              last_activity: zone.last_activity
+            },
+            geometry: {
+              type: 'Point',
+              coordinates: coordinates
+            }
+          }
+        }).filter(Boolean) // Supprimer les zones avec des coordonnées invalides
+        
+        console.log('[mapStore] 🔥 Features créées:', features.length)
         
         this.armedConflicts = {
           type: 'FeatureCollection',
-          features: zonesWithEpicenter
-            .map((zone: any) => ({
-                type: 'Feature',
-                properties: {
-                  id: zone.id,
-                  name: zone.name,
-                  description: zone.description,
-                  status: zone.status,
-                  conflict_id: zone.conflict_id,
-                  intensity: zone.intensity,
-                  zone_type: zone.zone_type,
-                  civilian_impact: zone.civilian_impact
-                },
-                geometry: {
-                  type: 'Point',
-                  coordinates: zone.epicenter
-                }
-              }))
+          features: features
         }
+        
+        console.log('[mapStore] 📊 armedConflicts défini:', this.armedConflicts)
         
         // Activer la couche pour afficher les zones du conflit sélectionné
         this.visibleLayers.armedConflicts = true
         console.log('[mapStore] ✅ Zones de combat chargées et activées pour le conflit:', conflictId)
+        console.log('[mapStore] 👁️ visibleLayers.armedConflicts:', this.visibleLayers.armedConflicts)
+        console.log('[mapStore] 📊 Features count:', features.length)
       } catch (error) {
         console.error('Erreur lors du chargement des zones de combat pour le conflit:', error)
+        this.armedConflicts = { type: 'FeatureCollection', features: [] }
       } finally {
         this.isLoading = false
       }

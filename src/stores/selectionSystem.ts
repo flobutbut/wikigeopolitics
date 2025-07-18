@@ -227,7 +227,9 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       this.floatingPanelOpen = true
       this.floatingPanelType = source === 'panel' ? 'country' : 'conflict'
       
+      // Marquer les zones de combat comme visibles (même si vides dans Supabase)
       this.conflictZonesVisible = true
+      console.log(`[SelectionSystem] 🔥 conflictZonesVisible défini à true pour conflit ${conflictId}`)
       
       // Garder les marqueurs d'épicentres visibles lors de la sélection d'un conflit
       const { useMapStore } = await import('@/stores/mapStore')
@@ -235,10 +237,11 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       // On garde les épicentres visibles pour permettre la sélection d'autres conflits
       
       // Charger les pays du conflit
-      const { armedConflictAPI } = await import('@/services/api/armedConflictAPI')
+      const { supabaseService } = await import('@/services/supabaseService')
       try {
-        const countries = await armedConflictAPI.getCountries(conflictId)
+        const countries = await supabaseService.getCountriesByConflict(conflictId)
         this.visibleCountries = countries.map((c: any) => c.id)
+        console.log(`[SelectionSystem] 🏳️ Pays du conflit ${conflictId}:`, this.visibleCountries)
         
         if (source === 'aside') {
           this.highlightedCountries = this.visibleCountries
@@ -263,6 +266,7 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       }
       
       // Synchroniser avec les autres stores
+      console.log(`[SelectionSystem] 🔄 Appel de syncWithStores pour conflit ${conflictId}`)
       await this.syncWithStores()
     },
 
@@ -394,9 +398,9 @@ export const useSelectionSystem = defineStore('selectionSystem', {
         this.selectedConflict = null
         
         // Recharger les pays du régime
-        const { politicalRegimeAPI } = await import('@/services/api/politicalRegimeAPI')
+        const { supabaseService } = await import('@/services/supabaseService')
         try {
-          const countries = await politicalRegimeAPI.getCountries(this.parentContext.id!)
+          const countries = await supabaseService.getCountriesByRegime(this.parentContext.id!)
           this.visibleCountries = countries.map((c: any) => c.id)
           this.highlightedCountries = []
         } catch (error) {
@@ -410,9 +414,9 @@ export const useSelectionSystem = defineStore('selectionSystem', {
         this.selectedConflict = null
         
         // Recharger les pays de l'organisation
-        const { organizationAPI } = await import('@/services/api/organizationAPI')
+        const { supabaseService } = await import('@/services/supabaseService')
         try {
-          const countries = await organizationAPI.getCountries(this.parentContext.id!)
+          const countries = await supabaseService.getCountriesByOrganization(this.parentContext.id!)
           this.visibleCountries = countries.map((c: any) => c.id)
           this.highlightedCountries = []
         } catch (error) {
@@ -518,9 +522,9 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       }
       
       // Charger les pays de ce régime
-      const { politicalRegimeAPI } = await import('@/services/api/politicalRegimeAPI')
+      const { supabaseService } = await import('@/services/supabaseService')
       try {
-        const countries = await politicalRegimeAPI.getCountries(regimeId)
+        const countries = await supabaseService.getCountriesByRegime(regimeId)
         this.visibleCountries = countries.map((c: any) => c.id)
         
         // Pour les régimes, on ne met pas les pays en évidence par défaut
@@ -569,9 +573,9 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       }
       
       // Charger les pays membres de cette organisation
-      const { organizationAPI } = await import('@/services/api/organizationAPI')
+      const { supabaseService } = await import('@/services/supabaseService')
       try {
-        const countries = await organizationAPI.getCountries(organizationId)
+        const countries = await supabaseService.getCountriesByOrganization(organizationId)
         this.visibleCountries = countries.map((c: any) => c.id)
         
         // Pour les organisations, on ne met pas les pays en évidence par défaut
@@ -599,6 +603,8 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       const mapStore = useMapStore()
       const asideStore = useAsideStore()
       
+      console.log(`[SelectionSystem] 🔄 syncWithStores - type: ${this.type}, conflictZonesVisible: ${this.conflictZonesVisible}, selectedConflict: ${this.selectedConflict}`)
+      
       // Synchroniser l'affichage des pays sur la carte
       if (this.type === 'initial') {
         // Vérifier si on est dans le menu conflits
@@ -614,15 +620,20 @@ export const useSelectionSystem = defineStore('selectionSystem', {
           mapStore.clearSelectedCountries()
         }
       } else {
+        console.log(`[SelectionSystem] 🏳️ Synchronisation des pays - visibleCountries: ${this.visibleCountries.length}`, this.visibleCountries)
         mapStore.setCountryDisplayMode('selected')
         mapStore.setSelectedCountries(this.visibleCountries)
+        console.log(`[SelectionSystem] 🏳️ Countries synchronisés avec mapStore, countryDisplayMode: ${mapStore.countryDisplayMode}`)
       }
       
       // Synchroniser les zones de combat
       if (this.conflictZonesVisible && this.selectedConflict) {
+        console.log(`[SelectionSystem] 🔥 Activation des zones de combat pour conflit ${this.selectedConflict}`)
         mapStore.visibleLayers.armedConflicts = true
         await mapStore.loadConflictZones(this.selectedConflict)
+        console.log(`[SelectionSystem] 🔥 Zones de combat chargées, visibleLayers.armedConflicts: ${mapStore.visibleLayers.armedConflicts}`)
       } else {
+        console.log(`[SelectionSystem] 🔥 Désactivation des zones de combat - conflictZonesVisible: ${this.conflictZonesVisible}, selectedConflict: ${this.selectedConflict}`)
         mapStore.visibleLayers.armedConflicts = false
         mapStore.armedConflicts = null
       }
@@ -630,12 +641,14 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       // Synchroniser les couches selon le type de sélection
       if (this.type === 'regime' || this.type === 'organization') {
         // Désactiver les zones de combat pour les régimes et organisations
+        console.log(`[SelectionSystem] 🔥 Désactivation des zones de combat pour ${this.type}`)
         mapStore.visibleLayers.armedConflicts = false
         mapStore.armedConflicts = null
       }
       
       // Déclencher un refresh des marqueurs
       // Cela sera intercepté par le watcher dans useUnifiedMarkers
+      console.log(`[SelectionSystem] ✅ syncWithStores terminé`)
     },
 
     /**
