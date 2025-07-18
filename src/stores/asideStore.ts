@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { getAllCountries, getNavigationData, getCategoryData, getAllPoliticalRegimes, getCountriesByRegime, getOrganizationsByType, getCountriesByOrganization } from '@/services/readService'
 import { armedConflictApi } from '@/services/apiService'
 import { armedConflictAPI } from '@/services/api/armedConflictAPI'
+import AdaptiveApiService from '@/services/adaptiveApiService'
 
 // Définir les interfaces pour le typage
 interface AppData {

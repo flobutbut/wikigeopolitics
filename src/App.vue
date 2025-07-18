@@ -18,6 +18,9 @@
           @conflict-selected="handleConflictSelected"
         />
         
+        <!-- Debug Panel (développement seulement) -->
+        <DebugPanel />
+        
         <!-- Panneau flottant de détails universel -->
         <UniversalFloatingPanel />
       </main>
@@ -39,6 +42,7 @@ import AsideNav from '@components/aside/aside.vue'
 import MapComponent from '@components/map/map.vue'
 import HeaderNav from '@components/header/header.vue'
 import UniversalFloatingPanel from '@components/panels/UniversalFloatingPanel.vue'
+import DebugPanel from '@components/debug/DebugPanel.vue'
 import type { LatLng } from 'leaflet'
 import { useCountrySelectionStore } from '@/stores/countrySelectionStore'
 import { useAsideStore } from '@/stores/asideStore'
@@ -52,7 +56,8 @@ export default defineComponent({
     AsideNav,
     MapComponent,
     HeaderNav,
-    UniversalFloatingPanel
+    UniversalFloatingPanel,
+    DebugPanel
   },
   
   setup() {
