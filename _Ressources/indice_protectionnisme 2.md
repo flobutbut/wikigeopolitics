@@ -11,12 +11,12 @@ Ce pilier mesure les barrières commerciales et la volonté d’un État à prot
 
 **Sous-indicateurs :**
 
-| Sous-indicateur                      | Description                                                    |
-|-------------------------------------|----------------------------------------------------------------|
-| Barrières tarifaires moyennes       | Droits de douane appliqués aux importations                   |
-| Barrières non tarifaires            | Normes sanitaires, quotas, restrictions administratives        |
-| Subventions sectorielles nationales | Aides à l’agriculture, industrie, etc.                         |
-| Accords de libre-échange            | Nombre et nature des accords commerciaux actifs                |
+| Sous-indicateur                     | Description                                             |
+| ----------------------------------- | ------------------------------------------------------- |
+| Barrières tarifaires moyennes       | Droits de douane appliqués aux importations             |
+| Barrières non tarifaires            | Normes sanitaires, quotas, restrictions administratives |
+| Subventions sectorielles nationales | Aides à l’agriculture, industrie, etc.                  |
+| Accords de libre-échange            | Nombre et nature des accords commerciaux actifs         |
 
 Chaque sous-indicateur est normalisé sur 0–100, la moyenne des sous-scores constitue le score du pilier.
 

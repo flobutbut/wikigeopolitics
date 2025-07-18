@@ -379,12 +379,17 @@ app.get('/api/organizations/:id/countries', async (req, res) => {
   }
 });
 
-// Récupérer tous les régimes politiques
+// Récupérer tous les régimes politiques avec le nombre de pays
 app.get('/api/political-regimes', async (req, res) => {
   try {
     console.log('[API] Tentative de récupération des régimes politiques...');
     const regimes = await query(
-      'SELECT id, name, description FROM political_regime ORDER BY name'
+      `SELECT pr.id, pr.name, pr.description, 
+              COUNT(cpr.country_id)::integer as country_count
+       FROM political_regime pr
+       LEFT JOIN country_political_regime cpr ON pr.id = cpr.regime_id AND cpr.current_regime = true
+       GROUP BY pr.id, pr.name, pr.description
+       ORDER BY pr.name`
     );
     console.log('[API] Régimes politiques récupérés:', regimes.length);
     

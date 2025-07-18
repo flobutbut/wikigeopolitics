@@ -1,7 +1,7 @@
 <template>
   <header class="header">
     <div class="logo">
-      <img src="@assets/brand/logoWG.svg" alt="Logo WikiGeopolitics">
+      <span class="logo-text">WikiGeopolitics</span>
     </div>
     
     <!-- Barre de recherche centrée -->
@@ -91,8 +91,26 @@ export default defineComponent({
   z-index: 1001;
 }
 
-.logo img {
-  height: 40px;
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo-text {
+  font-family: 'Lora', serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  padding: var(--spacing-sm) 0;
+  border-radius: var(--radius-sm);
+}
+
+.logo-text:hover {
+  color: var(--primary-color);
 }
 
 .search-container {

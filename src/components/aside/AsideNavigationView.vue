@@ -77,6 +77,9 @@
             :key="regime.id"
             :title="regime.name"
             :selected="isPoliticalRegimeSelected(regime.id)"
+            :badge-value="regime.country_count"
+            :show-badge="true"
+            badge-variant="secondary"
             @click="selectPoliticalRegime(regime.id)"
           >
             <template #prepend>

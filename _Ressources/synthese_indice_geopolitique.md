@@ -8,7 +8,7 @@ Ce document synthétise les axes méthodologiques et conceptuels nécessaires po
 
 ### 1.1 Pilier principaux (exemples proposés)
 - Énergie
-- Alimentation
+- Alimentation / agriculture
 - Technologie & Numérique
 - Défense
 - Économie & Finances
@@ -45,12 +45,12 @@ Indice global = Moyenne pondérée des scores de chaque pilier
 
 Certains domaines ne sont pas indépendants :
 
-| Pilier principal    | Dépend de…                         | Exemple concret |
-|---------------------|-------------------------------------|------------------|
-| Alimentation         | Énergie, Commerce                  | Engrais azotés → Gaz naturel |
-| Défense              | Industrie, Technologie             | Avions de chasse → composants numériques |
-| Économie             | Stabilité politique, infrastructures | IDE, accès au cloud |
-| Politique extérieure | Capacité militaire, ressources     | Relations diplomatiques dépendantes d’approvisionnement |
+| Pilier principal     | Dépend de…                           | Exemple concret                                         |
+| -------------------- | ------------------------------------ | ------------------------------------------------------- |
+| Alimentation         | Énergie, Commerce                    | Engrais azotés → Gaz naturel                            |
+| Défense              | Industrie, Technologie               | Avions de chasse → composants numériques                |
+| Économie             | Stabilité politique, infrastructures | IDE, accès au cloud                                     |
+| Politique extérieure | Capacité militaire, ressources       | Relations diplomatiques dépendantes d’approvisionnement |
 
 ### 3.1 Intégration proposée
 - Graphe de dépendances inter-piliers (visuel + logique)

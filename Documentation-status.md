@@ -45,11 +45,13 @@
 
 ### 🗄️ **Base de Données Optimisée**
 
-#### Système de Régimes Politiques
+#### Système de Régimes Politiques Unifié (Correction 2025)
 - ✅ **10 régimes politiques** avec descriptions complètes
-- ✅ **238 pays** avec chefs d'État et dates de prise de poste
+- ✅ **196 pays** avec chefs d'État et dates de prise de poste (100% couverture)
 - ✅ **Distribution crédible** selon données géopolitiques réelles
 - ✅ **API spécialisée** pour requêtes optimisées
+- ✅ **Doublons éliminés** : 46 relations en double supprimées
+- ✅ **Pays manquants ajoutés** : 4 pays (Côte d'Ivoire, UK, RDC, Émirats arabes unis)
 
 #### Organisations Internationales Rationalisées
 - ✅ **35 organisations** (redondances supprimées)
@@ -75,13 +77,15 @@
 
 ### 🆕 **Nouvelles Fonctionnalités Implémentées (v3.1.0)**
 
-#### ⚔️ **Conflits Armés Intégrés**
+#### ⚔️ **Conflits Armés Unifiés (Migration 2025)**
+- ✅ **Tables unifiées** : Migration `conflict` → `armed_conflict` réussie
 - ✅ **Conflits armés complets** : API spécialisée avec 10 conflits armés actifs
 - ✅ **Zones de combat interactives** : Marqueurs sur carte avec géolocalisation
 - ✅ **Sélection depuis fiche pays** : Liste des conflits dans les détails pays
 - ✅ **Affichage conditionnel** : Zones visibles uniquement lors de la sélection
-- ✅ **Pays impliqués** : Affichage automatique des pays concernés
+- ✅ **Pays impliqués** : Affichage automatique des pays concernés (17 relations)
 - ✅ **Nettoyage intelligent** : Suppression des zones lors du changement de navigation
+- ✅ **Grandes puissances** : Implication réaliste (USA, Chine, Russie)
 
 #### 🗺️ **Amélioration Cartographique**
 - ✅ **Sélections consolidées** : Logique unifiée carte ↔ aside
@@ -116,6 +120,7 @@
 - 🆕 **API conflits** : `/api/countries/:id/conflicts` avec fallback
 - 🆕 **Zones de combat** : `/api/armed-conflicts/:id/combat-zones`
 - 🆕 **Relations complexes** : Tables de liaison optimisées
+- 🆕 **Tables unifiées** : Migration `conflict` → `armed_conflict` terminée
 
 ## 📁 **Structure Finale de l'Architecture**
 

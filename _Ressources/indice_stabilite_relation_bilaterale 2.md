@@ -46,14 +46,14 @@ Somme pondérée des événements récents selon une grille standardisée.
 ### Grille de notation
 Chaque événement est évalué selon 6 axes, notés de 0 à 3 :
 
-| Axe              | Score 0         | Score 1              | Score 2                      | Score 3                        |
-|------------------|------------------|----------------------|------------------------------|--------------------------------|
-| Domaine          | Culturel mineur  | Diplomatique         | Économique                   | Militaire / stratégique        |
-| Profondeur       | Annonce vague    | Projet / débat       | Accord signé / décret        | Rupture / attaque / retrait   |
-| Durée prévue     | Ponctuelle       | ≤ 6 mois             | > 1 an                       | Permanente / structurelle      |
-| Engagement       | Rhétorique       | Projet               | Signature                    | Mise en œuvre effective        |
-| Réversibilité    | Totale           | Modérée              | Difficile                    | Irréversible                   |
-| Visibilité       | Nulle            | Nationale            | Internationale               | Crise médiatique mondiale      |
+| Axe           | Score 0         | Score 1        | Score 2               | Score 3                     |
+| ------------- | --------------- | -------------- | --------------------- | --------------------------- |
+| Domaine       | Culturel mineur | Diplomatique   | Économique            | Militaire / stratégique     |
+| Profondeur    | Annonce vague   | Projet / débat | Accord signé / décret | Rupture / attaque / retrait |
+| Durée prévue  | Ponctuelle      | ≤ 6 mois       | > 1 an                | Permanente / structurelle   |
+| Engagement    | Rhétorique      | Projet         | Signature             | Mise en œuvre effective     |
+| Réversibilité | Totale          | Modérée        | Difficile             | Irréversible                |
+| Visibilité    | Nulle           | Nationale      | Internationale        | Crise médiatique mondiale   |
 
 ### Traduction en impact
 

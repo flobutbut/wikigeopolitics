@@ -5,6 +5,13 @@
         <span class="menu-item__title">
           <slot name="prepend"></slot>
           {{ title }}
+          <Badge 
+            v-if="showBadge && badgeValue" 
+            :value="badgeValue" 
+            :variant="badgeVariant" 
+            size="small"
+            class="menu-item__badge"
+          />
         </span>
         <input 
           type="checkbox" 
@@ -24,6 +31,13 @@
         <span class="menu-item__title">
           <slot name="prepend"></slot>
           {{ title }}
+          <Badge 
+            v-if="showBadge && badgeValue" 
+            :value="badgeValue" 
+            :variant="badgeVariant" 
+            size="small"
+            class="menu-item__badge"
+          />
         </span>
         <span 
           v-if="hasChildren" 
@@ -47,12 +61,14 @@
 <script lang="ts">
 import { defineComponent, ref, computed } from 'vue'
 import ChevronIcon from '@/components/common/icons/ChevronIcon.vue'
+import Badge from '@/components/common/Badge.vue'
 
 export default defineComponent({
   name: 'MenuItem',
 
   components: {
-    ChevronIcon
+    ChevronIcon,
+    Badge
   },
 
   props: {
@@ -81,6 +97,19 @@ export default defineComponent({
       default: 0
     },
     selected: {
+      type: Boolean,
+      default: false
+    },
+    badgeValue: {
+      type: [Number, String],
+      default: null
+    },
+    badgeVariant: {
+      type: String,
+      default: 'primary',
+      validator: (value: string) => ['primary', 'secondary', 'success', 'warning', 'danger', 'info'].includes(value)
+    },
+    showBadge: {
       type: Boolean,
       default: false
     }
@@ -172,6 +201,9 @@ export default defineComponent({
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
 }
 
 .menu-item__chevron {
@@ -250,5 +282,11 @@ export default defineComponent({
 
 .switch-input:checked + .switch-slider:before {
   transform: translateX(16px);
+}
+
+/* Styles pour le badge dans le menu */
+.menu-item__badge {
+  flex-shrink: 0;
+  margin-left: auto;
 }
 </style> 
