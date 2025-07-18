@@ -9,7 +9,7 @@ DB_NAME="wikigeopolitics"
 DB_USER="wikigeo_user"
 DB_PASSWORD="wikigeo_password"
 CONTAINER_NAME="wikigeopolitics-db"
-BACKUP_DIR="./database/backup"
+BACKUP_DIR="../backup"
 DATE=$(date +"%Y%m%d_%H%M%S")
 BACKUP_FILE="${BACKUP_DIR}/wikigeopolitics_backup_${DATE}.sql"
 

@@ -172,7 +172,6 @@ const getItemMetadata = (item: EntitySectionItem) => {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
-  background-color: blue;
 }
 
 .entity-section__no-data {

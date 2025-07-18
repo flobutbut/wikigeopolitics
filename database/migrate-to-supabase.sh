@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-BACKUP_FILE="database/backup/wikigeopolitics_complete_backup.sql"
+BACKUP_FILE="backup/wikigeopolitics_backup_20250718_192138.sql"
 ENV_FILE=".env.local"
 
 echo -e "${BLUE}🚀 Migration WikiGeopolitics vers Supabase${NC}"
@@ -39,27 +39,35 @@ fi
 
 echo -e "${GREEN}✅ PostgreSQL client disponible${NC}"
 
-# Demander les informations de connexion Supabase
-echo -e "${YELLOW}🔧 Configuration de la connexion Supabase${NC}"
-echo ""
+# Charger les informations depuis .env.local
+echo -e "${YELLOW}🔧 Chargement de la configuration depuis .env.local${NC}"
 
-read -p "Host Supabase (ex: db.xxxxxxxxxxxxx.supabase.co): " SUPABASE_HOST
-read -p "Port (défaut: 5432): " SUPABASE_PORT
-SUPABASE_PORT=${SUPABASE_PORT:-5432}
-read -p "Database name (défaut: postgres): " SUPABASE_DB
-SUPABASE_DB=${SUPABASE_DB:-postgres}
-read -p "Username (défaut: postgres): " SUPABASE_USER
-SUPABASE_USER=${SUPABASE_USER:-postgres}
-read -s -p "Password: " SUPABASE_PASSWORD
-echo ""
+if [ -f "../.env.local" ]; then
+    # Charger les variables une par une pour éviter les problèmes de caractères spéciaux
+    export SUPABASE_DB_HOST=$(grep "SUPABASE_DB_HOST=" ../.env.local | cut -d'=' -f2)
+    export SUPABASE_DB_PORT=$(grep "SUPABASE_DB_PORT=" ../.env.local | cut -d'=' -f2)
+    export SUPABASE_DB_NAME=$(grep "SUPABASE_DB_NAME=" ../.env.local | cut -d'=' -f2)
+    export SUPABASE_DB_USER=$(grep "SUPABASE_DB_USER=" ../.env.local | cut -d'=' -f2)
+    export SUPABASE_DB_PASSWORD=$(grep "SUPABASE_DB_PASSWORD=" ../.env.local | cut -d'=' -f2)
+    echo "✅ Configuration chargée depuis .env.local"
+    echo "Host: '$SUPABASE_DB_HOST'"
+    echo "User: '$SUPABASE_DB_USER'"
+    echo "Database: '$SUPABASE_DB_NAME'"
+    echo "Port: '$SUPABASE_DB_PORT'"
+    echo "Password: '${SUPABASE_DB_PASSWORD:0:3}***'"
+else
+    echo -e "${RED}❌ Fichier .env.local non trouvé${NC}"
+    exit 1
+fi
 
 # Construire l'URL de connexion
-CONNECTION_URL="postgresql://${SUPABASE_USER}:${SUPABASE_PASSWORD}@${SUPABASE_HOST}:${SUPABASE_PORT}/${SUPABASE_DB}"
+CONNECTION_URL="postgresql://${SUPABASE_DB_USER}:${SUPABASE_DB_PASSWORD}@${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT}/${SUPABASE_DB_NAME}"
+echo "URL de connexion: postgresql://${SUPABASE_DB_USER}:***@${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT}/${SUPABASE_DB_NAME}"
 
 echo -e "${YELLOW}🔍 Test de connexion à Supabase...${NC}"
 
 # Test de connexion
-if psql "$CONNECTION_URL" -c "SELECT version();" > /dev/null 2>&1; then
+if psql "$CONNECTION_URL" -c "SELECT 1;" > /dev/null 2>&1; then
     echo -e "${GREEN}✅ Connexion à Supabase réussie${NC}"
 else
     echo -e "${RED}❌ Échec de la connexion à Supabase${NC}"
@@ -72,16 +80,16 @@ echo -e "${YELLOW}💾 Sauvegarde de la configuration...${NC}"
 
 cat > "$ENV_FILE" << EOF
 # Supabase Configuration
-VITE_SUPABASE_URL=https://${SUPABASE_HOST#db.}
+VITE_SUPABASE_URL=https://${SUPABASE_DB_HOST#db.}
 VITE_SUPABASE_ANON_KEY=your_anon_key_here
 VITE_SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 
 # Database Configuration (pour migration)
-SUPABASE_DB_HOST=${SUPABASE_HOST}
-SUPABASE_DB_PORT=${SUPABASE_PORT}
-SUPABASE_DB_NAME=${SUPABASE_DB}
-SUPABASE_DB_USER=${SUPABASE_USER}
-SUPABASE_DB_PASSWORD=${SUPABASE_PASSWORD}
+SUPABASE_DB_HOST=${SUPABASE_DB_HOST}
+SUPABASE_DB_PORT=${SUPABASE_DB_PORT}
+SUPABASE_DB_NAME=${SUPABASE_DB_NAME}
+SUPABASE_DB_USER=${SUPABASE_DB_USER}
+SUPABASE_DB_PASSWORD=${SUPABASE_DB_PASSWORD}
 EOF
 
 echo -e "${GREEN}✅ Configuration sauvegardée dans $ENV_FILE${NC}"

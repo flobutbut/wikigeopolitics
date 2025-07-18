@@ -68,10 +68,12 @@
 #### 🚀 Migration vers Supabase
 - ✅ **Client Supabase** : `@supabase/supabase-js` installé
 - ✅ **Service Supabase** : `supabaseService.ts` créé
-- ✅ **Types Supabase** : Interfaces complètes définies
+- ✅ **Types Vite** : `src/vite-env.d.ts` configuré
 - ✅ **Script de migration** : `migrate-to-supabase.sh` automatisé
+- ✅ **Migration des données** : Base complète migrée vers Supabase
+- ✅ **API Country** : Migrée vers Supabase avec transformation des données
 - ✅ **Documentation** : Guide complet de migration
-- 🔄 **En attente** : Configuration projet Supabase
+- ⏳ **En cours** : Migration des autres APIs (Organization, PoliticalRegime, etc.)
 
 ## 🚀 **Fonctionnalités Métier Stables & Nouvelles Fonctionnalités**
 

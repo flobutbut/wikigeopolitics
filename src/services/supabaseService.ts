@@ -1,322 +1,185 @@
 // 🚀 Service Supabase pour WikiGeopolitics
 // Remplace l'API service existant pour utiliser Supabase
 
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
-import type { Country } from '@/types/country'
-import type { PoliticalRegime, Organization, ArmedConflict, CombatZone, GlobalStats } from '@/types/supabase'
+import { createClient } from '@supabase/supabase-js'
 
 // Configuration Supabase
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error('❌ Variables d\'environnement Supabase manquantes')
-  throw new Error('Configuration Supabase requise')
+  throw new Error('Configuration Supabase manquante. Vérifiez vos variables d\'environnement.')
 }
 
-// Client Supabase
-export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey)
+export const supabase = createClient(supabaseUrl, supabaseKey)
 
-// Types pour les réponses Supabase
-interface SupabaseResponse<T> {
-  data: T | null
-  error: any
-  count?: number
+// Types pour la compatibilité avec l'API existante
+export interface Country {
+  id: string
+  nom: string
+  capitale: string
+  population: number
+  superficie: number
+  latitude: number
+  longitude: number
+  drapeau: string
+  regime_politique: string
+  continent: string
+  chef_etat: string
 }
 
-// Service principal pour WikiGeopolitics
-export class SupabaseService {
-  
-  // ===== PAYS =====
-  
-  /**
-   * Récupère tous les pays
-   */
-  static async getAllCountries(): Promise<Country[]> {
+export interface Organization {
+  id: string
+  nom: string
+  acronyme: string
+  type: string
+  description: string
+  date_creation: string
+  siege: string
+}
+
+export interface PoliticalRegime {
+  id: string
+  nom: string
+  description: string
+  caracteristiques: string[]
+}
+
+export interface ArmedConflict {
+  id: string
+  nom: string
+  description: string
+  date_debut: string
+  date_fin: string
+  type: string
+  intensite: string
+  pays_impliques: string[]
+}
+
+// Service Supabase avec les mêmes méthodes que l'API locale
+export const supabaseService = {
+  // Récupérer tous les pays
+  async getCountries(): Promise<Country[]> {
     const { data, error } = await supabase
       .from('country')
       .select('*')
-      .order('name')
+      .order('nom')
     
-    if (error) {
-      console.error('Erreur récupération pays:', error)
-      throw new Error(`Erreur récupération pays: ${error.message}`)
-    }
-    
+    if (error) throw error
     return data || []
-  }
-  
-  /**
-   * Récupère un pays par ID
-   */
-  static async getCountryById(id: string): Promise<Country | null> {
+  },
+
+  // Récupérer un pays par ID
+  async getCountryById(id: string): Promise<Country | null> {
     const { data, error } = await supabase
       .from('country')
       .select('*')
       .eq('id', id)
       .single()
     
-    if (error) {
-      console.error('Erreur récupération pays:', error)
-      return null
-    }
-    
+    if (error) throw error
     return data
-  }
-  
-  /**
-   * Recherche de pays par nom
-   */
-  static async searchCountries(query: string): Promise<Country[]> {
+  },
+
+  // Récupérer les organisations par type
+  async getOrganizationsByType(): Promise<Record<string, Organization[]>> {
+    const { data, error } = await supabase
+      .from('organization')
+      .select(`
+        *,
+        country_organization(countryid)
+      `)
+      .order('nom')
+    
+    if (error) throw error
+
+    // Grouper par type et ajouter le nombre de pays membres
+    const grouped = (data || []).reduce((acc, org) => {
+      const type = org.type || 'Autre'
+      if (!acc[type]) acc[type] = []
+      
+      // Ajouter le nombre de pays membres
+      const countryCount = org.country_organization?.length || 0
+      acc[type].push({
+        ...org,
+        country_count: countryCount
+      })
+      
+      return acc
+    }, {} as Record<string, (Organization & { country_count: number })[]>)
+
+    return grouped
+  },
+
+  // Récupérer les régimes politiques
+  async getPoliticalRegimes(): Promise<PoliticalRegime[]> {
+    const { data, error } = await supabase
+      .from('political_regime')
+      .select(`
+        *,
+        country_political_regime(country_id)
+      `)
+      .order('nom')
+    
+    if (error) throw error
+
+    // Ajouter le nombre de pays pour chaque régime
+    return (data || []).map(regime => ({
+      ...regime,
+      country_count: regime.country_political_regime?.length || 0
+    }))
+  },
+
+  // Récupérer les conflits armés
+  async getArmedConflicts(): Promise<ArmedConflict[]> {
+    const { data, error } = await supabase
+      .from('armed_conflict')
+      .select(`
+        *,
+        conflict_country(countryid)
+      `)
+      .order('date_debut', { ascending: false })
+    
+    if (error) throw error
+
+    // Transformer les données pour correspondre à l'interface
+    return (data || []).map(conflict => ({
+      id: conflict.id,
+      nom: conflict.nom,
+      description: conflict.description || '',
+      date_debut: conflict.date_debut,
+      date_fin: conflict.date_fin,
+      type: conflict.type || '',
+      intensite: conflict.intensite || '',
+      pays_impliques: conflict.conflict_country?.map((cc: any) => cc.countryid) || []
+    }))
+  },
+
+  // Rechercher des pays
+  async searchCountries(query: string): Promise<Country[]> {
     const { data, error } = await supabase
       .from('country')
       .select('*')
-      .ilike('name', `%${query}%`)
-      .order('name')
+      .or(`nom.ilike.%${query}%,capitale.ilike.%${query}%`)
+      .order('nom')
+      .limit(20)
     
-    if (error) {
-      console.error('Erreur recherche pays:', error)
-      return []
-    }
-    
+    if (error) throw error
     return data || []
-  }
-  
-  /**
-   * Récupère les pays par continent
-   */
-  static async getCountriesByContinent(continent: string): Promise<Country[]> {
+  },
+
+  // Récupérer les pays par continent
+  async getCountriesByContinent(continent: string): Promise<Country[]> {
     const { data, error } = await supabase
       .from('country')
       .select('*')
       .eq('continent', continent)
-      .order('name')
+      .order('nom')
     
-    if (error) {
-      console.error('Erreur récupération pays par continent:', error)
-      return []
-    }
-    
+    if (error) throw error
     return data || []
-  }
-  
-  // ===== RÉGIMES POLITIQUES =====
-  
-  /**
-   * Récupère tous les régimes politiques
-   */
-  static async getAllPoliticalRegimes(): Promise<PoliticalRegime[]> {
-    const { data, error } = await supabase
-      .from('political_regime')
-      .select('*')
-      .order('name')
-    
-    if (error) {
-      console.error('Erreur récupération régimes politiques:', error)
-      return []
-    }
-    
-    return data || []
-  }
-  
-  /**
-   * Récupère les pays par régime politique
-   */
-  static async getCountriesByRegime(regimeId: string): Promise<Country[]> {
-    const { data, error } = await supabase
-      .from('country')
-      .select('*')
-      .eq('political_regime_id', regimeId)
-      .order('name')
-    
-    if (error) {
-      console.error('Erreur récupération pays par régime:', error)
-      return []
-    }
-    
-    return data || []
-  }
-  
-  // ===== ORGANISATIONS =====
-  
-  /**
-   * Récupère toutes les organisations
-   */
-  static async getAllOrganizations(): Promise<Organization[]> {
-    const { data, error } = await supabase
-      .from('organization')
-      .select('*')
-      .order('name')
-    
-    if (error) {
-      console.error('Erreur récupération organisations:', error)
-      return []
-    }
-    
-    return data || []
-  }
-  
-  /**
-   * Récupère les organisations par type
-   */
-  static async getOrganizationsByType(type: string): Promise<Organization[]> {
-    const { data, error } = await supabase
-      .from('organization')
-      .select('*')
-      .eq('type', type)
-      .order('name')
-    
-    if (error) {
-      console.error('Erreur récupération organisations par type:', error)
-      return []
-    }
-    
-    return data || []
-  }
-  
-  // ===== CONFLITS ARMÉS =====
-  
-  /**
-   * Récupère tous les conflits armés
-   */
-  static async getAllArmedConflicts(): Promise<ArmedConflict[]> {
-    const { data, error } = await supabase
-      .from('armed_conflict')
-      .select('*')
-      .order('name')
-    
-    if (error) {
-      console.error('Erreur récupération conflits armés:', error)
-      return []
-    }
-    
-    return data || []
-  }
-  
-  /**
-   * Récupère les conflits par pays
-   */
-  static async getConflictsByCountry(countryId: string): Promise<ArmedConflict[]> {
-    const { data, error } = await supabase
-      .from('armed_conflict')
-      .select('*')
-      .contains('countries_involved', [countryId])
-      .order('name')
-    
-    if (error) {
-      console.error('Erreur récupération conflits par pays:', error)
-      return []
-    }
-    
-    return data || []
-  }
-  
-  /**
-   * Récupère les zones de combat d'un conflit
-   */
-  static async getCombatZones(conflictId: string): Promise<any[]> {
-    const { data, error } = await supabase
-      .from('combat_zone')
-      .select('*')
-      .eq('armed_conflict_id', conflictId)
-    
-    if (error) {
-      console.error('Erreur récupération zones de combat:', error)
-      return []
-    }
-    
-    return data || []
-  }
-  
-  // ===== RECHERCHE GÉOGRAPHIQUE =====
-  
-  /**
-   * Recherche géographique avec PostGIS
-   */
-  static async searchByLocation(lat: number, lng: number, radiusKm: number = 100): Promise<Country[]> {
-    const { data, error } = await supabase
-      .rpc('search_countries_by_location', {
-        search_lat: lat,
-        search_lng: lng,
-        search_radius: radiusKm * 1000 // Conversion en mètres
-      })
-    
-    if (error) {
-      console.error('Erreur recherche géographique:', error)
-      return []
-    }
-    
-    return data || []
-  }
-  
-  // ===== STATISTIQUES =====
-  
-  /**
-   * Récupère les statistiques globales
-   */
-  static async getGlobalStats(): Promise<any> {
-    const [countriesCount, regimesCount, orgsCount, conflictsCount] = await Promise.all([
-      supabase.from('country').select('*', { count: 'exact', head: true }),
-      supabase.from('political_regime').select('*', { count: 'exact', head: true }),
-      supabase.from('organization').select('*', { count: 'exact', head: true }),
-      supabase.from('armed_conflict').select('*', { count: 'exact', head: true })
-    ])
-    
-    return {
-      countries: countriesCount.count || 0,
-      politicalRegimes: regimesCount.count || 0,
-      organizations: orgsCount.count || 0,
-      armedConflicts: conflictsCount.count || 0
-    }
-  }
-  
-  // ===== GESTION DU CACHE =====
-  
-  private static cache = new Map<string, { data: any, timestamp: number }>()
-  private static CACHE_TTL = 5 * 60 * 1000 // 5 minutes
-  
-  /**
-   * Récupère des données avec cache
-   */
-  static async getCached<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
-    const cached = this.cache.get(key)
-    const now = Date.now()
-    
-    if (cached && (now - cached.timestamp) < this.CACHE_TTL) {
-      return cached.data
-    }
-    
-    const data = await fetcher()
-    this.cache.set(key, { data, timestamp: now })
-    return data
-  }
-  
-  /**
-   * Vide le cache
-   */
-  static clearCache(): void {
-    this.cache.clear()
   }
 }
 
-// Export des fonctions utilitaires
-export const {
-  getAllCountries,
-  getCountryById,
-  searchCountries,
-  getCountriesByContinent,
-  getAllPoliticalRegimes,
-  getCountriesByRegime,
-  getAllOrganizations,
-  getOrganizationsByType,
-  getAllArmedConflicts,
-  getConflictsByCountry,
-  getCombatZones,
-  searchByLocation,
-  getGlobalStats,
-  getCached,
-  clearCache
-} = SupabaseService
-
-// Export par défaut
-export default SupabaseService 
+// Export par défaut pour la compatibilité
+export default supabaseService 

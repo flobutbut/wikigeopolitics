@@ -1,223 +1,105 @@
-# 🚀 Guide de Migration Supabase - WikiGeopolitics
+# Migration vers Supabase
 
-## 📊 État Actuel
+## ✅ État de la migration
 
-**✅ Préparations terminées :**
-- ✅ Service Supabase complet (`src/services/supabaseService.ts`)
-- ✅ Types TypeScript définis (`src/types/supabase.ts`)
-- ✅ Script de migration automatisé (`database/migrate-to-supabase.sh`)
-- ✅ Package Supabase installé (`@supabase/supabase-js@2.51.0`)
-- ✅ Service adaptatif créé (`src/services/adaptiveApiService.ts`)
-- ✅ Composant de diagnostic développé (`src/components/common/SupabaseDiagnostic.vue`)
-- ✅ Panel de debug intégré (`src/components/debug/DebugPanel.vue`)
+### Base de données
+- ✅ Migration des données vers Supabase terminée
+- ✅ Toutes les tables principales migrées
+- ✅ Relations entre tables préservées
 
-**⏳ Étapes restantes :**
-1. Configuration des variables d'environnement
-2. Migration effective des données
-3. Test et validation
-4. Basculement progressif
+### Application Frontend
+- ✅ Client Supabase installé (`@supabase/supabase-js`)
+- ✅ Service Supabase créé (`src/services/supabaseService.ts`)
+- ✅ Types Vite configurés (`src/vite-env.d.ts`)
+- ✅ API Country migrée vers Supabase
+- ⏳ Autres APIs en cours de migration
 
-## 🛠️ Instructions de Migration
+## 🔧 Configuration requise
 
-### Étape 1: Configuration Supabase
+### 1. Variables d'environnement
 
-1. **Créez votre projet Supabase :**
-   - Allez sur https://supabase.com/dashboard
-   - Créez un nouveau projet
-   - Nom : `wikigeopolitics`
-   - Région : Europe (Paris) recommandé
-   - Mot de passe : (notez-le bien)
+Créez un fichier `.env.local` à la racine du projet :
 
-2. **Récupérez vos clés API :**
-   - Dashboard → Settings → API
-   - Notez : `Project URL` et `anon public key`
+```env
+VITE_SUPABASE_URL=https://tiwrzklmwcqmetucrgib.supabase.co
+VITE_SUPABASE_ANON_KEY=votre_cle_anon_public_ici
+```
 
-3. **Configurez l'environnement :**
-   ```bash
-   # Copiez le fichier d'exemple
-   cp .env.local.example .env.local
-   
-   # Éditez .env.local avec vos vraies valeurs
-   nano .env.local
-   ```
+### 2. Obtenir votre clé API
 
-   ```env
-   # Remplacez ces valeurs par les vôtres
-   VITE_SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co
-   VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-   VITE_USE_SUPABASE=true
-   VITE_USE_LOCAL_API=false
-   ```
+1. Allez sur https://supabase.com/dashboard
+2. Sélectionnez votre projet `wikigeopolitics`
+3. Allez dans **Settings** → **API**
+4. Copiez la clé **anon public**
 
-### Étape 2: Migration des Données
+## 📋 APIs migrées
 
-1. **Préparez vos données locales :**
-   ```bash
-   # Créez un backup récent de votre base locale
-   docker exec wikigeopolitics-db pg_dump -U wikigeo_user -d wikigeopolitics > database/backup/latest_backup.sql
-   ```
+### ✅ CountryAPI
+- `getAll()` - Récupère tous les pays
+- `getById(id)` - Récupère un pays par ID
+- `search(query)` - Recherche de pays
+- `getByRegime(regimeId)` - Pays par régime politique
+- `getDetails(id)` - Détails d'un pays (TODO: implémenter les relations)
+- `getGeoData()` - Données géographiques (TODO)
+- `getByOrganization(orgId)` - Pays par organisation (TODO)
 
-2. **Exécutez le script de migration :**
-   ```bash
-   # Rendez le script exécutable
-   chmod +x database/migrate-to-supabase.sh
-   
-   # Lancez la migration
-   ./database/migrate-to-supabase.sh
-   ```
+### ⏳ APIs en cours
+- OrganizationAPI
+- PoliticalRegimeAPI
+- ArmedConflictAPI
+- NavigationAPI
 
-3. **Suivez les instructions du script :**
-   - Entrez vos informations de connexion Supabase
-   - Confirmez la migration
-   - Vérifiez les résultats
+## 🔄 Transformation des données
 
-### Étape 3: Test et Validation
+Les données de Supabase sont transformées pour correspondre aux types TypeScript existants :
 
-1. **Démarrez l'application :**
-   ```bash
-   npm run dev
-   ```
+```typescript
+// Base de données Supabase
+{
+  id: "france",
+  nom: "France",
+  drapeau: "🇫🇷",
+  capitale: "Paris",
+  latitude: 48.8566,
+  longitude: 2.3522
+}
 
-2. **Ouvrez le Debug Panel :**
-   - Raccourci : `Ctrl + Shift + D`
-   - Ou cliquez sur l'icône 🔧 en haut à droite
+// Type Country de l'application
+{
+  id: "france",
+  title: "France",        // nom → title
+  flag: "🇫🇷",           // drapeau → flag
+  capitale: "Paris",
+  coordonnees: [48.8566, 2.3522]  // latitude/longitude → coordonnees
+}
+```
 
-3. **Vérifiez la migration dans l'onglet "🚀 Supabase" :**
-   - ✅ Configuration correcte
-   - ✅ Connexion réussie
-   - ✅ Données disponibles (nombre de pays, régimes, etc.)
+## 🚀 Test de la migration
 
-4. **Testez les fonctionnalités :**
-   - Navigation dans les pays
-   - Sélection sur la carte
-   - Floating panels
-   - Recherche et filtres
+1. Configurez vos variables d'environnement
+2. Lancez l'application : `npm run dev`
+3. Vérifiez que les pays se chargent depuis Supabase
+4. Testez la recherche et la navigation
 
-### Étape 4: Basculement Progressif
+## 📝 Prochaines étapes
 
-Le service adaptatif permet une migration en douceur :
+1. Migrer les autres APIs (Organization, PoliticalRegime, etc.)
+2. Implémenter les relations complexes (pays par organisation)
+3. Ajouter les données géographiques
+4. Optimiser les performances avec le cache Supabase
+5. Supprimer l'ancien serveur API local
 
-1. **Mode hybride** (recommandé pour débuter) :
-   ```env
-   VITE_USE_SUPABASE=true
-   VITE_USE_LOCAL_API=true
-   ```
-   → Supabase en priorité, fallback vers l'API locale
+## 🐛 Dépannage
 
-2. **Mode Supabase uniquement** (production) :
-   ```env
-   VITE_USE_SUPABASE=true
-   VITE_USE_LOCAL_API=false
-   ```
-   → Utilise uniquement Supabase
+### Erreur de connexion
+- Vérifiez vos variables d'environnement
+- Assurez-vous que la clé anon est correcte
+- Vérifiez que le projet Supabase est actif
 
-3. **Rollback possible** :
-   ```env
-   VITE_USE_SUPABASE=false
-   VITE_USE_LOCAL_API=true
-   ```
-   → Retour à l'API locale
+### Données manquantes
+- Vérifiez que la migration des données est complète
+- Consultez les logs de la console pour les erreurs Supabase
 
-## 🔧 Outils de Diagnostic
-
-### Debug Panel (Ctrl + Shift + D)
-
-Accessible uniquement en développement, le Debug Panel contient :
-
-1. **🚀 Supabase :**
-   - État de la configuration
-   - Test de connexion
-   - Statistiques des données
-   - Instructions de configuration
-
-2. **📊 Stores :**
-   - État des stores Pinia
-   - Sélections actives
-   - Données chargées
-
-3. **🌍 Env :**
-   - Variables d'environnement
-   - Configuration actuelle
-
-4. **⚡ Perf :**
-   - Métriques de performance
-   - Utilisation mémoire
-
-### Service Adaptatif
-
-Le `AdaptiveApiService` gère automatiquement :
-- Basculement entre APIs
-- Fallback en cas d'erreur
-- Logs détaillés
-- Cache intelligent
-
-## 📋 Checklist de Migration
-
-### Avant Migration
-- [ ] Backup de la base locale créé
-- [ ] Projet Supabase créé et configuré
-- [ ] Variables d'environnement définies
-- [ ] Script de migration testé
-
-### Pendant Migration
-- [ ] Script de migration exécuté sans erreur
-- [ ] Données migrées (vérification par comptage)
-- [ ] Extensions PostGIS activées
-- [ ] Permissions correctement configurées
-
-### Après Migration
-- [ ] Debug Panel affiche ✅ pour Supabase
-- [ ] Navigation des pays fonctionne
-- [ ] Floating panels s'affichent correctement
-- [ ] Recherche et filtres opérationnels
-- [ ] Performance acceptable
-
-### Production
-- [ ] Variables d'environnement de production configurées
-- [ ] Mode Supabase uniquement activé
-- [ ] Monitoring activé
-- [ ] Backups automatiques configurés
-
-## 🚨 Troubleshooting
-
-### Problème : Connexion Supabase échoue
-**Solution :**
-1. Vérifiez les variables d'environnement
-2. Confirmez que le projet Supabase est actif
-3. Vérifiez les logs dans le Debug Panel
-
-### Problème : Données manquantes après migration
-**Solution :**
-1. Vérifiez les logs du script de migration
-2. Contrôlez les comptages dans Supabase Dashboard
-3. Re-exécutez la migration si nécessaire
-
-### Problème : Performance dégradée
-**Solution :**
-1. Vérifiez votre région Supabase (Europe recommandé)
-2. Activez la mise en cache
-3. Considérez le plan payant pour plus de ressources
-
-### Problème : Rollback nécessaire
-**Solution :**
-1. Changez `VITE_USE_SUPABASE=false` dans `.env.local`
-2. Redémarrez le serveur de développement
-3. Vérifiez que l'API locale fonctionne
-
-## 📞 Support
-
-- **Documentation Supabase :** https://supabase.com/docs
-- **Community Discord :** https://discord.supabase.com
-- **Debug Panel :** `Ctrl + Shift + D` dans l'application
-
----
-
-**🎉 Une fois la migration terminée, vous bénéficierez de :**
-- Hébergement cloud automatique
-- Scalabilité automatique
-- Backups automatiques
-- API REST et GraphQL générées
-- Dashboard d'administration
-- Monitoring intégré
-
-La migration est conçue pour être **progressive** et **réversible**. N'hésitez pas à tester en mode hybride avant le basculement complet !
+### Types TypeScript
+- Vérifiez que `src/vite-env.d.ts` existe
+- Redémarrez le serveur de développement si nécessaire
