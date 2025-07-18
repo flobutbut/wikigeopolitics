@@ -115,7 +115,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import DetailSection from '@/components/aside/DetailSection.vue'
 import CollapsibleSection from '@/components/aside/CollapsibleSection.vue'
 import EntitySection from '@/components/common/EntitySection.vue'
