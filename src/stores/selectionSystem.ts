@@ -251,7 +251,7 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       // Charger les données du conflit
       const asideStore = useAsideStore()
       if (source === 'aside') {
-        await asideStore.selectArmedConflict(conflictId)
+        await asideStore.loadConflictData(conflictId)
       } else if (source === 'map') {
         // Pour les sélections depuis la map, charger les données du conflit pour le floating panel
         await asideStore.loadConflictData(conflictId)
@@ -506,7 +506,7 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       this.selectedConflict = null
       this.selectedOrganization = null
       
-      this.floatingPanelOpen = source === 'panel'
+      this.floatingPanelOpen = true
       this.floatingPanelType = source === 'panel' ? 'country' : 'regime'
       
       this.conflictZonesVisible = false
@@ -557,7 +557,7 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       this.selectedConflict = null
       this.selectedRegime = null
       
-      this.floatingPanelOpen = source === 'panel'
+      this.floatingPanelOpen = true
       this.floatingPanelType = source === 'panel' ? 'country' : 'organization'
       
       this.conflictZonesVisible = false

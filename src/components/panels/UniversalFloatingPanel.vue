@@ -14,6 +14,7 @@
       <!-- Vue spécialisée selon le type d'entité -->
       <FloatingDetailView 
         v-if="asideStore.currentEntityType === 'country'" 
+        :data="data"
       />
       
       <ConflictDetailView 

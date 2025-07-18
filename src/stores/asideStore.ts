@@ -1241,6 +1241,25 @@ export const useAsideStore = defineStore('aside', {
               timeline: conflictData.timeline
             } as ConflictDetailData
             this.currentEntityType = 'conflict'
+            
+            // Charger les pays impliqués séparément
+            try {
+              const countries = await armedConflictAPI.getCountries(conflictId)
+              if (this.currentDetailData && 'paysImpliques' in this.currentDetailData) {
+                this.currentDetailData.paysImpliques = countries.map((country: any) => ({
+                  id: country.id || country.countryId,
+                  nom: country.nom || country.name || country.title || country.country_name,
+                  flag: country.flag || country.drapeau || country.emoji_flag,
+                  role: country.role || country.involvement_type || 'Participant',
+                  dateEntree: country.dateEntree || country.involvement_date || country.start_date
+                }))
+              }
+            } catch (countriesError) {
+              console.error('Erreur lors du chargement des pays impliqués:', countriesError)
+              if (this.currentDetailData && 'paysImpliques' in this.currentDetailData) {
+                this.currentDetailData.paysImpliques = []
+              }
+            }
           } else {
             throw new Error('Conflict data not found')
           }
@@ -1263,7 +1282,15 @@ export const useAsideStore = defineStore('aside', {
               blesses: 5000,
               deplaces: 50000
             },
-            paysImpliques: [],
+            paysImpliques: [
+              {
+                id: '1',
+                nom: 'Pays exemple',
+                flag: '🏳️',
+                role: 'Participant',
+                dateEntree: '2020-01-01'
+              }
+            ],
             timeline: [{
               id: '1',
               date: '2020-01-01',

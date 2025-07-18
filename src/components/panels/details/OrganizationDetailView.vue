@@ -1,5 +1,5 @@
 <template>
-  <div class="organization-detail-view">
+  <DetailViewContainer>
     <!-- Informations principales -->
     <DetailSection
       :sections="[
@@ -47,28 +47,14 @@
     </CollapsibleSection>
 
     <!-- Pays membres -->
-    <CollapsibleSection
+    <EntitySection
       title="Pays Membres"
+      :items="data.paysMembres"
       :expanded="membersExpanded"
+      :config="membersConfig"
+      no-data-message="Aucun pays membre répertorié."
       @toggle="toggleMembers"
-    >
-      <div v-if="data.paysMembres && data.paysMembres.length > 0" class="members-list">
-        <div v-for="member in data.paysMembres" :key="member.id" class="member-item">
-          <div class="member-info">
-            <span v-if="member.flag" class="member-flag">{{ member.flag }}</span>
-            <span class="member-name">{{ member.nom }}</span>
-          </div>
-          <div v-if="member.statut" class="member-status">{{ member.statut }}</div>
-          <div v-if="member.dateAdhesion" class="member-since">
-            Membre depuis: {{ formatDate(member.dateAdhesion) }}
-          </div>
-          <div v-if="member.role" class="member-role">{{ member.role }}</div>
-        </div>
-      </div>
-      <div v-else class="no-data">
-        Aucun pays membre répertorié.
-      </div>
-    </CollapsibleSection>
+    />
 
     <!-- Structure et gouvernance -->
     <CollapsibleSection
@@ -156,13 +142,15 @@
         Aucune information financière disponible.
       </div>
     </CollapsibleSection>
-  </div>
+  </DetailViewContainer>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import DetailSection from '@/components/aside/DetailSection.vue'
 import CollapsibleSection from '@/components/aside/CollapsibleSection.vue'
+import EntitySection from '@/components/common/EntitySection.vue'
+import DetailViewContainer from '@/components/panels/DetailViewContainer.vue'
 import { formatDate } from '@/utils/formatUtils'
 
 interface OrganizationData {
@@ -218,6 +206,26 @@ const governanceExpanded = ref(false)
 const activitiesExpanded = ref(false)
 const financingExpanded = ref(false)
 
+// Configuration pour les pays membres
+const membersConfig = {
+  titleField: 'nom',
+  subtitleField: 'statut',
+  iconField: 'flag',
+  metadataFields: [
+    {
+      key: 'dateAdhesion',
+      label: 'Membre depuis',
+      field: 'dateAdhesion',
+      formatter: (date: string) => formatDate(date)
+    },
+    {
+      key: 'role',
+      label: 'Rôle',
+      field: 'role'
+    }
+  ]
+}
+
 // Fonctions de toggle
 const toggleDescription = () => { descriptionExpanded.value = !descriptionExpanded.value }
 const toggleObjectives = () => { objectivesExpanded.value = !objectivesExpanded.value }
@@ -245,11 +253,7 @@ const formatPercentage = (percentage?: number) => {
 </script>
 
 <style scoped>
-.organization-detail-view {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
+/* Container maintenant géré par DetailViewContainer */
 
 .description-content {
   line-height: 1.6;
@@ -280,54 +284,7 @@ const formatPercentage = (percentage?: number) => {
   line-height: 1.5;
 }
 
-.members-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.member-item {
-  background-color: var(--surface-dimmed);
-  border-radius: var(--radius-sm);
-  padding: var(--spacing-sm);
-  transition: background-color var(--transition-speed) var(--transition-function);
-}
-
-.member-item:hover {
-  background-color: var(--surface-hover);
-}
-
-.member-info {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-weight: var(--font-weight-medium);
-}
-
-.member-flag {
-  font-size: var(--font-size-md);
-}
-
-.member-status {
-  margin-top: var(--spacing-xs);
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-.member-since {
-  margin-top: var(--spacing-xs);
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-.member-role {
-  margin-top: var(--spacing-xs);
-  font-size: var(--font-size-sm);
-  color: var(--primary-color);
-  font-weight: var(--font-weight-medium);
-}
+/* Styles pour les membres supprimés - maintenant gérés par EntitySection */
 
 .governance-content {
   display: flex;

@@ -1,5 +1,5 @@
 <template>
-  <div class="conflict-detail-view">
+  <DetailViewContainer>
     <!-- Informations principales -->
     <DetailSection
       :sections="mainSections"
@@ -28,27 +28,14 @@
     </CollapsibleSection>
 
     <!-- Pays impliqués -->
-    <CollapsibleSection
+    <EntitySection
       title="Pays Impliqués"
+      :items="data.paysImpliques"
       :expanded="countriesExpanded"
+      :config="countriesConfig"
+      no-data-message="Aucun pays impliqué répertorié."
       @toggle="toggleCountries"
-    >
-      <div v-if="data.paysImpliques && data.paysImpliques.length > 0" class="countries-list">
-        <div v-for="country in data.paysImpliques" :key="country.id" class="country-item">
-          <div class="country-name">
-            <span v-if="country.flag">{{ country.flag }}</span>
-            {{ country.nom }}
-          </div>
-          <div v-if="country.role" class="country-role">{{ country.role }}</div>
-          <div v-if="country.dateEntree" class="country-involvement">
-            Impliqué depuis: {{ formatDate(country.dateEntree) }}
-          </div>
-        </div>
-      </div>
-      <div v-else class="no-data">
-        Aucun pays impliqué répertorié.
-      </div>
-    </CollapsibleSection>
+    />
 
     <!-- Timeline -->
     <CollapsibleSection
@@ -102,13 +89,15 @@
         Aucune conséquence documentée.
       </div>
     </CollapsibleSection>
-  </div>
+  </DetailViewContainer>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import DetailSection from '@/components/aside/DetailSection.vue'
 import CollapsibleSection from '@/components/aside/CollapsibleSection.vue'
+import EntitySection from '@/components/common/EntitySection.vue'
+import DetailViewContainer from '@/components/panels/DetailViewContainer.vue'
 import { formatDate } from '@/utils/formatUtils'
 import type { ConflictDetailData } from '@/types/conflict'
 
@@ -122,6 +111,21 @@ const countriesExpanded = ref(true)
 const timelineExpanded = ref(false)
 const peaceExpanded = ref(false)
 const consequencesExpanded = ref(false)
+
+// Configuration pour les pays impliqués
+const countriesConfig = {
+  titleField: 'nom',
+  subtitleField: 'role',
+  iconField: 'flag',
+  metadataFields: [
+    {
+      key: 'dateEntree',
+      label: 'Impliqué depuis',
+      field: 'dateEntree',
+      formatter: (date: string) => formatDate(date)
+    }
+  ]
+}
 
 // Computed pour les sections principales
 const mainSections = computed(() => [
@@ -188,11 +192,7 @@ const formatVictimValue = (value: any) => {
 </script>
 
 <style scoped>
-.conflict-detail-view {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
+/* Container maintenant géré par DetailViewContainer */
 
 .victims-info {
   display: flex;
@@ -219,42 +219,7 @@ const formatVictimValue = (value: any) => {
   color: var(--text-muted);
 }
 
-.countries-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-.country-item {
-  background-color: var(--surface-dimmed);
-  border-radius: var(--radius-sm);
-  padding: var(--spacing-sm);
-  transition: background-color var(--transition-speed) var(--transition-function);
-}
-
-.country-item:hover {
-  background-color: var(--surface-hover);
-}
-
-.country-name {
-  font-weight: var(--font-weight-medium);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.country-role {
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
-  margin-top: var(--spacing-xs);
-}
-
-.country-involvement {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-  font-style: italic;
-  margin-top: var(--spacing-xs);
-}
+/* Styles pour les pays supprimés - maintenant gérés par EntitySection */
 
 .timeline {
   display: flex;

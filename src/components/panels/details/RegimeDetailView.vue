@@ -38,30 +38,14 @@
     </CollapsibleSection>
 
     <!-- Pays avec ce régime -->
-    <CollapsibleSection
+    <EntitySection
       title="Pays avec ce régime"
+      :items="data.countries"
       :expanded="countriesExpanded"
+      :config="countriesConfig"
+      no-data-message="Aucun pays répertorié avec ce régime."
       @toggle="toggleCountries"
-    >
-      <div v-if="data.countries && data.countries.length > 0" class="countries-list">
-        <div v-for="country in data.countries" :key="country.id" class="country-item">
-          <div class="country-info">
-            <span v-if="country.flag" class="country-flag">{{ country.flag }}</span>
-            <span class="country-name">{{ country.nom }}</span>
-          </div>
-          <div v-if="country.chefEtat" class="country-leader">
-            <span class="leader-title">{{ getLeaderTitle(data.type) }}:</span>
-            <span class="leader-name">{{ country.chefEtat }}</span>
-          </div>
-          <div v-if="country.datePrisePoste" class="country-since">
-            En poste depuis: {{ formatDate(country.datePrisePoste) }}
-          </div>
-        </div>
-      </div>
-      <div v-else class="no-data">
-        Aucun pays répertorié avec ce régime.
-      </div>
-    </CollapsibleSection>
+    />
 
     <!-- Avantages et inconvénients -->
     <CollapsibleSection
@@ -134,6 +118,8 @@
 import { ref } from 'vue'
 import DetailSection from '@/components/aside/DetailSection.vue'
 import CollapsibleSection from '@/components/aside/CollapsibleSection.vue'
+import EntitySection from '@/components/common/EntitySection.vue'
+import DetailViewContainer from '@/components/panels/DetailViewContainer.vue'
 import { formatDate } from '@/utils/formatUtils'
 
 interface RegimeData {
@@ -163,7 +149,7 @@ interface RegimeData {
   }>
 }
 
-defineProps<{
+const props = defineProps<{
   data: RegimeData
 }>()
 
@@ -174,6 +160,25 @@ const countriesExpanded = ref(true)
 const prosConsExpanded = ref(false)
 const historyExpanded = ref(false)
 const examplesExpanded = ref(false)
+
+// Configuration pour les pays
+const countriesConfig = computed(() => ({
+  titleField: 'nom',
+  iconField: 'flag',
+  metadataFields: [
+    {
+      key: 'chefEtat',
+      label: getLeaderTitle(props.data.type),
+      field: 'chefEtat'
+    },
+    {
+      key: 'datePrisePoste',
+      label: 'En poste depuis',
+      field: 'datePrisePoste',
+      formatter: (date: string) => formatDate(date)
+    }
+  ].filter(field => field.field)
+}))
 
 // Fonctions de toggle
 const toggleDescription = () => { descriptionExpanded.value = !descriptionExpanded.value }
@@ -199,11 +204,7 @@ const getLeaderTitle = (regimeType?: string) => {
 </script>
 
 <style scoped>
-.regime-detail-view {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
+/* Container maintenant géré par DetailViewContainer */
 
 .description-content {
   line-height: 1.6;

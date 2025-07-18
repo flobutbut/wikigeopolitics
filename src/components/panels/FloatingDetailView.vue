@@ -1,7 +1,5 @@
 <template>
-  <div class="aside__detail-view">
-    <div class="aside__section">
-      <div class="detail-content">
+  <DetailViewContainer>
 
 
         <!-- Bloc principal : Forme de l'État + Chef d'État -->
@@ -35,65 +33,81 @@
         </CollapsibleSection>
 
         <!-- Coalitions diplomatiques -->
-        <CollapsibleSection
+        <EntitySection
           title="Coalitions diplomatiques"
+          :items="detailData.coalitions || []"
           :expanded="coalitionsExpanded"
+          :config="coalitionsConfig"
+          no-data-message="Aucune coalition diplomatique disponible."
           @toggle="toggleCoalitions"
-        >
-          <div class="coalitions-list">
-            <div v-for="coalition in detailData.coalitions" :key="coalition.id" class="coalition-item">
-              <div class="coalition-title">{{ coalition.title }}</div>
-              <div v-if="coalition.role" class="coalition-role">{{ coalition.role }}</div>
-              <div v-if="coalition.dateAdhesion" class="coalition-date">
-                Adhésion: {{ formatDate(coalition.dateAdhesion) }}
-              </div>
-            </div>
-            <div v-if="!detailData.coalitions || detailData.coalitions.length === 0" class="no-data">
-              Aucune coalition diplomatique disponible.
-            </div>
-          </div>
-        </CollapsibleSection>
+        />
 
         <!-- Accords de libre-échange -->
-        <CollapsibleSection
+        <EntitySection
           title="Accords de libre-échange"
+          :items="detailData.accords || []"
           :expanded="tradeAgreementsExpanded"
+          :config="tradeAgreementsConfig"
+          no-data-message="Aucun accord de libre-échange disponible."
           @toggle="toggleTradeAgreements"
-        >
-          <div class="trade-agreements-list">
-            <div v-for="accord in detailData.accords" :key="accord.id" class="trade-agreement-item">
-              <div class="accord-title">{{ accord.title }}</div>
-              <div v-if="accord.role" class="accord-role">{{ accord.role }}</div>
-              <div v-if="accord.dateAdhesion" class="accord-date">
-                Adhésion: {{ formatDate(accord.dateAdhesion) }}
-              </div>
-            </div>
-            <div v-if="!detailData.accords || detailData.accords.length === 0" class="no-data">
-              Aucun accord de libre-échange disponible.
-            </div>
-          </div>
-        </CollapsibleSection>
+        />
 
         <!-- Conflits armés -->
-        <ConflictsSection
-          :conflicts="detailData.conflitsArmes || []"
+        <EntitySection
+          title="Conflits armés"
+          :items="detailData.conflitsArmes || []"
           :expanded="conflictsExpanded"
-          :is-conflict-selected="isConflictSelected"
+          :selectable="true"
+          :is-item-selected="isConflictSelected"
+          :config="conflictsConfig"
+          no-data-message="Aucun conflit armé disponible."
           @toggle="toggleConflicts"
           @select="selectConflict"
         />
-      </div>
-    </div>
-  </div>
+  </DetailViewContainer>
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, ref } from 'vue'
+import { defineComponent, computed, ref, PropType } from 'vue'
 import { useAsideStore } from '@/stores/asideStore'
 import { useSelectionSystem } from '@/stores/selectionSystem'
 import CollapsibleSection from '@/components/aside/CollapsibleSection.vue'
 import DetailSection from '@/components/aside/DetailSection.vue'
-import ConflictsSection from '@/components/panels/details/ConflictsSection.vue'
+import EntitySection from '@/components/common/EntitySection.vue'
+import DetailViewContainer from '@/components/panels/DetailViewContainer.vue'
+
+interface CountryData {
+  id: string
+  title: string
+  regimePolitique?: string
+  chefEtat?: string
+  datePrisePoste?: string
+  pib?: number
+  population?: number
+  revenuMedian?: number
+  superficieKm2?: number
+  histoire?: string
+  coalitions?: Array<{
+    id: string
+    title: string
+    role?: string
+    dateAdhesion?: string
+  }>
+  accords?: Array<{
+    id: string
+    title: string
+    role?: string
+    dateAdhesion?: string
+  }>
+  conflitsArmes?: Array<{
+    id: string
+    name: string
+    status?: string
+    startDate?: string
+    endDate?: string
+    description?: string
+  }>
+}
 
 export default defineComponent({
   name: 'FloatingDetailView',
@@ -101,16 +115,71 @@ export default defineComponent({
   components: {
     CollapsibleSection,
     DetailSection,
-    ConflictsSection
+    EntitySection,
+    DetailViewContainer
   },
   
-  setup() {
+  props: {
+    data: {
+      type: Object as PropType<CountryData>,
+      default: null
+    }
+  },
+  
+  setup(props) {
     const asideStore = useAsideStore()
     const selectionSystem = useSelectionSystem()
     const coalitionsExpanded = ref(true)
     const tradeAgreementsExpanded = ref(true)
     const historyExpanded = ref(true) // Added for history section
     const conflictsExpanded = ref(true) // Added for conflicts section
+    
+    // Configuration pour les sections d'entités
+    const coalitionsConfig = {
+      titleField: 'title',
+      subtitleField: 'role',
+      metadataFields: [
+        {
+          key: 'dateAdhesion',
+          label: 'Adhésion',
+          field: 'dateAdhesion',
+          formatter: (date: string) => formatDate(date)
+        }
+      ]
+    }
+    
+    const tradeAgreementsConfig = {
+      titleField: 'title',
+      subtitleField: 'role',
+      metadataFields: [
+        {
+          key: 'dateAdhesion',
+          label: 'Adhésion',
+          field: 'dateAdhesion',
+          formatter: (date: string) => formatDate(date)
+        }
+      ]
+    }
+    
+    const conflictsConfig = {
+      titleField: 'name',
+      subtitleField: 'status',
+      descriptionField: 'description',
+      metadataFields: [
+        {
+          key: 'startDate',
+          label: 'Début',
+          field: 'startDate',
+          formatter: (date: string) => formatDate(date)
+        },
+        {
+          key: 'endDate',
+          label: 'Fin',
+          field: 'endDate',
+          formatter: (date: string) => formatDate(date)
+        }
+      ].filter(field => field.field)
+    }
     
     // Label dynamique pour le chef d'État
     const chefEtatLabel = computed(() => {
@@ -220,16 +289,19 @@ export default defineComponent({
     }
 
     // Sélectionner un conflit
-    const selectConflict = async (conflictId: string) => {
+    const selectConflict = async (item: any) => {
+      const conflictId = item.id
       console.log('🔥 Sélection conflit depuis fiche pays:', conflictId)
       await selectionSystem.selectConflict(conflictId, 'panel')
     }
     
+    // Utiliser les props si disponibles, sinon fallback sur asideStore
+    const detailData = computed(() => {
+      return props.data || asideStore.currentDetailData
+    })
+    
     return {
-      detailData: computed(() => {
-        // Utiliser les données de l'asideStore (qui reste responsable du chargement des données)
-        return asideStore.currentDetailData
-      }),
+      detailData,
       coalitionsExpanded,
       tradeAgreementsExpanded,
       historyExpanded, // Added to return
@@ -247,6 +319,9 @@ export default defineComponent({
       toggleTradeAgreements,
       toggleHistory, // Added to return
       toggleConflicts, // Added for conflicts
+      coalitionsConfig,
+      tradeAgreementsConfig,
+      conflictsConfig,
       isConflictSelected, // Added for conflict selection status
       selectConflict // Added for conflict selection
     }
@@ -255,90 +330,5 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.aside__detail-view {
-  /* Supprimer les paddings spécifiques */
-}
-
-.detail-content {
-  padding: 0;
-}
-
-.coalitions-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-.coalition-item {
-  background-color: var(--surface-dimmed);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-sm);
-  margin-bottom: var(--spacing-xs);
-  transition: background-color var(--transition-speed) var(--transition-function);
-}
-
-.coalition-item:hover {
-  background-color: var(--surface-hover);
-}
-
-.coalition-title {
-  font-weight: var(--font-weight-medium);
-}
-
-.coalition-role {
-  font-size: var(--font-size-xs);
-  line-height: var(--line-height-xs);
-  color: var(--text-muted);
-}
-
-.coalition-date {
-  font-size: var(--font-size-xs);
-  line-height: var(--line-height-xs);
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-.trade-agreements-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-.trade-agreement-item {
-  background-color: var(--surface-dimmed);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-sm);
-  margin-bottom: var(--spacing-xs);
-  transition: background-color var(--transition-speed) var(--transition-function);
-}
-
-.trade-agreement-item:hover {
-  background-color: var(--surface-hover);
-}
-
-.accord-title {
-  font-weight: var(--font-weight-medium);
-}
-
-.accord-role {
-  font-size: var(--font-size-xs);
-  line-height: var(--line-height-xs);
-  color: var(--text-muted);
-}
-
-.accord-date {
-  font-size: var(--font-size-xs);
-  line-height: var(--line-height-xs);
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-.no-data {
-  padding: var(--spacing-sm);
-  color: var(--text-muted);
-  font-style: italic;
-  text-align: center;
-}
-
-
+/* Styles maintenant gérés par DetailViewContainer, EntitySection et EntityItem */
 </style> 
