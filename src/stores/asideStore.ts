@@ -674,7 +674,7 @@ export const useAsideStore = defineStore('aside', {
 
     // Navigation vers la liste des organisations
     async navigateToOrganizationsList() {
-      console.log('Navigating to organizations list')
+      console.log('Navigating to organizations list - Updated with complete data')
 
       // Nettoyer les zones de combat si on vient du menu conflits
       await this.clearConflictData()
@@ -697,6 +697,7 @@ export const useAsideStore = defineStore('aside', {
         const organizations = await getOrganizationsByType()
         // Stocker les organisations dans appData comme les autres listes
         this.appData.organizationList = organizations || {}
+        console.log('✅ Organisations chargées avec données complètes:', Object.keys(organizations || {}).length, 'types')
       } catch (error) {
         console.error('Erreur lors du chargement des organisations internationales:', error)
         this.error = 'Erreur lors du chargement des organisations'
