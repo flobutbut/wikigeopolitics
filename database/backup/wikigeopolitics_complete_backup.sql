@@ -45,6 +45,65 @@ COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UU
 
 
 --
+-- Name: generate_country_regime_relations(integer); Type: FUNCTION; Schema: public; Owner: wikigeo_user
+--
+
+CREATE FUNCTION public.generate_country_regime_relations(batch_size integer DEFAULT 15) RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    country_record RECORD;
+    regime_record RECORD;
+    regime_count INTEGER;
+    current_batch INTEGER := 0;
+    total_countries INTEGER;
+    processed_countries INTEGER := 0;
+BEGIN
+    -- Compter le nombre total de pays
+    SELECT COUNT(*) INTO total_countries FROM country;
+    
+    -- Récupérer tous les régimes politiques
+    SELECT COUNT(*) INTO regime_count FROM political_regime;
+    
+    RAISE NOTICE 'Début de la génération des relations pour % pays avec % régimes', total_countries, regime_count;
+    
+    -- Pour chaque pays, assigner un régime politique aléatoire
+    FOR country_record IN SELECT id, nom FROM country ORDER BY nom LOOP
+        -- Sélectionner un régime politique aléatoire
+        SELECT * INTO regime_record 
+        FROM political_regime 
+        ORDER BY RANDOM() 
+        LIMIT 1;
+        
+        -- Insérer la relation
+        INSERT INTO country_political_regime (country_id, regime_id, current_regime, start_year, notes)
+        VALUES (
+            country_record.id, 
+            regime_record.id, 
+            true, 
+            EXTRACT(YEAR FROM CURRENT_DATE),
+            'Généré automatiquement - ' || country_record.nom || ' -> ' || regime_record.name
+        );
+        
+        processed_countries := processed_countries + 1;
+        current_batch := current_batch + 1;
+        
+        -- Afficher le progrès tous les 15 pays
+        IF current_batch >= batch_size THEN
+            RAISE NOTICE 'Paquet % terminé: % pays traités sur %', 
+                (processed_countries / batch_size), processed_countries, total_countries;
+            current_batch := 0;
+        END IF;
+    END LOOP;
+    
+    RAISE NOTICE 'Génération terminée: % pays traités', processed_countries;
+END;
+$$;
+
+
+ALTER FUNCTION public.generate_country_regime_relations(batch_size integer) OWNER TO wikigeo_user;
+
+--
 -- Name: update_updated_at_column(); Type: FUNCTION; Schema: public; Owner: wikigeo_user
 --
 
@@ -363,9 +422,7 @@ CREATE TABLE public.country (
     datecreation date,
     datedernieremiseajour date,
     histoire text,
-    regimepolitique character varying(50),
-    appartenancegeographique character varying(100),
-    chefetat character varying(100)
+    appartenancegeographique character varying(100)
 );
 
 
@@ -446,7 +503,9 @@ CREATE TABLE public.country_political_regime (
     start_year integer NOT NULL,
     end_year integer,
     current_regime boolean DEFAULT true,
-    notes text
+    notes text,
+    chef_etat character varying(255),
+    date_prise_poste date
 );
 
 
@@ -724,9 +783,7 @@ COMMENT ON TABLE public.organization IS 'Organisations internationales (ONU, OTA
 CREATE TABLE public.political_regime (
     id character varying(50) NOT NULL,
     name character varying(100) NOT NULL,
-    description text,
-    characteristics jsonb,
-    examples jsonb
+    description text
 );
 
 
@@ -1313,203 +1370,203 @@ conflit-yemen	route-malacca	Impact mineur
 -- Data for Name: country; Type: TABLE DATA; Schema: public; Owner: wikigeo_user
 --
 
-COPY public.country (id, nom, drapeau, capitale, langue, monnaie, continent, sections, indicateurs, politique, economie, demographie, frontieres, coordonnees, pib, population, revenumedian, superficiekm2, indicesouverainete, indicedependance, statutstrategique, datecreation, datedernieremiseajour, histoire, regimepolitique, appartenancegeographique, chefetat) FROM stdin;
-eritrea	Érythrée	🇪🇷	Asmara	Tigrinya	Nakfa (ERN)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000008043400000000000002E40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-netherlands	Pays-Bas	🇳🇱	Amsterdam	Néerlandais	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000016400000000000004A40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-sri-lanka	Sri Lanka	🇱🇰	Colombo	Cingalais, Tamoul	Roupie srilankaise (LKR)	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000000000000004054400000000000001C40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-poland	Pologne	🇵🇱	Varsovie	Polonais	Zloty (PLN)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000033400000000000004A40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-afghanistan	Afghanistan	🇦🇫	Kaboul	Pachto, Dari	Afghani (AFN)	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000000000000004050400000000000804040	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-pakistan	Pakistan	🇵🇰	Islamabad	Ourdou, Anglais	Roupie pakistanaise (PKR)	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000000000000008051400000000000003E40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-bangladesh	Bangladesh	🇧🇩	Dhaka	Bengali	Taka (BDT)	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000000000000008056400000000000003840	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-bolivia	Bolivie	🇧🇴	La Paz	Espagnol	Boliviano (BOB)	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E610000000000000004050C000000000000031C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-ethiopia	Éthiopie	🇪🇹	Addis-Abeba	Amharique	Birr (ETB)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000044400000000000002240	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-nigeria	Nigeria	🇳🇬	Abuja	Anglais	Naira (NGN)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000020400000000000002440	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-botswana	Botswana	🇧🇼	Gaborone	Anglais, Tswana	Pula (BWP)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000000000000000384000000000000036C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-burkina-faso	Burkina Faso	🇧🇫	Ouagadougou	Français	Franc CFA (XOF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000000C00000000000002840	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-cuba	Cuba	🇨🇺	La Havane	Espagnol	Peso cubain (CUP)	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000054C00000000000803540	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-iraq	Irak	🇮🇶	Bagdad	Arabe	Dinar irakien (IQD)	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000046400000000000804040	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-kazakhstan	Kazakhstan	🇰🇿	Nour-Soultan	Kazakh, Russe	Tenge (KZT)	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000051400000000000004840	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-tonga	Tonga	🇹🇴	Nuku'alofa	Anglais, Tongan	Pa'anga	Océanie	\N	\N	\N	\N	\N	\N	0101000020E610000027C286A757E665C0E7FBA9F1D22D35C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-tuvalu	Tuvalu	🇹🇻	Funafuti	Tuvaluan, Anglais	Dollar tuvaluan	Océanie	\N	\N	\N	\N	\N	\N	0101000020E61000007D3F355EBA436640E3A59BC420701CC0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-vanuatu	Vanuatu	🇻🇺	Port-Vila	Bichelamar, Anglais, Français	Vatu	Océanie	\N	\N	\N	\N	\N	\N	0101000020E610000009F9A067B3DE644070CE88D2DEC02EC0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-ukraine	Ukraine	🇺🇦	Kiev	Ukrainien	Hryvnia (UAH)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000040400000000000804840	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-uganda	Ouganda	🇺🇬	Kampala	Anglais	Shilling ougandais (UGX)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000004040000000000000F03F	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-uzbekistan	Ouzbékistan	🇺🇿	Tachkent	Ouzbek	Sum (UZS)	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000050400000000000804440	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-rwanda	Rwanda	🇷🇼	Kigali	Kinyarwanda, Français, Anglais	Franc rwandais (RWF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000003E4000000000000000C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-somalia	Somalie	🇸🇴	Mogadiscio	Somali, Arabe	Shilling somalien (SOS)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000008048400000000000002440	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-south-sudan	Soudan du Sud	🇸🇸	Djouba	Anglais	Livre sud-soudanaise (SSP)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000003E400000000000001C40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-vietnam	Vietnam	🇻🇳	Hanoï	Vietnamien	Dong (VND)	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000005B400000000000003040	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-australia	Australie	🇦🇺	Canberra	Anglais	Dollar australien	Océanie	\N	\N	\N	\N	\N	\N	0101000020E610000026E4839ECDB86040BC0512143F4639C0	1675416000000	25690000	65000	7692024	0	0	\N	2025-07-05	2025-07-07	L'Australie, officiellement le Commonwealth d'Australie, a été colonisée par les Britanniques en 1788. Le pays a obtenu son indépendance en 1901 et est devenu une fédération. L'Australie est une monarchie constitutionnelle fédérale, membre du Commonwealth. Le pays est connu pour sa biodiversité unique, ses ressources naturelles abondantes et son économie développée.	monarchie-constitutionnelle	\N	Charles III
-barbados	Barbade	🇧🇧	Bridgetown	Anglais	Dollar barbadien	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E6100000BBB88D06F0CE4DC052B81E85EB312A40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-kiribati	Kiribati	🇰🇮	Tarawa	Gilbertese, Anglais	Dollar australien	Océanie	\N	\N	\N	\N	\N	\N	0101000020E6100000C1A8A44E40B565407E1D38674469F53F	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-denmark	Danemark	🇩🇰	Copenhague	Danois	Couronne danoise (DKK)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000034A2B437F8222940AD69DE718AD64B40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-ivory-coast	Côte d'Ivoire	🇨🇮	Yamoussoukro	Français	Franc CFA (XOF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000007A36AB3E571B15C0ACADD85F764F1B40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-finland	Finlande	🇫🇮	Helsinki	Finnois, Suédois	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000000917EFB3AF0384092CB7F48BF154E40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-greece	Grèce	🇬🇷	Athènes	Grec	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000000AD7A3703DBA374004E78C28EDFD4240	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-tanzania	Tanzanie	🇹🇿	Dodoma	Swahili, Anglais	Shilling tanzanien (TZS)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000736891ED7CDF4140F4FDD478E9A618C0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-sudan	Soudan	🇸🇩	Khartoum	Arabe, Anglais	Livre soudanaise (SDG)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000E4839ECDAA474040E3361AC05B002F40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-angola	Angola	🇦🇴	Luanda	Portugais	Kwanza (AOA)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000645DDC4603782A403E7958A835AD21C0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-austria	Autriche	🇦🇹	Vienne	Allemand	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000AB3E575BB15F30407B832F4CA61A4840	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-belgium	Belgique	🇧🇪	Bruxelles	Néerlandais, Français, Allemand	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000004703780B24681140F7E461A1D66C4940	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-ireland	Irlande	🇮🇪	Dublin	Anglais, Irlandais	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000005F984C158C0A19C00612143FC6AC4A40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-kenya	Kenya	🇰🇪	Nairobi	Swahili, Anglais	Shilling kényan (KES)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000008C4AEA0434694240EA95B20C71ACF4BF	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-portugal	Portugal	🇵🇹	Lisbonne	Portugais	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000065AA6054524722C04DF38E53745C4340	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-sweden	Suède	🇸🇪	Stockholm	Suédois	Couronne suédoise (SEK)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000006F8104C58F11324052499D8026AA4D40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-norway	Norvège	🇳🇴	Oslo	Norvégien	Couronne norvégienne (NOK)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000371AC05B208125403EE8D9ACFAF44D40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-colombia	Colombie	🇨🇴	Bogota	Espagnol	Peso colombien (COP)	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E6100000AA8251499D8452C0F2D24D6210D81240	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-cyprus	Chypre	🇨🇾	Nicosie	Grec, Turc	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000062A1D634EFB040409D11A5BDC1974140	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-czech-republic	République tchèque	🇨🇿	Prague	Tchèque	Couronne tchèque (CZK)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000004850FC1873D72C408B6CE7FBA9094940	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-brunei	Brunei	🇧🇳	Bandar Seri Begawan	Malais	Dollar de Brunei (BND)	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000711B0DE02DBC5C40E4839ECDAA8F1340	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-bulgaria	Bulgarie	🇧🇬	Sofia	Bulgare	Lev bulgare (BGN)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000001895D40968523740A835CD3B4E594540	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-cambodia	Cambodge	🇰🇭	Phnom Penh	Khmer	Riel (KHR)	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000B4C876BE9F3A5A4022FDF675E01C2740	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-east-timor	Timor oriental	🇹🇱	Dili	Tétoum, Portugais	Dollar américain (USD)	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000143FC6DCB5645F405917B7D1001E21C0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-ecuador	Équateur	🇪🇨	Quito	Espagnol	Dollar américain (USD)	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E61000006744696FF09D53C0E8D9ACFA5C6DCDBF	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-equatorial-guinea	Guinée équatoriale	🇬🇶	Malabo	Espagnol, Français, Portugais	Franc CFA (XAF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000E2E995B20C912140143FC6DCB5040E40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-estonia	Estonie	🇪🇪	Tallinn	Estonien	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000FE43FAEDEBC038400E2DB29DEFB74D40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-gabon	Gabon	🇬🇦	Libreville	Français	Franc CFA (XAF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000073D712F241EF2240C217265305A3DA3F	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-spain	Espagne	🇪🇸	Madrid	Espagnol	Euro	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000003C4ED1915CFE0DC0857CD0B359354440	1395000000000	47350000	30000	505990	0	0	\N	2025-07-07	2025-07-07	L'Espagne, officiellement le Royaume d'Espagne, a été unifiée sous les Rois Catholiques en 1492. Le pays a connu l'empire colonial espagnol, puis la dictature franquiste de 1939 à 1975. Depuis 1978, l'Espagne est une monarchie constitutionnelle démocratique. Le pays est membre de l'Union européenne et de l'OTAN.	monarchie-constitutionnelle	\N	Felipe VI
-nauru	Nauru	🇳🇷	Yaren	Nauruan, Anglais	Dollar australien	Océanie	\N	\N	\N	\N	\N	\N	0101000020E61000002B8716D9CEDD64405F29CB10C7BAE0BF	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-libya	Libye	🇱🇾	Tripoli	Arabe	Dinar libyen (LYD)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000031400000000000003940	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-mali	Mali	🇲🇱	Bamako	Français	Franc CFA (XOF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000010C00000000000003140	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-chad	Tchad	🇹🇩	N'Djamena	Français, Arabe	Franc CFA (XAF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000033400000000000002E40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-niger	Niger	🇳🇪	Niamey	Français	Franc CFA (XOF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000020400000000000003240	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-guinea	Guinée	🇬🇳	Conakry	Français	Franc guinéen (GNF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000005B423EE8D96C2BC06DE7FBA9F1122340	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-guyana	Guyana	🇬🇾	Georgetown	Anglais	Dollar de Guyana (GYD)	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E6100000CE88D2DEE0134DC0A323B9FC87341B40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-laos	Laos	🇱🇦	Vientiane	Lao	Kip (LAK)	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000A323B9FC87A859400BB5A679C7F93140	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-latvia	Lettonie	🇱🇻	Riga	Letton	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000098A1F63EE1A38400B24287E8C794C40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-liberia	Libéria	🇱🇷	Monrovia	Anglais	Dollar libérien (LRD)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000F1F44A59869825C0A4DFBE0E9C331940	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-iceland	Islande	🇮🇸	Reykjavik	Islandais	Couronne islandaise (ISK)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000A835CD3B4EF135C0FE65F7E461095040	25691000000	372000	67000	103000	0	0	\N	2025-07-07	2025-07-07	L'Islande, officiellement la République d'Islande, a été colonisée par les Vikings norvégiens au IXe siècle. Le pays a obtenu son indépendance du Danemark en 1944. L'Islande est connue pour ses paysages volcaniques, ses sources géothermiques et ses aurores boréales. Le pays a surmonté la crise financière de 2008 et est devenu un modèle de développement durable.	democratie-representative	\N	Guðni Th. Jóhannesson
-germany	Allemagne	🇩🇪	Berlin	Allemand	Euro	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000BA490C022BE724403E7958A835954940	4072191000000	83290000	52000	357022	0	0	\N	2025-07-05	2025-07-07	L'Allemagne, officiellement la République fédérale d'Allemagne, a été unifiée en 1871 sous l'Empire allemand. Après la défaite de 1945, l'Allemagne a été divisée en RFA et RDA. La chute du mur de Berlin en 1989 a permis la réunification en 1990. L'Allemagne est aujourd'hui la première économie européenne et un leader de l'Union européenne.	republique-parlementaire	\N	Frank-Walter Steinmeier
-lithuania	Lituanie	🇱🇹	Vilnius	Lituanien	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000F2B0506B9A473940D5E76A2BF6574B40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-luxembourg	Luxembourg	🇱🇺	Luxembourg	Luxembourgeois, Français, Allemand	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000143FC6DCB5841840E71DA7E848CE4840	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-malaysia	Malaisie	🇲🇾	Kuala Lumpur	Malais	Ringgit malaisien (MYR)	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000D5E76A2BF66B5940E9263108AC1C0940	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-slovakia	Slovaquie	🇸🇰	Bratislava	Slovaque	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000007AC7293A921B3140C217265305134840	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-romania	Roumanie	🇷🇴	Bucarest	Roumain	Leu roumain (RON)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000000AD7A3703D1A3A4066F7E461A1364640	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-slovenia	Slovénie	🇸🇮	Ljubljana	Slovène	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000034A2B437F8022D403A92CB7F48074740	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-malta	Malte	🇲🇹	La Valette	Maltais, Anglais	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000000F0BB5A679072D40EC2FBB270FF34140	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-myanmar	Myanmar	🇲🇲	Naypyidaw	Birman	Kyat (MMK)	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000F853E3A59B0858406C09F9A067C33340	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-mongolia	Mongolie	🇲🇳	Oulan-Bator	Mongol	Tugrik (MNT)	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000002EFF21FDF6B95A405396218E75F14740	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-nepal	Népal	🇳🇵	Katmandou	Népalais	Roupie népalaise (NPR)	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000DBF97E6ABC545540F2B0506B9AB73B40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-maldives	Maldives	🇲🇻	Malé	Divehi	Rufiyaa (MVR)	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000008A8EE4F21F4E5240C8073D9B559F0940	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-venezuela	Venezuela	🇻🇪	Caracas	Espagnol	Bolivar (VES)	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E6100000992A1895D4B950C04BEA043411F62440	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-uruguay	Uruguay	🇺🇾	Montevideo	Espagnol	Peso uruguayen (UYU)	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E6100000931804560E154CC07A36AB3E577341C0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-qatar	Qatar	🇶🇦	Doha	Arabe	Riyal qatari (QAR)	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000006666666666A649400000000000803940	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-paraguay	Paraguay	🇵🇾	Asunción	Espagnol, Guarani	Guarani (PYG)	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E6100000454772F90FD14CC088F4DBD7814339C0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-suriname	Suriname	🇸🇷	Paramaribo	Néerlandais	Dollar du Suriname (SRD)	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E610000060764F1E169A4BC09CC420B072681740	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-senegal	Sénégal	🇸🇳	Dakar	Français	Franc CFA (XOF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000005227A089B07131C01E166A4DF36E2D40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-sierra-leone	Sierra Leone	🇸🇱	Freetown	Anglais	Leone (SLL)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000066F7E461A1762AC0401361C3D3EB2040	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-guinea-bissau	Guinée-Bissau	🇬🇳	Bissau	Portugais	Franc CFA (XOF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000B37BF2B0502B2FC0B5A679C729BA2740	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-lesotho	Lesotho	🇱🇸	Maseru	Anglais, Sotho	Loti (LSL)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000098DD9387857A3B40386744696F503DC0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-liechtenstein	Liechtenstein	🇱🇮	Vaduz	Allemand	Franc suisse (CHF)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000097900F7A360B234099BB96900F924740	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-north-macedonia	Macédoine du Nord	🇲🇰	Skopje	Macédonien	Denar (MKD)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000917EFB3A706E35407FD93D7958004540	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-cape-verde	Cap-Vert	🌭	Praia	Portugais	Escudo cap-verdien (CVE)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000A779C7293A8237C05BD3BCE314DD2D40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-zimbabwe	Zimbabwe	🇿🇼	Harare	Anglais, Shona, Ndebele	Dollar zimbabwéen (ZWL)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000007F6ABC7493083F40C1A8A44E40D331C0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-zambia	Zambie	🇿🇲	Lusaka	Anglais	Kwacha zambien (ZMW)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000D0D556EC2F4B3C406666666666C62EC0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-moldova	Moldavie	🇲🇩	Chișinău	Roumain	Leu moldave (MDL)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000007AC7293A92DB3C40D34D621058814740	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-montenegro	Monténégro	🇲🇪	Podgorica	Monténégrin	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000001895D409684233406519E25817374540	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-monaco	Monaco	🇲🇨	Monaco	Français	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000009F9A067B3AA1D4012143FC6DCDD4540	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-san-marino	Saint-Marin	🇸🇲	Saint-Marin	Italien	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000143FC6DCB5E42840E4141DC9E5F74540	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-vatican	Vatican	🇻🇦	Cité du Vatican	Italien, Latin	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000004703780B24E828407AC7293A92F34440	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-albania	Albanie	🇦🇱	Tirana	Albanais	Lek (ALL)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000363CBD5296D1334052B81E85EBA94440	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-andorra	Andorre	🇦🇩	Andorre-la-Vieille	Catalan	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000045D8F0F44A59F83F7FFB3A70CE404540	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-armenia	Arménie	🇦🇲	Erevan	Arménien	Dram (AMD)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000009CC420B072404640D5E76A2BF6174440	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-azerbaijan	Azerbaïdjan	🇦🇿	Bakou	Azéri	Manat (AZN)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000492EFF21FDEE48407FD93D7958304440	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-benin	Bénin	🇧🇯	Porto-Novo	Français	Franc CFA (XOF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000013F241CF66D504409487855AD3FC1940	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-bhutan	Bhoutan	🇧🇹	Thimphou	Dzongkha	Ngultrum (BTN)	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000046B6F3FDD468564029CB10C7BA783B40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-cameroon	Cameroun	🇨🇲	Yaoundé	Français, Anglais	Franc CFA (XAF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000A9A44E401301274062105839B4C80E40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-namibia	Namibie	🇳🇦	Windhoek	Anglais	Dollar namibien (NAD)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000000000000000314000000000000036C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-papua-new-guinea	Papouasie-Nouvelle-Guinée	🇵🇬	Port Moresby	Anglais, Tok Pisin	Kina	Océanie	\N	\N	\N	\N	\N	\N	0101000020E61000007F6ABC7493FE6140C3F5285C8F4219C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-usa	États-Unis	🇺🇸	Washington D.C.	Anglais	Dollar américain	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E610000061545227A0ED57C0B30C71AC8B8B4240	25462700000000	331900000	74000	9833517	0	0	\N	2025-07-05	2025-07-07	Les États-Unis d'Amérique sont nés de la déclaration d'indépendance de 1776. La Constitution de 1787 a établi un système fédéral. Le XIXe siècle a vu l'expansion territoriale vers l'ouest et la guerre civile (1861-1865). Au XXe siècle, les États-Unis sont devenus une superpuissance mondiale, leader de l'économie capitaliste et de l'innovation technologique.	republique-federale	\N	Joe Biden
-north-korea	Corée du Nord	🇰🇵	Pyongyang	Coréen	Won nord-coréen	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000226C787AA5E05F4088F4DBD7812B4440	18000000000	25780000	1300	120540	0	0	\N	2025-07-05	2025-07-07	La Corée du Nord, officiellement République populaire démocratique de Corée, a été fondée en 1948 après la division de la péninsule coréenne. Dirigée par la dynastie Kim depuis 1948, le pays suit l'idéologie du Juche (autosuffisance). Isolée internationalement, la Corée du Nord a développé un programme nucléaire controversé et maintient un régime totalitaire.	regime-autoritaire	\N	Kim Jong-un
-china	Chine	🇨🇳	Pékin	Mandarin	Yuan renminbi	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000DC68006F810C5A404A7B832F4CEE4140	17963170000000	1439000000	12500	9596961	0	0	\N	2025-07-05	2025-07-07	La Chine, officiellement la République populaire de Chine, est l'une des plus anciennes civilisations du monde. L'histoire chinoise remonte à plus de 4000 ans avec les dynasties successives. En 1949, Mao Zedong proclame la République populaire de Chine après la victoire communiste. Depuis les réformes économiques de 1978, la Chine est devenue la deuxième économie mondiale et une puissance majeure sur la scène internationale.	regime-autoritaire	\N	Xi Jinping
-japan	Japon	🇯🇵	Tokyo	Japonais	Yen japonais	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000012A5BDC117486140431CEBE2361A4240	4231141000000	125700000	42000	377975	0	0	\N	2025-07-05	2025-07-07	Le Japon, officiellement l'État du Japon, est une monarchie constitutionnelle avec une histoire millénaire. Après la défaite de 1945, le Japon a adopté une constitution pacifiste et s'est reconstruit pour devenir la troisième économie mondiale. Le pays est connu pour son innovation technologique, sa culture traditionnelle et son système éducatif performant.	monarchie-constitutionnelle	\N	Naruhito
-argentina	Argentine	🇦🇷	Buenos Aires	Espagnol	Peso argentin (ARS)	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000050C000000000000041C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-egypt	Égypte	🇪🇬	Le Caire	Arabe	Livre égyptienne (EGP)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000003E400000000000003A40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-russia	Russie	🇷🇺	Moscou	Russe	Rouble russe	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000BF7D1D3867545A40508D976E12C34E40	2240910000000	144100000	12000	17098246	0	0	\N	2025-07-05	2025-07-07	La Russie, officiellement la Fédération de Russie, est le plus grand pays du monde par sa superficie. L'histoire russe remonte à la principauté de Moscou au XIIIe siècle. L'Empire russe s'est étendu jusqu'à devenir l'URSS en 1922. Après la chute de l'URSS en 1991, la Russie est devenue une fédération indépendante. Le pays reste une puissance nucléaire et un acteur majeur de la géopolitique mondiale.	regime-autoritaire	\N	Vladimir Poutine
-italy	Italie	🇮🇹	Rome	Italien	Euro	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000003780B2428FE2840166A4DF38EF34440	2010430000000	60360000	35000	301340	0	0	\N	2025-07-07	2025-07-07	L'Italie, officiellement la République italienne, est née de l'unification de 1861. Le pays a connu le fascisme de 1922 à 1945, puis est devenu une république démocratique. L'Italie est un membre fondateur de l'Union européenne et de l'OTAN. Le pays est connu pour son patrimoine culturel exceptionnel, son industrie de luxe et son influence dans la mode et le design.	republique-parlementaire	\N	Sergio Mattarella
-mexico	Mexique	🇲🇽	Mexico	Espagnol	Peso mexicain	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E610000000000000008059C00000000000003740	1417000000000	128900000	9500	1964375	0	0	\N	2025-07-05	2025-07-07	Le Mexique, officiellement les États-Unis mexicains, a été colonisé par l'Espagne au XVIe siècle. Le pays a obtenu son indépendance en 1821. Le Mexique est une république fédérale démocratique. Le pays est la deuxième économie d'Amérique latine et un partenaire commercial majeur des États-Unis.	republique-federale	\N	Andrés Manuel López Obrador
-turkey	Turquie	🇹🇷	Ankara	Turc	Livre turque	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000000000000008041400000000000804340	905987000000	84780000	9500	783562	0	0	\N	2025-07-05	2025-07-07	La Turquie, officiellement la République de Turquie, a été fondée en 1923 par Mustafa Kemal Atatürk après la chute de l'Empire ottoman. Le pays a adopté un système laïc et occidental. La Turquie est un pont géographique entre l'Europe et l'Asie. Le pays est membre de l'OTAN et candidat à l'Union européenne.	regime-hybride	\N	Recep Tayyip Erdoğan
-dominica	Dominique	🇩🇲	Roseau	Anglais	Dollar des Caraïbes orientales	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E6100000EFC9C342ADB14EC05F07CE19519A2E40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-fiji	Fidji	🇫🇯	Suva	Anglais, Fidjien	Dollar fidjien	Océanie	\N	\N	\N	\N	\N	\N	0101000020E6100000AE47E17A1442664066F7E461A1B631C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-switzerland	Suisse	🇨🇭	Berne	Allemand, Français, Italien	Franc suisse (CHF)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000020400000000000804740	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-peru	Pérou	🇵🇪	Lima	Espagnol	Sol (PEN)	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000053C000000000000024C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-morocco	Maroc	🇲🇦	Rabat	Arabe	Dirham marocain (MAD)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000014C00000000000004040	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-comoros	Comores	🇰🇲	Moroni	Arabe, Français, Comorien	Franc comorien (KMF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000048BF7D1D389F4540D122DBF97E4A27C0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-burundi	Burundi	🇧🇮	Gitega	Kirundi	Franc burundais	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000B1E1E995B2EC3D407E1D386744690BC0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-new-zealand	Nouvelle-Zélande	🇳🇿	Wellington	Anglais, Maori	Dollar néo-zélandais	Océanie	\N	\N	\N	\N	\N	\N	0101000020E6100000F7E461A1D6D8654088635DDC467344C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-togo	Togo	🇹🇬	Lomé	Français	Franc CFA (XOF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000E3C798BB9690F33FCDCCCCCCCC8C1840	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-tunisia	Tunisie	🇹🇳	Tunis	Arabe	Dinar tunisien	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000865AD3BCE35424407FFB3A70CE684240	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-indonesia	Indonésie	🇮🇩	Jakarta	Indonésien	Roupie indonésienne (IDR)	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000005E4000000000000000C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-taiwan	Taïwan	🇹🇼	Taipei	Mandarin	Dollar taïwanais (TWD)	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000405E400000000000803740	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-uae	Émirats arabes unis	🇦🇪	Abu Dhabi	Arabe	Dirham des Émirats (AED)	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000004B400000000000003840	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-bosnia-herzegovina	Bosnie-Herzégovine	🇧🇦	Sarajevo	Bosniaque, Croate, Serbe	Mark convertible (BAM)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000032400000000000004640	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-new-caledonia	Nouvelle-Calédonie	🇳🇨	Nouméa	Français	Franc CFP (XPF)	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000B0644000000000008035C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-haiti	Haïti	🇭🇹	Port-au-Prince	Français	Gourde haïtienne	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E6100000AE47E17A141652C0D200DE02098A3240	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-thailand	Thaïlande	🇹🇭	Bangkok	Thaï	Baht	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000EC51B81E853F59403D0AD7A370BD2F40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-algeria	Algérie	🇩🇿	Alger	Arabe	Dinar algérien (DZD)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000008400000000000003C40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-gambia	Gambie	🇬🇲	Banjul	Anglais	Dalasi (GMD)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000004E621058399430C0A52C431CEBE22A40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-central-african-republic	République centrafricaine	🇨🇫	Bangui	Français	Franc CFA (XAF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000035400000000000001C40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-uk	Royaume-Uni	🇬🇧	Londres	Anglais	Livre sterling	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000DA1B7C613255C0BFC5FEB27BF2C04940	3070667000000	67220000	46000	242495	0	0	\N	2025-07-05	2025-07-07	Le Royaume-Uni de Grande-Bretagne et d'Irlande du Nord est né de l'union de l'Angleterre et de l'Écosse en 1707. Au XIXe siècle, l'Empire britannique est devenu le plus vaste empire de l'histoire. Le pays a joué un rôle crucial dans les deux guerres mondiales. En 1973, il rejoint la CEE, mais quitte l'Union européenne en 2020 (Brexit).	monarchie-constitutionnelle	\N	Charles III
-brazil	Brésil	🇧🇷	Brasília	Portugais	Real brésilien	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E6100000917EFB3A70F649C0B81E85EB51782CC0	1920095000000	214300000	8900	8515767	0	0	\N	2025-07-05	2025-07-07	Le Brésil, officiellement la République fédérative du Brésil, a été colonisé par le Portugal au XVIe siècle. Le pays a obtenu son indépendance en 1822 et est devenu une république en 1889. Plus grand pays d'Amérique du Sud, le Brésil est une puissance émergente avec une économie diversifiée et une influence croissante sur la scène internationale.	republique-federale	\N	Luiz Inácio Lula da Silva
-south-korea	Corée du Sud	🇰🇷	Séoul	Coréen	Won sud-coréen	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000005BD3BCE314F15F4087A757CA32F44140	1674000000000	51740000	35000	100210	0	0	\N	2025-07-05	2025-07-07	La Corée du Sud, officiellement la République de Corée, a été fondée en 1948 après la division de la péninsule coréenne. Le pays a connu une croissance économique spectaculaire depuis les années 1960, devenant l'un des "Tigres asiatiques". La Corée du Sud est une démocratie parlementaire développée, leader dans les technologies et l'innovation.	democratie-representative	\N	Yoon Suk-yeol
-iran	Iran	🇮🇷	Téhéran	Persan	Rial iranien	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000F2D24D6210D84A40ADFA5C6DC5364040	367970000000	85000000	5500	1648195	0	0	\N	2025-07-05	2025-07-07	L'Iran, officiellement la République islamique d'Iran, a une histoire millénaire remontant à l'Empire perse. En 1979, la Révolution islamique a renversé la monarchie et établi une république islamique. L'Iran est une théocratie où le pouvoir religieux et politique sont fusionnés. Le pays est une puissance régionale majeure au Moyen-Orient.	theocratie	\N	Ali Khamenei
-panama	Panama	🇵🇦	Panama	Espagnol	Balboa	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E6100000F775E09C11E153C04850FC1873F72140	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-ghana	Ghana	🇬🇭	Accra	Anglais	Cedi (GHS)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000CEAACFD556ECC7BF3D0AD7A3703D1640	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-palau	Palaos	🇵🇼	Ngerulmud	Anglais, Palauan	Dollar américain	Océanie	\N	\N	\N	\N	\N	\N	0101000020E6100000713D0AD7A3D260408FC2F5285C0F1E40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-samoa	Samoa	🇼🇸	Apia	Samoan, Anglais	Tala	Océanie	\N	\N	\N	\N	\N	\N	0101000020E6100000AD69DE718A7865C0A4DFBE0E9CB32BC0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-france	France	🇫🇷	Paris	Français	Euro	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000D93D7958A8B50140E9482EFF211D4740	2782900000000	67390000	42000	551695	0	0	\N	2025-07-05	2025-07-07	La France, officiellement la République française, est un pays d'Europe occidentale. Fondée en 987, elle est devenue une puissance majeure sous les rois capétiens. La Révolution française de 1789 a transformé la monarchie en république. Au XIXe siècle, la France a étendu son empire colonial. Après les deux guerres mondiales, elle est devenue un membre fondateur de l'Union européenne et une puissance nucléaire.	republique-presidentielle	\N	Emmanuel Macron
-india	Inde	🇮🇳	New Delhi	Hindi	Roupie indienne	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000061545227A0BD53409CA223B9FC973440	3385089000000	1408000000	2200	3287263	0	0	\N	2025-07-05	2025-07-07	L'Inde, officiellement la République de l'Inde, a obtenu son indépendance du Royaume-Uni en 1947. Plus grande démocratie du monde, l'Inde a connu une croissance économique rapide depuis les réformes de 1991. Le pays est marqué par sa diversité culturelle, religieuse et linguistique. L'Inde est devenue une puissance régionale majeure en Asie du Sud.	republique-federale	\N	Droupadi Murmu
-canada	Canada	🇨🇦	Ottawa	Anglais, Français	Dollar canadien	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E61000002E90A0F831965AC0FFB27BF2B0104C40	2139840000000	38250000	52000	9984670	0	0	\N	2025-07-05	2025-07-07	Le Canada, officiellement la Confédération canadienne, est né de l'union de colonies britanniques en 1867. Le pays a obtenu son indépendance progressive du Royaume-Uni et est devenu un dominion autonome. Le Canada est une monarchie constitutionnelle fédérale, membre du Commonwealth. Le pays est connu pour sa diversité culturelle, ses vastes territoires naturels et sa qualité de vie élevée.	monarchie-constitutionnelle	\N	Charles III
-south-africa	Afrique du Sud	🇿🇦	Pretoria	Anglais, Afrikaans, Zoulou	Rand sud-africain	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000AEB6627FD9FD3840AC1C5A643B8F3EC0	405870000000	59310000	6000	1221037	0	0	\N	2025-07-05	2025-07-07	L'Afrique du Sud, officiellement la République d'Afrique du Sud, a été colonisée par les Européens au XVIIe siècle. Le pays a connu l'apartheid de 1948 à 1994. En 1994, Nelson Mandela est devenu le premier président noir démocratiquement élu. L'Afrique du Sud est la première économie d'Afrique et un leader continental.	republique-parlementaire	\N	Cyril Ramaphosa
-honduras	Honduras	🇭🇳	Tegucigalpa	Espagnol	Lempira hondurien	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E6100000053411363CCD55C069006F8104252C40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-nicaragua	Nicaragua	🇳🇮	Managua	Espagnol	Córdoba oro	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E6100000742497FF909255C0EE7C3F355E3A2840	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-chile	Chili	🇨🇱	Santiago	Espagnol	Peso chilien (CLP)	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000C051C00000000000003EC0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-congo	République du Congo	🇨🇬	Brazzaville	Français	Franc CFA (XAF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000002E40000000000000F0BF	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-singapore	Singapour	🇸🇬	Singapour	Anglais, Mandarin, Malais, Tamoul	Dollar de Singapour (SGD)	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000003333333333F35940CDCCCCCCCCCCF43F	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-belize	Belize	🇧🇿	Belmopan	Anglais	Dollar bélizien	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E610000068226C787A3156C0E3361AC05B403140	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-el-salvador	Salvador	🇸🇻	San Salvador	Espagnol	Dollar américain	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E61000002EFF21FDF64D56C0FBCBEEC9C3622B40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-saint-kitts-and-nevis	Saint-Kitts-et-Nevis	🇰🇳	Basseterre	Anglais	Dollar des Caraïbes orientales	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E61000006B2BF697DD5B4FC005C58F31774D3140	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-serbia	Serbie	🇷🇸	Belgrade	Serbe	Dinar serbe (RSD)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000035400000000000004640	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-antigua-and-barbuda	Antigua-et-Barbuda	🇦🇬	Saint John's	Anglais	Dollar des Caraïbes orientales	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E61000008FE4F21FD2DF4EC0AA8251499D203140	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-saint-lucia	Saint-Lucie	🇱🇨	Castries	Anglais	Dollar des Caraïbes orientales	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E610000066666666667E4EC02041F163CCFD2B40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-bahrain	Bahreïn	🇧🇭	Manama	Arabe	Dinar bahreïni	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000007B832F4CA64A4940F0A7C64B37393A40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-israel	Israël	🇮🇱	Jérusalem	Hébreu	Nouveau shekel israélien	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000DE9387855A9B41404D840D4FAFC43F40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-kyrgyzstan	Kirghizistan	🇰🇬	Bichkek	Kirghiz	Som kirghize	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000005F29CB10C7A65240728A8EE4F26F4540	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-kuwait	Koweït	🇰🇼	Koweït	Arabe	Dinar koweïtien	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000A1D634EF38FD474000917EFB3A603D40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-lebanon	Liban	🇱🇧	Beyrouth	Arabe	Livre libanaise	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000000917EFB3AC041401895D40968F24040	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-syria	Syrie	🇸🇾	Damas	Arabe	Livre syrienne	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000008AC1C5A64234240A857CA32C4C14040	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-yemen	Yémen	🇾🇪	Sanaa	Arabe	Rial yéménite	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000C3F5285C8F1A4640E9482EFF21BD2E40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-marshall-islands	Îles Marshall	🇲🇭	Majuro	Marshallese, Anglais	Dollar américain	Océanie	\N	\N	\N	\N	\N	\N	0101000020E6100000D6C56D34801765402DB29DEFA7861C40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-djibouti	Djibouti	🇩🇯	Djibouti	Français, Arabe	Franc de Djibouti (DJF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000ED0DBE30999245404D158C4AEA242740	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-eswatini	Eswatini	🇸🇿	Mbabane	Anglais, Swati	Lilangeni (SZL)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000D734EF3845773F40F6285C8FC2853AC0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-georgia	Géorgie	🇬🇪	Tbilissi	Géorgien	Lari (GEL)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000787AA52C436446404FAF946588DB4440	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-micronesia	Micronésie	🇫🇲	Palikir	Anglais	Dollar américain	Océanie	\N	\N	\N	\N	\N	\N	0101000020E6100000C58F31772DC56340FB5C6DC5FEB21B40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-solomon-islands	Îles Salomon	🇸🇧	Honiara	Anglais	Dollar des Îles Salomon	Océanie	\N	\N	\N	\N	\N	\N	0101000020E610000005A3923A01056440ED0DBE30994A23C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-turkmenistan	Turkménistan	🇹🇲	Achgabat	Turkmène	Manat turkmène	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000371AC05B20314D4019E25817B7F94240	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-oman	Oman	🇴🇲	Mascate	Arabe	Rial omanais	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000007958A835CD4B4D40B003E78C289D3740	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-tajikistan	Tadjikistan	🇹🇯	Douchanbé	Tadjik	Somoni	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000F697DD93873151408CDB68006F494340	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-philippines	Philippines	🇵🇭	Manille	Filipino, Anglais	Peso philippin (PHP)	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000805E400000000000002A40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-democratic-republic-of-congo	République démocratique du Congo	🇨🇩	Kinshasa	Français	Franc congolais (CDF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000039400000000000000000	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-croatia	Croatie	🇭🇷	Zagreb	Croate	Kuna (HRK)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000002E400000000000804640	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-hungary	Hongrie	🇭🇺	Budapest	Hongrois	Forint (HUF)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000034400000000000804740	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-kosovo	Kosovo	🇽🇰	Pristina	Albanais, Serbe	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000003540CDCCCCCCCC4C4540	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N	\N	\N
-saudi-arabia	Arabie Saoudite	🇸🇦	Riyad	Arabe	Riyal saoudien	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000EEEBC039238A4640C286A757CAE23740	1010000000000	35950000	25000	2149690	0	0	\N	2025-07-05	2025-07-07	L'Arabie Saoudite, officiellement le Royaume d'Arabie saoudite, a été unifiée en 1932 par Abdelaziz Al Saoud. Le pays est une monarchie absolue gouvernée par la famille Al Saoud. L'Arabie Saoudite est le plus grand exportateur de pétrole au monde et un leader du monde arabe. Le pays est le gardien des lieux saints de l'islam.	monarchie-absolue	\N	Salmane ben Abdelaziz Al Saoud
-trinidad-and-tobago	Trinité-et-Tobago	🇹🇹	Port d'Espagne	Anglais	Dollar de Trinité-et-Tobago	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E610000042CF66D5E7C24EC0857CD0B359552540	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-costa-rica	Costa Rica	🇨🇷	San José	Espagnol	Colón costaricien	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E61000006FF085C9540555C0AEB6627FD9DD2340	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-guatemala	Guatemala	🇬🇹	Guatemala	Espagnol	Quetzal guatémaltèque	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E61000005B423EE8D9A056C0F775E09C11452D40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-jamaica	Jamaïque	🇯🇲	Kingston	Anglais	Dollar jamaïcain	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E6100000A69BC420B03253C00DE02D90A0F83140	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-dominican-republic	République dominicaine	🇩🇴	Saint-Domingue	Espagnol	Peso dominicain	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E61000004182E2C7987B51C0EA95B20C717C3240	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-saint-vincent-and-the-grenadines	Saint-Vincent-et-les-Grenadines	🇻🇨	Kingstown	Anglais	Dollar des Caraïbes orientales	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E61000000612143FC69C4EC052B81E85EB512A40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-bahamas	Bahamas	🇧🇸	Nassau	Anglais	Dollar bahaméen	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E61000003C4ED1915C4253C032772D211F744340	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-grenada	Grenade	🇬🇩	Saint George's	Anglais	Dollar des Caraïbes orientales	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E61000008FE4F21FD2DF4EC0789CA223B91C2840	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-jordan	Jordanie	🇯🇴	Amman	Arabe	Dinar jordanien	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000006519E25817F74140A4DFBE0E9CF33F40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-madagascar	Madagascar	🇲🇬	Antananarivo	Malgache, Français	Ariary (MGA)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000005BB1BFEC9EC44740A9A44E4013E132C0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-malawi	Malawi	🇲🇼	Lilongwe	Anglais, Chichewa	Kwacha malawite (MWK)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000000612143FC6E440405B423EE8D9EC2BC0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-mauritania	Mauritanie	🇲🇷	Nouakchott	Arabe	Ouguiya (MRU)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000ED0DBE3099EA2FC04DF38E5374143240	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-seychelles	Seychelles	🇸🇨	Victoria	Français, Anglais, Créole seychellois	Roupie seychelloise (SCR)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000B5A679C729BA4B407DD0B359F57912C0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-mauritius	Maurice	🇲🇺	Port-Louis	Anglais, Français	Roupie mauricienne (MUR)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000F46C567DAEC64C4029ED0DBE302934C0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-mozambique	Mozambique	🇲🇿	Maputo	Portugais	Metical (MZN)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000009A081B9E5E4940408048BF7D1DF839C0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
-belarus	Biélorussie	🇧🇾	Minsk	Biélorusse, Russe	Rouble biélorusse (BYN)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000039B4C876BE8F3B402497FF907EF34A40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N	\N	\N
+COPY public.country (id, nom, drapeau, capitale, langue, monnaie, continent, sections, indicateurs, politique, economie, demographie, frontieres, coordonnees, pib, population, revenumedian, superficiekm2, indicesouverainete, indicedependance, statutstrategique, datecreation, datedernieremiseajour, histoire, appartenancegeographique) FROM stdin;
+eritrea	Érythrée	🇪🇷	Asmara	Tigrinya	Nakfa (ERN)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000008043400000000000002E40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+netherlands	Pays-Bas	🇳🇱	Amsterdam	Néerlandais	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000016400000000000004A40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+sri-lanka	Sri Lanka	🇱🇰	Colombo	Cingalais, Tamoul	Roupie srilankaise (LKR)	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000000000000004054400000000000001C40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+poland	Pologne	🇵🇱	Varsovie	Polonais	Zloty (PLN)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000033400000000000004A40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+afghanistan	Afghanistan	🇦🇫	Kaboul	Pachto, Dari	Afghani (AFN)	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000000000000004050400000000000804040	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+pakistan	Pakistan	🇵🇰	Islamabad	Ourdou, Anglais	Roupie pakistanaise (PKR)	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000000000000008051400000000000003E40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+bangladesh	Bangladesh	🇧🇩	Dhaka	Bengali	Taka (BDT)	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000000000000008056400000000000003840	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+bolivia	Bolivie	🇧🇴	La Paz	Espagnol	Boliviano (BOB)	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E610000000000000004050C000000000000031C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+ethiopia	Éthiopie	🇪🇹	Addis-Abeba	Amharique	Birr (ETB)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000044400000000000002240	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+nigeria	Nigeria	🇳🇬	Abuja	Anglais	Naira (NGN)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000020400000000000002440	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+botswana	Botswana	🇧🇼	Gaborone	Anglais, Tswana	Pula (BWP)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000000000000000384000000000000036C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+burkina-faso	Burkina Faso	🇧🇫	Ouagadougou	Français	Franc CFA (XOF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000000C00000000000002840	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+cuba	Cuba	🇨🇺	La Havane	Espagnol	Peso cubain (CUP)	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000054C00000000000803540	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+iraq	Irak	🇮🇶	Bagdad	Arabe	Dinar irakien (IQD)	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000046400000000000804040	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+kazakhstan	Kazakhstan	🇰🇿	Nour-Soultan	Kazakh, Russe	Tenge (KZT)	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000051400000000000004840	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+tonga	Tonga	🇹🇴	Nuku'alofa	Anglais, Tongan	Pa'anga	Océanie	\N	\N	\N	\N	\N	\N	0101000020E610000027C286A757E665C0E7FBA9F1D22D35C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+tuvalu	Tuvalu	🇹🇻	Funafuti	Tuvaluan, Anglais	Dollar tuvaluan	Océanie	\N	\N	\N	\N	\N	\N	0101000020E61000007D3F355EBA436640E3A59BC420701CC0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+vanuatu	Vanuatu	🇻🇺	Port-Vila	Bichelamar, Anglais, Français	Vatu	Océanie	\N	\N	\N	\N	\N	\N	0101000020E610000009F9A067B3DE644070CE88D2DEC02EC0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+ukraine	Ukraine	🇺🇦	Kiev	Ukrainien	Hryvnia (UAH)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000040400000000000804840	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+uganda	Ouganda	🇺🇬	Kampala	Anglais	Shilling ougandais (UGX)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000004040000000000000F03F	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+uzbekistan	Ouzbékistan	🇺🇿	Tachkent	Ouzbek	Sum (UZS)	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000050400000000000804440	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+rwanda	Rwanda	🇷🇼	Kigali	Kinyarwanda, Français, Anglais	Franc rwandais (RWF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000003E4000000000000000C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+somalia	Somalie	🇸🇴	Mogadiscio	Somali, Arabe	Shilling somalien (SOS)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000008048400000000000002440	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+south-sudan	Soudan du Sud	🇸🇸	Djouba	Anglais	Livre sud-soudanaise (SSP)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000003E400000000000001C40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+vietnam	Vietnam	🇻🇳	Hanoï	Vietnamien	Dong (VND)	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000005B400000000000003040	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+australia	Australie	🇦🇺	Canberra	Anglais	Dollar australien	Océanie	\N	\N	\N	\N	\N	\N	0101000020E610000026E4839ECDB86040BC0512143F4639C0	1675416000000	25690000	65000	7692024	0	0	\N	2025-07-05	2025-07-07	L'Australie, officiellement le Commonwealth d'Australie, a été colonisée par les Britanniques en 1788. Le pays a obtenu son indépendance en 1901 et est devenu une fédération. L'Australie est une monarchie constitutionnelle fédérale, membre du Commonwealth. Le pays est connu pour sa biodiversité unique, ses ressources naturelles abondantes et son économie développée.	\N
+barbados	Barbade	🇧🇧	Bridgetown	Anglais	Dollar barbadien	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E6100000BBB88D06F0CE4DC052B81E85EB312A40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+kiribati	Kiribati	🇰🇮	Tarawa	Gilbertese, Anglais	Dollar australien	Océanie	\N	\N	\N	\N	\N	\N	0101000020E6100000C1A8A44E40B565407E1D38674469F53F	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+denmark	Danemark	🇩🇰	Copenhague	Danois	Couronne danoise (DKK)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000034A2B437F8222940AD69DE718AD64B40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+ivory-coast	Côte d'Ivoire	🇨🇮	Yamoussoukro	Français	Franc CFA (XOF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000007A36AB3E571B15C0ACADD85F764F1B40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+finland	Finlande	🇫🇮	Helsinki	Finnois, Suédois	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000000917EFB3AF0384092CB7F48BF154E40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+greece	Grèce	🇬🇷	Athènes	Grec	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000000AD7A3703DBA374004E78C28EDFD4240	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+tanzania	Tanzanie	🇹🇿	Dodoma	Swahili, Anglais	Shilling tanzanien (TZS)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000736891ED7CDF4140F4FDD478E9A618C0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+sudan	Soudan	🇸🇩	Khartoum	Arabe, Anglais	Livre soudanaise (SDG)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000E4839ECDAA474040E3361AC05B002F40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+angola	Angola	🇦🇴	Luanda	Portugais	Kwanza (AOA)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000645DDC4603782A403E7958A835AD21C0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+austria	Autriche	🇦🇹	Vienne	Allemand	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000AB3E575BB15F30407B832F4CA61A4840	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+belgium	Belgique	🇧🇪	Bruxelles	Néerlandais, Français, Allemand	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000004703780B24681140F7E461A1D66C4940	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+ireland	Irlande	🇮🇪	Dublin	Anglais, Irlandais	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000005F984C158C0A19C00612143FC6AC4A40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+kenya	Kenya	🇰🇪	Nairobi	Swahili, Anglais	Shilling kényan (KES)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000008C4AEA0434694240EA95B20C71ACF4BF	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+portugal	Portugal	🇵🇹	Lisbonne	Portugais	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000065AA6054524722C04DF38E53745C4340	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+sweden	Suède	🇸🇪	Stockholm	Suédois	Couronne suédoise (SEK)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000006F8104C58F11324052499D8026AA4D40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+norway	Norvège	🇳🇴	Oslo	Norvégien	Couronne norvégienne (NOK)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000371AC05B208125403EE8D9ACFAF44D40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+colombia	Colombie	🇨🇴	Bogota	Espagnol	Peso colombien (COP)	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E6100000AA8251499D8452C0F2D24D6210D81240	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+cyprus	Chypre	🇨🇾	Nicosie	Grec, Turc	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000062A1D634EFB040409D11A5BDC1974140	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+czech-republic	République tchèque	🇨🇿	Prague	Tchèque	Couronne tchèque (CZK)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000004850FC1873D72C408B6CE7FBA9094940	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+brunei	Brunei	🇧🇳	Bandar Seri Begawan	Malais	Dollar de Brunei (BND)	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000711B0DE02DBC5C40E4839ECDAA8F1340	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+bulgaria	Bulgarie	🇧🇬	Sofia	Bulgare	Lev bulgare (BGN)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000001895D40968523740A835CD3B4E594540	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+cambodia	Cambodge	🇰🇭	Phnom Penh	Khmer	Riel (KHR)	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000B4C876BE9F3A5A4022FDF675E01C2740	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+east-timor	Timor oriental	🇹🇱	Dili	Tétoum, Portugais	Dollar américain (USD)	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000143FC6DCB5645F405917B7D1001E21C0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+ecuador	Équateur	🇪🇨	Quito	Espagnol	Dollar américain (USD)	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E61000006744696FF09D53C0E8D9ACFA5C6DCDBF	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+equatorial-guinea	Guinée équatoriale	🇬🇶	Malabo	Espagnol, Français, Portugais	Franc CFA (XAF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000E2E995B20C912140143FC6DCB5040E40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+estonia	Estonie	🇪🇪	Tallinn	Estonien	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000FE43FAEDEBC038400E2DB29DEFB74D40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+gabon	Gabon	🇬🇦	Libreville	Français	Franc CFA (XAF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000073D712F241EF2240C217265305A3DA3F	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+spain	Espagne	🇪🇸	Madrid	Espagnol	Euro	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000003C4ED1915CFE0DC0857CD0B359354440	1395000000000	47350000	30000	505990	0	0	\N	2025-07-07	2025-07-07	L'Espagne, officiellement le Royaume d'Espagne, a été unifiée sous les Rois Catholiques en 1492. Le pays a connu l'empire colonial espagnol, puis la dictature franquiste de 1939 à 1975. Depuis 1978, l'Espagne est une monarchie constitutionnelle démocratique. Le pays est membre de l'Union européenne et de l'OTAN.	\N
+nauru	Nauru	🇳🇷	Yaren	Nauruan, Anglais	Dollar australien	Océanie	\N	\N	\N	\N	\N	\N	0101000020E61000002B8716D9CEDD64405F29CB10C7BAE0BF	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+libya	Libye	🇱🇾	Tripoli	Arabe	Dinar libyen (LYD)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000031400000000000003940	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+mali	Mali	🇲🇱	Bamako	Français	Franc CFA (XOF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000010C00000000000003140	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+chad	Tchad	🇹🇩	N'Djamena	Français, Arabe	Franc CFA (XAF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000033400000000000002E40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+niger	Niger	🇳🇪	Niamey	Français	Franc CFA (XOF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000020400000000000003240	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+guinea	Guinée	🇬🇳	Conakry	Français	Franc guinéen (GNF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000005B423EE8D96C2BC06DE7FBA9F1122340	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+guyana	Guyana	🇬🇾	Georgetown	Anglais	Dollar de Guyana (GYD)	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E6100000CE88D2DEE0134DC0A323B9FC87341B40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+laos	Laos	🇱🇦	Vientiane	Lao	Kip (LAK)	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000A323B9FC87A859400BB5A679C7F93140	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+latvia	Lettonie	🇱🇻	Riga	Letton	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000098A1F63EE1A38400B24287E8C794C40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+liberia	Libéria	🇱🇷	Monrovia	Anglais	Dollar libérien (LRD)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000F1F44A59869825C0A4DFBE0E9C331940	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+iceland	Islande	🇮🇸	Reykjavik	Islandais	Couronne islandaise (ISK)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000A835CD3B4EF135C0FE65F7E461095040	25691000000	372000	67000	103000	0	0	\N	2025-07-07	2025-07-07	L'Islande, officiellement la République d'Islande, a été colonisée par les Vikings norvégiens au IXe siècle. Le pays a obtenu son indépendance du Danemark en 1944. L'Islande est connue pour ses paysages volcaniques, ses sources géothermiques et ses aurores boréales. Le pays a surmonté la crise financière de 2008 et est devenu un modèle de développement durable.	\N
+germany	Allemagne	🇩🇪	Berlin	Allemand	Euro	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000BA490C022BE724403E7958A835954940	4072191000000	83290000	52000	357022	0	0	\N	2025-07-05	2025-07-07	L'Allemagne, officiellement la République fédérale d'Allemagne, a été unifiée en 1871 sous l'Empire allemand. Après la défaite de 1945, l'Allemagne a été divisée en RFA et RDA. La chute du mur de Berlin en 1989 a permis la réunification en 1990. L'Allemagne est aujourd'hui la première économie européenne et un leader de l'Union européenne.	\N
+lithuania	Lituanie	🇱🇹	Vilnius	Lituanien	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000F2B0506B9A473940D5E76A2BF6574B40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+luxembourg	Luxembourg	🇱🇺	Luxembourg	Luxembourgeois, Français, Allemand	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000143FC6DCB5841840E71DA7E848CE4840	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+malaysia	Malaisie	🇲🇾	Kuala Lumpur	Malais	Ringgit malaisien (MYR)	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000D5E76A2BF66B5940E9263108AC1C0940	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+slovakia	Slovaquie	🇸🇰	Bratislava	Slovaque	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000007AC7293A921B3140C217265305134840	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+romania	Roumanie	🇷🇴	Bucarest	Roumain	Leu roumain (RON)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000000AD7A3703D1A3A4066F7E461A1364640	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+slovenia	Slovénie	🇸🇮	Ljubljana	Slovène	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000034A2B437F8022D403A92CB7F48074740	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+malta	Malte	🇲🇹	La Valette	Maltais, Anglais	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000000F0BB5A679072D40EC2FBB270FF34140	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+myanmar	Myanmar	🇲🇲	Naypyidaw	Birman	Kyat (MMK)	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000F853E3A59B0858406C09F9A067C33340	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+mongolia	Mongolie	🇲🇳	Oulan-Bator	Mongol	Tugrik (MNT)	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000002EFF21FDF6B95A405396218E75F14740	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+nepal	Népal	🇳🇵	Katmandou	Népalais	Roupie népalaise (NPR)	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000DBF97E6ABC545540F2B0506B9AB73B40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+maldives	Maldives	🇲🇻	Malé	Divehi	Rufiyaa (MVR)	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000008A8EE4F21F4E5240C8073D9B559F0940	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+venezuela	Venezuela	🇻🇪	Caracas	Espagnol	Bolivar (VES)	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E6100000992A1895D4B950C04BEA043411F62440	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+uruguay	Uruguay	🇺🇾	Montevideo	Espagnol	Peso uruguayen (UYU)	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E6100000931804560E154CC07A36AB3E577341C0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+qatar	Qatar	🇶🇦	Doha	Arabe	Riyal qatari (QAR)	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000006666666666A649400000000000803940	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+paraguay	Paraguay	🇵🇾	Asunción	Espagnol, Guarani	Guarani (PYG)	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E6100000454772F90FD14CC088F4DBD7814339C0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+suriname	Suriname	🇸🇷	Paramaribo	Néerlandais	Dollar du Suriname (SRD)	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E610000060764F1E169A4BC09CC420B072681740	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+senegal	Sénégal	🇸🇳	Dakar	Français	Franc CFA (XOF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000005227A089B07131C01E166A4DF36E2D40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+sierra-leone	Sierra Leone	🇸🇱	Freetown	Anglais	Leone (SLL)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000066F7E461A1762AC0401361C3D3EB2040	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+guinea-bissau	Guinée-Bissau	🇬🇳	Bissau	Portugais	Franc CFA (XOF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000B37BF2B0502B2FC0B5A679C729BA2740	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+lesotho	Lesotho	🇱🇸	Maseru	Anglais, Sotho	Loti (LSL)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000098DD9387857A3B40386744696F503DC0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+liechtenstein	Liechtenstein	🇱🇮	Vaduz	Allemand	Franc suisse (CHF)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000097900F7A360B234099BB96900F924740	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+north-macedonia	Macédoine du Nord	🇲🇰	Skopje	Macédonien	Denar (MKD)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000917EFB3A706E35407FD93D7958004540	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+cape-verde	Cap-Vert	🌭	Praia	Portugais	Escudo cap-verdien (CVE)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000A779C7293A8237C05BD3BCE314DD2D40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+zimbabwe	Zimbabwe	🇿🇼	Harare	Anglais, Shona, Ndebele	Dollar zimbabwéen (ZWL)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000007F6ABC7493083F40C1A8A44E40D331C0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+zambia	Zambie	🇿🇲	Lusaka	Anglais	Kwacha zambien (ZMW)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000D0D556EC2F4B3C406666666666C62EC0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+moldova	Moldavie	🇲🇩	Chișinău	Roumain	Leu moldave (MDL)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000007AC7293A92DB3C40D34D621058814740	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+montenegro	Monténégro	🇲🇪	Podgorica	Monténégrin	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000001895D409684233406519E25817374540	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+monaco	Monaco	🇲🇨	Monaco	Français	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000009F9A067B3AA1D4012143FC6DCDD4540	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+san-marino	Saint-Marin	🇸🇲	Saint-Marin	Italien	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000143FC6DCB5E42840E4141DC9E5F74540	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+vatican	Vatican	🇻🇦	Cité du Vatican	Italien, Latin	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000004703780B24E828407AC7293A92F34440	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+albania	Albanie	🇦🇱	Tirana	Albanais	Lek (ALL)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000363CBD5296D1334052B81E85EBA94440	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+andorra	Andorre	🇦🇩	Andorre-la-Vieille	Catalan	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000045D8F0F44A59F83F7FFB3A70CE404540	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+armenia	Arménie	🇦🇲	Erevan	Arménien	Dram (AMD)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000009CC420B072404640D5E76A2BF6174440	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+azerbaijan	Azerbaïdjan	🇦🇿	Bakou	Azéri	Manat (AZN)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000492EFF21FDEE48407FD93D7958304440	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+benin	Bénin	🇧🇯	Porto-Novo	Français	Franc CFA (XOF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000013F241CF66D504409487855AD3FC1940	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+bhutan	Bhoutan	🇧🇹	Thimphou	Dzongkha	Ngultrum (BTN)	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000046B6F3FDD468564029CB10C7BA783B40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+cameroon	Cameroun	🇨🇲	Yaoundé	Français, Anglais	Franc CFA (XAF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000A9A44E401301274062105839B4C80E40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+namibia	Namibie	🇳🇦	Windhoek	Anglais	Dollar namibien (NAD)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000000000000000314000000000000036C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+papua-new-guinea	Papouasie-Nouvelle-Guinée	🇵🇬	Port Moresby	Anglais, Tok Pisin	Kina	Océanie	\N	\N	\N	\N	\N	\N	0101000020E61000007F6ABC7493FE6140C3F5285C8F4219C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+usa	États-Unis	🇺🇸	Washington D.C.	Anglais	Dollar américain	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E610000061545227A0ED57C0B30C71AC8B8B4240	25462700000000	331900000	74000	9833517	0	0	\N	2025-07-05	2025-07-07	Les États-Unis d'Amérique sont nés de la déclaration d'indépendance de 1776. La Constitution de 1787 a établi un système fédéral. Le XIXe siècle a vu l'expansion territoriale vers l'ouest et la guerre civile (1861-1865). Au XXe siècle, les États-Unis sont devenus une superpuissance mondiale, leader de l'économie capitaliste et de l'innovation technologique.	\N
+north-korea	Corée du Nord	🇰🇵	Pyongyang	Coréen	Won nord-coréen	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000226C787AA5E05F4088F4DBD7812B4440	18000000000	25780000	1300	120540	0	0	\N	2025-07-05	2025-07-07	La Corée du Nord, officiellement République populaire démocratique de Corée, a été fondée en 1948 après la division de la péninsule coréenne. Dirigée par la dynastie Kim depuis 1948, le pays suit l'idéologie du Juche (autosuffisance). Isolée internationalement, la Corée du Nord a développé un programme nucléaire controversé et maintient un régime totalitaire.	\N
+china	Chine	🇨🇳	Pékin	Mandarin	Yuan renminbi	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000DC68006F810C5A404A7B832F4CEE4140	17963170000000	1439000000	12500	9596961	0	0	\N	2025-07-05	2025-07-07	La Chine, officiellement la République populaire de Chine, est l'une des plus anciennes civilisations du monde. L'histoire chinoise remonte à plus de 4000 ans avec les dynasties successives. En 1949, Mao Zedong proclame la République populaire de Chine après la victoire communiste. Depuis les réformes économiques de 1978, la Chine est devenue la deuxième économie mondiale et une puissance majeure sur la scène internationale.	\N
+japan	Japon	🇯🇵	Tokyo	Japonais	Yen japonais	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000012A5BDC117486140431CEBE2361A4240	4231141000000	125700000	42000	377975	0	0	\N	2025-07-05	2025-07-07	Le Japon, officiellement l'État du Japon, est une monarchie constitutionnelle avec une histoire millénaire. Après la défaite de 1945, le Japon a adopté une constitution pacifiste et s'est reconstruit pour devenir la troisième économie mondiale. Le pays est connu pour son innovation technologique, sa culture traditionnelle et son système éducatif performant.	\N
+argentina	Argentine	🇦🇷	Buenos Aires	Espagnol	Peso argentin (ARS)	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000050C000000000000041C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+egypt	Égypte	🇪🇬	Le Caire	Arabe	Livre égyptienne (EGP)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000003E400000000000003A40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+russia	Russie	🇷🇺	Moscou	Russe	Rouble russe	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000BF7D1D3867545A40508D976E12C34E40	2240910000000	144100000	12000	17098246	0	0	\N	2025-07-05	2025-07-07	La Russie, officiellement la Fédération de Russie, est le plus grand pays du monde par sa superficie. L'histoire russe remonte à la principauté de Moscou au XIIIe siècle. L'Empire russe s'est étendu jusqu'à devenir l'URSS en 1922. Après la chute de l'URSS en 1991, la Russie est devenue une fédération indépendante. Le pays reste une puissance nucléaire et un acteur majeur de la géopolitique mondiale.	\N
+italy	Italie	🇮🇹	Rome	Italien	Euro	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000003780B2428FE2840166A4DF38EF34440	2010430000000	60360000	35000	301340	0	0	\N	2025-07-07	2025-07-07	L'Italie, officiellement la République italienne, est née de l'unification de 1861. Le pays a connu le fascisme de 1922 à 1945, puis est devenu une république démocratique. L'Italie est un membre fondateur de l'Union européenne et de l'OTAN. Le pays est connu pour son patrimoine culturel exceptionnel, son industrie de luxe et son influence dans la mode et le design.	\N
+mexico	Mexique	🇲🇽	Mexico	Espagnol	Peso mexicain	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E610000000000000008059C00000000000003740	1417000000000	128900000	9500	1964375	0	0	\N	2025-07-05	2025-07-07	Le Mexique, officiellement les États-Unis mexicains, a été colonisé par l'Espagne au XVIe siècle. Le pays a obtenu son indépendance en 1821. Le Mexique est une république fédérale démocratique. Le pays est la deuxième économie d'Amérique latine et un partenaire commercial majeur des États-Unis.	\N
+turkey	Turquie	🇹🇷	Ankara	Turc	Livre turque	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000000000000008041400000000000804340	905987000000	84780000	9500	783562	0	0	\N	2025-07-05	2025-07-07	La Turquie, officiellement la République de Turquie, a été fondée en 1923 par Mustafa Kemal Atatürk après la chute de l'Empire ottoman. Le pays a adopté un système laïc et occidental. La Turquie est un pont géographique entre l'Europe et l'Asie. Le pays est membre de l'OTAN et candidat à l'Union européenne.	\N
+dominica	Dominique	🇩🇲	Roseau	Anglais	Dollar des Caraïbes orientales	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E6100000EFC9C342ADB14EC05F07CE19519A2E40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+fiji	Fidji	🇫🇯	Suva	Anglais, Fidjien	Dollar fidjien	Océanie	\N	\N	\N	\N	\N	\N	0101000020E6100000AE47E17A1442664066F7E461A1B631C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+switzerland	Suisse	🇨🇭	Berne	Allemand, Français, Italien	Franc suisse (CHF)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000020400000000000804740	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+peru	Pérou	🇵🇪	Lima	Espagnol	Sol (PEN)	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000053C000000000000024C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+morocco	Maroc	🇲🇦	Rabat	Arabe	Dirham marocain (MAD)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000014C00000000000004040	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+comoros	Comores	🇰🇲	Moroni	Arabe, Français, Comorien	Franc comorien (KMF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000048BF7D1D389F4540D122DBF97E4A27C0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+burundi	Burundi	🇧🇮	Gitega	Kirundi	Franc burundais	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000B1E1E995B2EC3D407E1D386744690BC0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+new-zealand	Nouvelle-Zélande	🇳🇿	Wellington	Anglais, Maori	Dollar néo-zélandais	Océanie	\N	\N	\N	\N	\N	\N	0101000020E6100000F7E461A1D6D8654088635DDC467344C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+togo	Togo	🇹🇬	Lomé	Français	Franc CFA (XOF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000E3C798BB9690F33FCDCCCCCCCC8C1840	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+tunisia	Tunisie	🇹🇳	Tunis	Arabe	Dinar tunisien	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000865AD3BCE35424407FFB3A70CE684240	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+indonesia	Indonésie	🇮🇩	Jakarta	Indonésien	Roupie indonésienne (IDR)	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000005E4000000000000000C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+taiwan	Taïwan	🇹🇼	Taipei	Mandarin	Dollar taïwanais (TWD)	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000405E400000000000803740	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+uae	Émirats arabes unis	🇦🇪	Abu Dhabi	Arabe	Dirham des Émirats (AED)	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000004B400000000000003840	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+bosnia-herzegovina	Bosnie-Herzégovine	🇧🇦	Sarajevo	Bosniaque, Croate, Serbe	Mark convertible (BAM)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000032400000000000004640	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+new-caledonia	Nouvelle-Calédonie	🇳🇨	Nouméa	Français	Franc CFP (XPF)	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000B0644000000000008035C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+haiti	Haïti	🇭🇹	Port-au-Prince	Français	Gourde haïtienne	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E6100000AE47E17A141652C0D200DE02098A3240	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+thailand	Thaïlande	🇹🇭	Bangkok	Thaï	Baht	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000EC51B81E853F59403D0AD7A370BD2F40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+algeria	Algérie	🇩🇿	Alger	Arabe	Dinar algérien (DZD)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000008400000000000003C40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+gambia	Gambie	🇬🇲	Banjul	Anglais	Dalasi (GMD)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000004E621058399430C0A52C431CEBE22A40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+central-african-republic	République centrafricaine	🇨🇫	Bangui	Français	Franc CFA (XAF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000035400000000000001C40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+uk	Royaume-Uni	🇬🇧	Londres	Anglais	Livre sterling	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000DA1B7C613255C0BFC5FEB27BF2C04940	3070667000000	67220000	46000	242495	0	0	\N	2025-07-05	2025-07-07	Le Royaume-Uni de Grande-Bretagne et d'Irlande du Nord est né de l'union de l'Angleterre et de l'Écosse en 1707. Au XIXe siècle, l'Empire britannique est devenu le plus vaste empire de l'histoire. Le pays a joué un rôle crucial dans les deux guerres mondiales. En 1973, il rejoint la CEE, mais quitte l'Union européenne en 2020 (Brexit).	\N
+brazil	Brésil	🇧🇷	Brasília	Portugais	Real brésilien	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E6100000917EFB3A70F649C0B81E85EB51782CC0	1920095000000	214300000	8900	8515767	0	0	\N	2025-07-05	2025-07-07	Le Brésil, officiellement la République fédérative du Brésil, a été colonisé par le Portugal au XVIe siècle. Le pays a obtenu son indépendance en 1822 et est devenu une république en 1889. Plus grand pays d'Amérique du Sud, le Brésil est une puissance émergente avec une économie diversifiée et une influence croissante sur la scène internationale.	\N
+south-korea	Corée du Sud	🇰🇷	Séoul	Coréen	Won sud-coréen	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000005BD3BCE314F15F4087A757CA32F44140	1674000000000	51740000	35000	100210	0	0	\N	2025-07-05	2025-07-07	La Corée du Sud, officiellement la République de Corée, a été fondée en 1948 après la division de la péninsule coréenne. Le pays a connu une croissance économique spectaculaire depuis les années 1960, devenant l'un des "Tigres asiatiques". La Corée du Sud est une démocratie parlementaire développée, leader dans les technologies et l'innovation.	\N
+iran	Iran	🇮🇷	Téhéran	Persan	Rial iranien	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000F2D24D6210D84A40ADFA5C6DC5364040	367970000000	85000000	5500	1648195	0	0	\N	2025-07-05	2025-07-07	L'Iran, officiellement la République islamique d'Iran, a une histoire millénaire remontant à l'Empire perse. En 1979, la Révolution islamique a renversé la monarchie et établi une république islamique. L'Iran est une théocratie où le pouvoir religieux et politique sont fusionnés. Le pays est une puissance régionale majeure au Moyen-Orient.	\N
+panama	Panama	🇵🇦	Panama	Espagnol	Balboa	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E6100000F775E09C11E153C04850FC1873F72140	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+ghana	Ghana	🇬🇭	Accra	Anglais	Cedi (GHS)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000CEAACFD556ECC7BF3D0AD7A3703D1640	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+palau	Palaos	🇵🇼	Ngerulmud	Anglais, Palauan	Dollar américain	Océanie	\N	\N	\N	\N	\N	\N	0101000020E6100000713D0AD7A3D260408FC2F5285C0F1E40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+samoa	Samoa	🇼🇸	Apia	Samoan, Anglais	Tala	Océanie	\N	\N	\N	\N	\N	\N	0101000020E6100000AD69DE718A7865C0A4DFBE0E9CB32BC0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+france	France	🇫🇷	Paris	Français	Euro	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000D93D7958A8B50140E9482EFF211D4740	2782900000000	67390000	42000	551695	0	0	\N	2025-07-05	2025-07-07	La France, officiellement la République française, est un pays d'Europe occidentale. Fondée en 987, elle est devenue une puissance majeure sous les rois capétiens. La Révolution française de 1789 a transformé la monarchie en république. Au XIXe siècle, la France a étendu son empire colonial. Après les deux guerres mondiales, elle est devenue un membre fondateur de l'Union européenne et une puissance nucléaire.	\N
+india	Inde	🇮🇳	New Delhi	Hindi	Roupie indienne	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000061545227A0BD53409CA223B9FC973440	3385089000000	1408000000	2200	3287263	0	0	\N	2025-07-05	2025-07-07	L'Inde, officiellement la République de l'Inde, a obtenu son indépendance du Royaume-Uni en 1947. Plus grande démocratie du monde, l'Inde a connu une croissance économique rapide depuis les réformes de 1991. Le pays est marqué par sa diversité culturelle, religieuse et linguistique. L'Inde est devenue une puissance régionale majeure en Asie du Sud.	\N
+canada	Canada	🇨🇦	Ottawa	Anglais, Français	Dollar canadien	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E61000002E90A0F831965AC0FFB27BF2B0104C40	2139840000000	38250000	52000	9984670	0	0	\N	2025-07-05	2025-07-07	Le Canada, officiellement la Confédération canadienne, est né de l'union de colonies britanniques en 1867. Le pays a obtenu son indépendance progressive du Royaume-Uni et est devenu un dominion autonome. Le Canada est une monarchie constitutionnelle fédérale, membre du Commonwealth. Le pays est connu pour sa diversité culturelle, ses vastes territoires naturels et sa qualité de vie élevée.	\N
+south-africa	Afrique du Sud	🇿🇦	Pretoria	Anglais, Afrikaans, Zoulou	Rand sud-africain	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000AEB6627FD9FD3840AC1C5A643B8F3EC0	405870000000	59310000	6000	1221037	0	0	\N	2025-07-05	2025-07-07	L'Afrique du Sud, officiellement la République d'Afrique du Sud, a été colonisée par les Européens au XVIIe siècle. Le pays a connu l'apartheid de 1948 à 1994. En 1994, Nelson Mandela est devenu le premier président noir démocratiquement élu. L'Afrique du Sud est la première économie d'Afrique et un leader continental.	\N
+honduras	Honduras	🇭🇳	Tegucigalpa	Espagnol	Lempira hondurien	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E6100000053411363CCD55C069006F8104252C40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+nicaragua	Nicaragua	🇳🇮	Managua	Espagnol	Córdoba oro	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E6100000742497FF909255C0EE7C3F355E3A2840	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+chile	Chili	🇨🇱	Santiago	Espagnol	Peso chilien (CLP)	Amérique du Sud	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000C051C00000000000003EC0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+congo	République du Congo	🇨🇬	Brazzaville	Français	Franc CFA (XAF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000002E40000000000000F0BF	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+singapore	Singapour	🇸🇬	Singapour	Anglais, Mandarin, Malais, Tamoul	Dollar de Singapour (SGD)	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000003333333333F35940CDCCCCCCCCCCF43F	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+belize	Belize	🇧🇿	Belmopan	Anglais	Dollar bélizien	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E610000068226C787A3156C0E3361AC05B403140	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+el-salvador	Salvador	🇸🇻	San Salvador	Espagnol	Dollar américain	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E61000002EFF21FDF64D56C0FBCBEEC9C3622B40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+saint-kitts-and-nevis	Saint-Kitts-et-Nevis	🇰🇳	Basseterre	Anglais	Dollar des Caraïbes orientales	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E61000006B2BF697DD5B4FC005C58F31774D3140	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+serbia	Serbie	🇷🇸	Belgrade	Serbe	Dinar serbe (RSD)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000035400000000000004640	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+antigua-and-barbuda	Antigua-et-Barbuda	🇦🇬	Saint John's	Anglais	Dollar des Caraïbes orientales	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E61000008FE4F21FD2DF4EC0AA8251499D203140	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+saint-lucia	Saint-Lucie	🇱🇨	Castries	Anglais	Dollar des Caraïbes orientales	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E610000066666666667E4EC02041F163CCFD2B40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+bahrain	Bahreïn	🇧🇭	Manama	Arabe	Dinar bahreïni	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000007B832F4CA64A4940F0A7C64B37393A40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+israel	Israël	🇮🇱	Jérusalem	Hébreu	Nouveau shekel israélien	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000DE9387855A9B41404D840D4FAFC43F40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+kyrgyzstan	Kirghizistan	🇰🇬	Bichkek	Kirghiz	Som kirghize	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000005F29CB10C7A65240728A8EE4F26F4540	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+kuwait	Koweït	🇰🇼	Koweït	Arabe	Dinar koweïtien	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000A1D634EF38FD474000917EFB3A603D40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+lebanon	Liban	🇱🇧	Beyrouth	Arabe	Livre libanaise	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000000917EFB3AC041401895D40968F24040	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+syria	Syrie	🇸🇾	Damas	Arabe	Livre syrienne	Asie	\N	\N	\N	\N	\N	\N	0101000020E610000008AC1C5A64234240A857CA32C4C14040	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+yemen	Yémen	🇾🇪	Sanaa	Arabe	Rial yéménite	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000C3F5285C8F1A4640E9482EFF21BD2E40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+marshall-islands	Îles Marshall	🇲🇭	Majuro	Marshallese, Anglais	Dollar américain	Océanie	\N	\N	\N	\N	\N	\N	0101000020E6100000D6C56D34801765402DB29DEFA7861C40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+djibouti	Djibouti	🇩🇯	Djibouti	Français, Arabe	Franc de Djibouti (DJF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000ED0DBE30999245404D158C4AEA242740	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+eswatini	Eswatini	🇸🇿	Mbabane	Anglais, Swati	Lilangeni (SZL)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000D734EF3845773F40F6285C8FC2853AC0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+georgia	Géorgie	🇬🇪	Tbilissi	Géorgien	Lari (GEL)	Europe	\N	\N	\N	\N	\N	\N	0101000020E6100000787AA52C436446404FAF946588DB4440	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+micronesia	Micronésie	🇫🇲	Palikir	Anglais	Dollar américain	Océanie	\N	\N	\N	\N	\N	\N	0101000020E6100000C58F31772DC56340FB5C6DC5FEB21B40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+solomon-islands	Îles Salomon	🇸🇧	Honiara	Anglais	Dollar des Îles Salomon	Océanie	\N	\N	\N	\N	\N	\N	0101000020E610000005A3923A01056440ED0DBE30994A23C0	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+turkmenistan	Turkménistan	🇹🇲	Achgabat	Turkmène	Manat turkmène	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000371AC05B20314D4019E25817B7F94240	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+oman	Oman	🇴🇲	Mascate	Arabe	Rial omanais	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000007958A835CD4B4D40B003E78C289D3740	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+tajikistan	Tadjikistan	🇹🇯	Douchanbé	Tadjik	Somoni	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000F697DD93873151408CDB68006F494340	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+philippines	Philippines	🇵🇭	Manille	Filipino, Anglais	Peso philippin (PHP)	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000805E400000000000002A40	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+democratic-republic-of-congo	République démocratique du Congo	🇨🇩	Kinshasa	Français	Franc congolais (CDF)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000039400000000000000000	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+croatia	Croatie	🇭🇷	Zagreb	Croate	Kuna (HRK)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000002E400000000000804640	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+hungary	Hongrie	🇭🇺	Budapest	Hongrois	Forint (HUF)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000000000000000034400000000000804740	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+kosovo	Kosovo	🇽🇰	Pristina	Albanais, Serbe	Euro (EUR)	Europe	\N	\N	\N	\N	\N	\N	0101000020E61000000000000000003540CDCCCCCCCC4C4540	0	0	0	0	0	0	\N	2025-07-05	2025-07-07	\N	\N
+saudi-arabia	Arabie Saoudite	🇸🇦	Riyad	Arabe	Riyal saoudien	Asie	\N	\N	\N	\N	\N	\N	0101000020E6100000EEEBC039238A4640C286A757CAE23740	1010000000000	35950000	25000	2149690	0	0	\N	2025-07-05	2025-07-07	L'Arabie Saoudite, officiellement le Royaume d'Arabie saoudite, a été unifiée en 1932 par Abdelaziz Al Saoud. Le pays est une monarchie absolue gouvernée par la famille Al Saoud. L'Arabie Saoudite est le plus grand exportateur de pétrole au monde et un leader du monde arabe. Le pays est le gardien des lieux saints de l'islam.	\N
+trinidad-and-tobago	Trinité-et-Tobago	🇹🇹	Port d'Espagne	Anglais	Dollar de Trinité-et-Tobago	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E610000042CF66D5E7C24EC0857CD0B359552540	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+costa-rica	Costa Rica	🇨🇷	San José	Espagnol	Colón costaricien	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E61000006FF085C9540555C0AEB6627FD9DD2340	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+guatemala	Guatemala	🇬🇹	Guatemala	Espagnol	Quetzal guatémaltèque	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E61000005B423EE8D9A056C0F775E09C11452D40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+jamaica	Jamaïque	🇯🇲	Kingston	Anglais	Dollar jamaïcain	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E6100000A69BC420B03253C00DE02D90A0F83140	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+dominican-republic	République dominicaine	🇩🇴	Saint-Domingue	Espagnol	Peso dominicain	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E61000004182E2C7987B51C0EA95B20C717C3240	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+saint-vincent-and-the-grenadines	Saint-Vincent-et-les-Grenadines	🇻🇨	Kingstown	Anglais	Dollar des Caraïbes orientales	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E61000000612143FC69C4EC052B81E85EB512A40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+bahamas	Bahamas	🇧🇸	Nassau	Anglais	Dollar bahaméen	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E61000003C4ED1915C4253C032772D211F744340	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+grenada	Grenade	🇬🇩	Saint George's	Anglais	Dollar des Caraïbes orientales	Amérique du Nord	\N	\N	\N	\N	\N	\N	0101000020E61000008FE4F21FD2DF4EC0789CA223B91C2840	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+jordan	Jordanie	🇯🇴	Amman	Arabe	Dinar jordanien	Asie	\N	\N	\N	\N	\N	\N	0101000020E61000006519E25817F74140A4DFBE0E9CF33F40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+madagascar	Madagascar	🇲🇬	Antananarivo	Malgache, Français	Ariary (MGA)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000005BB1BFEC9EC44740A9A44E4013E132C0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+malawi	Malawi	🇲🇼	Lilongwe	Anglais, Chichewa	Kwacha malawite (MWK)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000000612143FC6E440405B423EE8D9EC2BC0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+mauritania	Mauritanie	🇲🇷	Nouakchott	Arabe	Ouguiya (MRU)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000ED0DBE3099EA2FC04DF38E5374143240	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+seychelles	Seychelles	🇸🇨	Victoria	Français, Anglais, Créole seychellois	Roupie seychelloise (SCR)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000B5A679C729BA4B407DD0B359F57912C0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+mauritius	Maurice	🇲🇺	Port-Louis	Anglais, Français	Roupie mauricienne (MUR)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E6100000F46C567DAEC64C4029ED0DBE302934C0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+mozambique	Mozambique	🇲🇿	Maputo	Portugais	Metical (MZN)	Afrique	\N	\N	\N	\N	\N	\N	0101000020E61000009A081B9E5E4940408048BF7D1DF839C0	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
+belarus	Biélorussie	🇧🇾	Minsk	Biélorusse, Russe	Rouble biélorusse (BYN)	Europe	\N	\N	\N	\N	\N	\N	0101000020E610000039B4C876BE8F3B402497FF907EF34A40	0	0	0	0	0	0	\N	2025-07-07	2025-07-07	\N	\N
 \.
 
 
@@ -1685,7 +1742,245 @@ lithuania	org_nato	Membre	2004-03-29	\N
 -- Data for Name: country_political_regime; Type: TABLE DATA; Schema: public; Owner: wikigeo_user
 --
 
-COPY public.country_political_regime (country_id, regime_id, start_year, end_year, current_regime, notes) FROM stdin;
+COPY public.country_political_regime (country_id, regime_id, start_year, end_year, current_regime, notes, chef_etat, date_prise_poste) FROM stdin;
+antigua-and-barbuda	republique-presidentielle	2025	\N	t	Attribution finale	Gaston Browne	2014-06-13
+bahamas	republique-presidentielle	2025	\N	t	Attribution finale	Philip Davis	2021-09-17
+saudi-arabia	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Mohammed ben Salmane	2017-06-21
+japan	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Fumio Kishida	2021-10-04
+turkey	republique-presidentielle	2025	\N	t	Attribution finale	Recep Tayyip Erdoğan	2023-06-03
+algeria	republique-presidentielle	2025	\N	t	Attribution finale	Abdelmadjid Tebboune	2019-12-19
+luxembourg	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Henri	2000-10-07
+china	regime-autoritaire	2025	\N	t	Redistribution finale	Xi Jinping	2013-03-14
+ukraine	republique-parlementaire	2025	\N	t	Redistribution finale	Volodymyr Zelensky	2019-05-20
+belarus	regime-autoritaire	2025	\N	t	Redistribution finale	Alexander Lukashenko	1994-07-20
+slovenia	republique-parlementaire	2025	\N	t	Redistribution finale	Nataša Pirc Musar	2022-12-23
+egypt	republique-presidentielle	2025	\N	t	Attribution finale	Abdel Fattah al-Sissi	2014-06-08
+papua-new-guinea	republique-presidentielle	2025	\N	t	Attribution finale	James Marape	2019-05-30
+kenya	republique-presidentielle	2025	\N	t	Attribution finale	William Ruto	2022-09-13
+uganda	republique-presidentielle	2025	\N	t	Attribution finale	Yoweri Museveni	1986-01-29
+chad	regime-autoritaire	2025	\N	t	Redistribution finale	Idriss Déby	1990-12-02
+central-african-republic	regime-autoritaire	2025	\N	t	Redistribution finale	Faustin-Archange Touadéra	2016-03-30
+eritrea	regime-autoritaire	2025	\N	t	Redistribution finale	Isaias Afwerki	1993-05-24
+zimbabwe	republique-presidentielle	2025	\N	t	Attribution finale	Emmerson Mnangagwa	2017-11-24
+tanzania	republique-presidentielle	2025	\N	t	Attribution finale	Samia Suluhu Hassan	2021-03-19
+zambia	republique-presidentielle	2025	\N	t	Attribution finale	Hichilema Hakainde	2021-08-24
+new-zealand	republique-presidentielle	2025	\N	t	Attribution finale	Christopher Luxon	2023-11-27
+fiji	republique-presidentielle	2025	\N	t	Attribution finale	Sitiveni Rabuka	2022-12-24
+solomon-islands	republique-presidentielle	2025	\N	t	Attribution finale	Manasseh Sogavare	2019-04-24
+kiribati	republique-presidentielle	2025	\N	t	Attribution finale	Taneti Maamau	2016-03-11
+samoa	republique-presidentielle	2025	\N	t	Attribution finale	Fiame Naomi Mataafa	2021-05-24
+tuvalu	republique-presidentielle	2025	\N	t	Attribution finale	Feleti Teo	2024-02-26
+tonga	republique-presidentielle	2025	\N	t	Attribution finale	Tupou VI	2012-03-18
+nauru	republique-presidentielle	2025	\N	t	Attribution finale	Nikunau Island Council	1979-07-12
+vanuatu	republique-presidentielle	2025	\N	t	Attribution finale	Nikenike Vurobaravu	2022-07-23
+brazil	republique-federale	2025	\N	t	Redistribution finale	Luiz Inácio Lula da Silva	2023-01-01
+venezuela	regime-autoritaire	2025	\N	t	Redistribution finale	Nicolás Maduro	2013-04-19
+lebanon	republique-presidentielle	2025	\N	t	Attribution finale	Najib Mikati	2021-09-10
+india	republique-federale	2025	\N	t	Redistribution finale	Narendra Modi	2024-06-09
+india	republique-parlementaire	2025	\N	t	Redistribution finale	Narendra Modi	2024-06-09
+north-korea	regime-autoritaire	2025	\N	t	Redistribution finale	Kim Jong-un	2011-12-17
+iran	regime-autoritaire	2025	\N	t	Redistribution finale	Ebrahim Raisi	2021-08-03
+russia	regime-autoritaire	2025	\N	t	Redistribution finale	Vladimir Putin	2024-05-07
+south-sudan	regime-autoritaire	2025	\N	t	Redistribution finale	Salva Kiir Mayardit	2011-07-09
+sudan	regime-autoritaire	2025	\N	t	Redistribution finale	Omar al-Bashir	1989-06-30
+ethiopia	republique-federale	2025	\N	t	Redistribution finale	Abiy Ahmed	2018-04-02
+somalia	regime-autoritaire	2025	\N	t	Redistribution finale	Hassan Sheikh Mohamud	2022-05-15
+australia	republique-federale	2025	\N	t	Redistribution finale	Anthony Albanese	2022-05-23
+libya	regime-autoritaire	2025	\N	t	Redistribution finale	Mohamed al-Menfi	2021-03-15
+marshall-islands	republique-federale	2025	\N	t	Redistribution finale	Iroojlaplap Jurelang Zedkaia	2009-10-26
+france	republique-parlementaire	2025	\N	t	Redistribution finale	Emmanuel Macron	2022-05-07
+germany	republique-federale	2025	\N	t	Redistribution finale	Olaf Scholz	2021-12-08
+malaysia	republique-federale	2025	\N	t	Redistribution finale	Anwar Ibrahim	2022-11-24
+mauritius	republique-presidentielle	2025	\N	t	Attribution finale	Pravind Jugnauth	2017-01-23
+uzbekistan	regime-autoritaire	2025	\N	t	Redistribution finale	Shavkat Mirziyoyev	2016-12-14
+turkmenistan	regime-autoritaire	2025	\N	t	Redistribution finale	Serdar Berdimuhamedow	2022-03-19
+austria	republique-federale	2025	\N	t	Redistribution finale	Alexander Van der Bellen	2022-07-09
+belgium	republique-federale	2025	\N	t	Redistribution finale	Alexander De Croo	2020-10-01
+denmark	republique-parlementaire	2025	\N	t	Redistribution finale	Frederik X	2024-01-14
+sweden	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Carl XVI Gustaf	1973-09-15
+vietnam	regime-autoritaire	2025	\N	t	Redistribution finale	Võ Văn Thưởng	2023-03-02
+mexico	republique-federale	2025	\N	t	Redistribution finale	Andrés Manuel López Obrador	2018-12-01
+canada	republique-federale	2025	\N	t	Redistribution finale	Justin Trudeau	2015-11-04
+argentina	republique-federale	2025	\N	t	Redistribution finale	Javier Milei	2023-12-10
+sri-lanka	republique-parlementaire	2025	\N	t	Redistribution finale	Ranil Wickremesinghe	2022-07-20
+dominica	republique-presidentielle	2025	\N	t	Attribution finale	Roosevelt Skerrit	2004-01-08
+gambia	republique-presidentielle	2025	\N	t	Attribution finale	Adama Barrow	2017-01-19
+kazakhstan	regime-autoritaire	2025	\N	t	Redistribution finale	Kassym-Jomart Tokaïev	2019-03-20
+mongolia	republique-presidentielle	2025	\N	t	Attribution finale	Ukhnaagiin Khürelsükh	2021-06-25
+andorra	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Xavier Espot Zamora	2019-05-16
+bahrain	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Hamad ben Issa Al Khalifa	1999-03-06
+barbados	republique-presidentielle	2025	\N	t	Attribution finale	Mia Mottley	2018-05-25
+belize	republique-presidentielle	2025	\N	t	Attribution finale	Johnny Briceño	2020-11-12
+bhutan	republique-presidentielle	2025	\N	t	Attribution finale	Jigme Khesar Namgyel Wangchuck	2006-12-14
+bosnia-herzegovina	republique-federale	2025	\N	t	Redistribution finale	Denis Bećirović	2022-11-16
+brunei	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Hassanal Bolkiah	1967-10-05
+comoros	republique-federale	2025	\N	t	Redistribution finale	Azali Assoumani	2016-05-26
+grenada	republique-presidentielle	2025	\N	t	Attribution finale	Dickon Mitchell	2022-06-24
+guyana	republique-presidentielle	2025	\N	t	Attribution finale	Irfaan Ali	2020-08-02
+haiti	republique-presidentielle	2025	\N	t	Attribution finale	Ariel Henry	2021-07-20
+indonesia	republique-presidentielle	2025	\N	t	Attribution finale	Joko Widodo	2014-10-20
+iraq	republique-federale	2025	\N	t	Redistribution finale	Mohammed Chia al-Soudani	2022-10-27
+jamaica	republique-presidentielle	2025	\N	t	Attribution finale	Andrew Holness	2016-03-03
+kyrgyzstan	regime-autoritaire	2025	\N	t	Redistribution finale	Sadyr Japarov	2021-01-28
+kosovo	republique-presidentielle	2025	\N	t	Attribution finale	Vjosa Osmani	2021-04-04
+laos	regime-autoritaire	2025	\N	t	Redistribution finale	Thongloun Sisoulith	2021-03-22
+maldives	republique-presidentielle	2025	\N	t	Attribution finale	Mohamed Muizzu	2023-11-17
+myanmar	regime-autoritaire	2025	\N	t	Redistribution finale	Min Aung Hlaing	2021-02-01
+new-caledonia	republique-presidentielle	2025	\N	t	Attribution finale	Louis Mapou	2021-07-08
+saint-kitts-and-nevis	republique-presidentielle	2025	\N	t	Attribution finale	Terrance Drew	2022-08-06
+saint-lucia	republique-presidentielle	2025	\N	t	Attribution finale	Philip J. Pierre	2021-07-28
+saint-vincent-and-the-grenadines	republique-presidentielle	2025	\N	t	Attribution finale	Ralph Gonsalves	2001-03-29
+syria	regime-autoritaire	2025	\N	t	Redistribution finale	Bachar el-Assad	2000-07-17
+tajikistan	regime-autoritaire	2025	\N	t	Redistribution finale	Emomali Rahmon	1994-11-16
+east-timor	republique-presidentielle	2025	\N	t	Attribution finale	José Ramos-Horta	2022-05-20
+taiwan	republique-presidentielle	2025	\N	t	Attribution finale	Lai Ching-te	2024-05-20
+thailand	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Srettha Thavisin	2023-08-22
+trinidad-and-tobago	republique-presidentielle	2025	\N	t	Attribution finale	Keith Rowley	2015-09-09
+tunisia	republique-presidentielle	2025	\N	t	Attribution finale	Kaïs Saïed	2019-10-23
+armenia	republique-presidentielle	2025	\N	t	Redistribution finale	Vahagn Khachaturyan	2022-03-13
+armenia	regime-autoritaire	2025	\N	t	Redistribution finale	Vahagn Khachaturyan	2022-03-13
+italy	republique-parlementaire	2025	\N	t	Redistribution finale	Giorgia Meloni	2022-10-22
+spain	republique-parlementaire	2025	\N	t	Redistribution finale	Pedro Sánchez	2023-11-17
+spain	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Pedro Sánchez	2023-11-17
+austria	republique-parlementaire	2025	\N	t	Redistribution finale	Alexander Van der Bellen	2022-07-09
+netherlands	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Mark Rutte	2010-10-14
+belgium	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Alexander De Croo	2020-10-01
+denmark	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Frederik X	2024-01-14
+sweden	republique-parlementaire	2025	\N	t	Redistribution finale	Carl XVI Gustaf	1973-09-15
+norway	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Harald V	1991-01-17
+mexico	republique-presidentielle	2025	\N	t	Redistribution finale	Andrés Manuel López Obrador	2018-12-01
+argentina	republique-presidentielle	2025	\N	t	Redistribution finale	Javier Milei	2023-12-10
+brazil	republique-presidentielle	2025	\N	t	Redistribution finale	Luiz Inácio Lula da Silva	2023-01-01
+chile	republique-presidentielle	2025	\N	t	Redistribution finale	Gabriel Boric	2022-03-11
+colombia	republique-presidentielle	2025	\N	t	Redistribution finale	Gustavo Petro	2022-08-07
+bolivia	republique-presidentielle	2025	\N	t	Redistribution finale	Luis Arce	2020-11-08
+congo	republique-presidentielle	2025	\N	t	Redistribution finale	Félix Tshisekedi	2019-01-24
+chad	republique-presidentielle	2025	\N	t	Redistribution finale	Idriss Déby	1990-12-02
+central-african-republic	republique-presidentielle	2025	\N	t	Redistribution finale	Faustin-Archange Touadéra	2016-03-30
+benin	republique-presidentielle	2025	\N	t	Redistribution finale	Patrice Talon	2016-04-06
+burkina-faso	republique-presidentielle	2025	\N	t	Redistribution finale	Roch Marc Christian Kaboré	2015-12-29
+cape-verde	republique-presidentielle	2025	\N	t	Redistribution finale	Jorge Carlos Fonseca	2011-09-09
+angola	republique-presidentielle	2025	\N	t	Redistribution finale	João Lourenço	2017-09-26
+botswana	republique-presidentielle	2025	\N	t	Redistribution finale	Mokgweetsi Masisi	2018-04-01
+azerbaijan	republique-presidentielle	2025	\N	t	Redistribution finale	Ilham Aliyev	2003-10-31
+burundi	republique-presidentielle	2025	\N	t	Redistribution finale	Évariste Ndayishimiye	2020-06-18
+cambodia	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Hun Manet	2023-08-22
+cameroon	republique-presidentielle	2025	\N	t	Redistribution finale	Paul Biya	1982-11-06
+comoros	republique-presidentielle	2025	\N	t	Redistribution finale	Azali Assoumani	2016-05-26
+eswatini	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Mswati III	1986-04-25
+jordan	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Abdallah II	1999-02-07
+kuwait	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Mishal Al-Ahmad Al-Jaber Al-Sabah	2023-12-16
+lesotho	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Sam Matekane	2022-10-28
+liechtenstein	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Daniel Risch	2021-03-25
+malaysia	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Anwar Ibrahim	2022-11-24
+morocco	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Mohammed VI	1999-07-23
+monaco	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Albert II	2005-04-06
+oman	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Haitham ben Tariq	2020-01-11
+qatar	monarchie-constitutionnelle	2025	\N	t	Redistribution finale	Tamim ben Hamad Al Thani	2013-06-25
+suriname	republique-presidentielle	2025	\N	t	Attribution finale	Chan Santokhi	2020-07-16
+usa	republique-presidentielle	2025	\N	t	Redistribution finale	Donald Trump	2025-01-20
+germany	republique-parlementaire	2025	\N	t	Redistribution finale	Olaf Scholz	2021-12-08
+costa-rica	republique-presidentielle	2025	\N	t	Redistribution finale	Rodrigo Chaves Robles	2022-05-08
+poland	republique-parlementaire	2025	\N	t	Redistribution finale	Donald Tusk	2023-12-13
+czech-republic	republique-parlementaire	2025	\N	t	Redistribution finale	Petr Pavel	2023-03-09
+hungary	republique-parlementaire	2025	\N	t	Redistribution finale	Viktor Orbán	2010-05-29
+ghana	republique-presidentielle	2025	\N	t	Redistribution finale	Nana Akufo-Addo	2017-01-07
+bulgaria	republique-parlementaire	2025	\N	t	Redistribution finale	Rumen Radev	2021-11-22
+croatia	republique-parlementaire	2025	\N	t	Redistribution finale	Zoran Milanović	2020-02-18
+slovakia	republique-parlementaire	2025	\N	t	Redistribution finale	Zuzana Čaputová	2019-06-15
+lithuania	republique-parlementaire	2025	\N	t	Redistribution finale	Gitanas Nausėda	2024-05-26
+latvia	republique-parlementaire	2025	\N	t	Redistribution finale	Edgars Rinkēvičs	2023-07-08
+estonia	republique-parlementaire	2025	\N	t	Redistribution finale	Alar Karis	2021-10-11
+finland	republique-parlementaire	2025	\N	t	Redistribution finale	Alexander Stubb	2024-03-01
+ireland	republique-parlementaire	2025	\N	t	Redistribution finale	Michael D. Higgins	2011-11-11
+portugal	republique-parlementaire	2025	\N	t	Redistribution finale	Marcelo Rebelo de Sousa	2016-03-09
+greece	republique-parlementaire	2025	\N	t	Redistribution finale	Katerina Sakellaropoulou	2020-03-13
+cyprus	republique-parlementaire	2025	\N	t	Redistribution finale	Nikos Christodoulides	2023-02-28
+malta	republique-parlementaire	2025	\N	t	Redistribution finale	George Vella	2019-04-04
+south-korea	republique-presidentielle	2025	\N	t	Redistribution finale	Yoon Suk-yeol	2022-05-10
+rwanda	republique-presidentielle	2025	\N	t	Redistribution finale	Paul Kagame	2000-04-22
+ecuador	republique-presidentielle	2025	\N	t	Redistribution finale	Guillermo Lasso	2021-05-24
+peru	republique-presidentielle	2025	\N	t	Redistribution finale	Pedro Castillo	2021-07-28
+venezuela	republique-presidentielle	2025	\N	t	Redistribution finale	Nicolás Maduro	2013-04-19
+paraguay	republique-presidentielle	2025	\N	t	Redistribution finale	Mario Abdo Benítez	2018-08-15
+moldova	republique-parlementaire	2025	\N	t	Redistribution finale	Maia Sandu	2020-12-24
+romania	republique-parlementaire	2025	\N	t	Redistribution finale	Klaus Iohannis	2014-12-21
+sudan	republique-presidentielle	2025	\N	t	Redistribution finale	Omar al-Bashir	1989-06-30
+eritrea	republique-presidentielle	2025	\N	t	Redistribution finale	Isaias Afwerki	1993-05-24
+somalia	republique-presidentielle	2025	\N	t	Redistribution finale	Hassan Sheikh Mohamud	2022-05-15
+djibouti	republique-presidentielle	2025	\N	t	Redistribution finale	Ismail Omar Guelleh	1999-05-08
+senegal	republique-presidentielle	2025	\N	t	Redistribution finale	Macky Sall	2012-04-02
+togo	republique-presidentielle	2025	\N	t	Redistribution finale	Faure Gnassingbé	2005-05-04
+niger	republique-presidentielle	2025	\N	t	Redistribution finale	Mahamadou Issoufou	2011-04-07
+mali	republique-presidentielle	2025	\N	t	Redistribution finale	Ibrahim Boubacar Keïta	2013-09-04
+guinea-bissau	republique-presidentielle	2025	\N	t	Redistribution finale	José Mário Vaz	2014-06-23
+nigeria	republique-presidentielle	2025	\N	t	Redistribution finale	Bola Tinubu	2023-05-29
+namibia	republique-presidentielle	2025	\N	t	Redistribution finale	Hage Geingob	2015-03-21
+mozambique	republique-presidentielle	2025	\N	t	Redistribution finale	Filipe Nyusi	2015-01-15
+dominican-republic	republique-presidentielle	2025	\N	t	Redistribution finale	Luis Abinader	2020-08-16
+tajikistan	republique-presidentielle	2025	\N	t	Redistribution finale	Emomali Rahmon	1994-11-16
+malaysia	theocratie	2025	\N	t	Redistribution finale	Anwar Ibrahim	2022-11-24
+turkmenistan	republique-presidentielle	2025	\N	t	Redistribution finale	Serdar Berdimuhamedow	2022-03-19
+usa	republique-federale	2025	\N	t	Redistribution finale	Donald Trump	2025-01-20
+vatican	democratie-directe	2025	\N	t	Redistribution finale	François	2013-03-13
+burundi	regime-autoritaire	2025	\N	t	Redistribution finale	Évariste Ndayishimiye	2020-06-18
+cambodia	regime-autoritaire	2025	\N	t	Redistribution finale	Hun Manet	2023-08-22
+uruguay	republique-presidentielle	2025	\N	t	Redistribution finale	Luis Lacalle Pou	2020-03-01
+san-marino	democratie-directe	2025	\N	t	Redistribution finale	Alessandro Scarano	2024-04-01
+iceland	republique-parlementaire	2025	\N	t	Redistribution finale	Guðni Th. Jóhannesson	2016-08-01
+iran	theocratie	2025	\N	t	Redistribution finale	Ebrahim Raisi	2021-08-03
+saudi-arabia	theocratie	2025	\N	t	Redistribution finale	Mohammed ben Salmane	2017-06-21
+russia	republique-federale	2025	\N	t	Redistribution finale	Vladimir Putin	2024-05-07
+south-africa	republique-federale	2025	\N	t	Redistribution finale	Cyril Ramaphosa	2024-06-14
+mauritania	republique-presidentielle	2025	\N	t	Redistribution finale	Mohamed Ould Ghazouani	2019-08-01
+guinea	republique-presidentielle	2025	\N	t	Redistribution finale	Alpha Condé	2010-12-21
+malawi	republique-presidentielle	2025	\N	t	Redistribution finale	Lazarus Chakwera	2020-06-28
+nigeria	republique-federale	2025	\N	t	Redistribution finale	Bola Tinubu	2023-05-29
+afghanistan	theocratie	2025	\N	t	Redistribution finale	Hibatullah Akhundzada	2021-08-15
+micronesia	republique-federale	2025	\N	t	Redistribution finale	Wesley Simina	2023-05-11
+palau	republique-federale	2025	\N	t	Redistribution finale	Surangel Whipps Jr.	2021-01-21
+albania	republique-parlementaire	2025	\N	t	Redistribution finale	Bajram Begaj	2022-07-24
+armenia	republique-parlementaire	2025	\N	t	Redistribution finale	Vahagn Khachaturyan	2022-03-13
+azerbaijan	regime-autoritaire	2025	\N	t	Redistribution finale	Ilham Aliyev	2003-10-31
+azerbaijan	republique-parlementaire	2025	\N	t	Redistribution finale	Ilham Aliyev	2003-10-31
+bangladesh	republique-parlementaire	2025	\N	t	Redistribution finale	Sheikh Hasina	2009-01-06
+bosnia-herzegovina	republique-parlementaire	2025	\N	t	Redistribution finale	Denis Bećirović	2022-11-16
+brunei	theocratie	2025	\N	t	Redistribution finale	Hassanal Bolkiah	1967-10-05
+cambodia	republique-parlementaire	2025	\N	t	Redistribution finale	Hun Manet	2023-08-22
+cuba	regime-autoritaire	2025	\N	t	Redistribution finale	Miguel Díaz-Canel	2018-04-19
+gabon	republique-presidentielle	2025	\N	t	Redistribution finale	Brice Oligui	2023-08-30
+guatemala	republique-presidentielle	2025	\N	t	Redistribution finale	Bernardo Arévalo	2024-01-15
+equatorial-guinea	regime-autoritaire	2025	\N	t	Redistribution finale	Teodoro Obiang Nguema Mbasogo	1979-08-03
+equatorial-guinea	republique-presidentielle	2025	\N	t	Redistribution finale	Teodoro Obiang Nguema Mbasogo	1979-08-03
+georgia	regime-autoritaire	2025	\N	t	Redistribution finale	Salomé Zourabichvili	2018-12-16
+honduras	republique-presidentielle	2025	\N	t	Redistribution finale	Xiomara Castro	2022-01-27
+kazakhstan	republique-presidentielle	2025	\N	t	Redistribution finale	Kassym-Jomart Tokaïev	2019-03-20
+kyrgyzstan	republique-presidentielle	2025	\N	t	Redistribution finale	Sadyr Japarov	2021-01-28
+liberia	republique-presidentielle	2025	\N	t	Redistribution finale	Joseph Boakai	2024-01-22
+liechtenstein	democratie-directe	2025	\N	t	Redistribution finale	Daniel Risch	2021-03-25
+madagascar	republique-presidentielle	2025	\N	t	Redistribution finale	Andry Rajoelina	2019-01-19
+nicaragua	republique-presidentielle	2025	\N	t	Redistribution finale	Daniel Ortega	2007-01-10
+uzbekistan	republique-presidentielle	2025	\N	t	Redistribution finale	Shavkat Mirziyoyev	2016-12-14
+pakistan	republique-federale	2025	\N	t	Redistribution finale	Anwaar-ul-Haq Kakar	2023-08-14
+pakistan	republique-presidentielle	2025	\N	t	Redistribution finale	Anwaar-ul-Haq Kakar	2023-08-14
+panama	republique-presidentielle	2025	\N	t	Redistribution finale	Laurentino Cortizo	2019-07-01
+philippines	republique-presidentielle	2025	\N	t	Redistribution finale	Ferdinand Marcos Jr.	2022-06-30
+el-salvador	republique-presidentielle	2025	\N	t	Redistribution finale	Nayib Bukele	2019-06-01
+seychelles	republique-presidentielle	2025	\N	t	Redistribution finale	Wavel Ramkalawan	2020-10-26
+sierra-leone	republique-presidentielle	2025	\N	t	Redistribution finale	Julius Maada Bio	2018-04-04
+singapore	republique-presidentielle	2025	\N	t	Redistribution finale	Tharman Shanmugaratnam	2023-09-14
+switzerland	republique-federale	2025	\N	t	Redistribution finale	Alain Berset	2023-01-01
+switzerland	democratie-directe	2025	\N	t	Redistribution finale	Alain Berset	2023-01-01
+vatican	theocratie	2025	\N	t	Redistribution finale	François	2013-03-13
+yemen	theocratie	2025	\N	t	Redistribution finale	Mahdi al-Mashat	2018-04-25
+georgia	republique-parlementaire	2025	\N	t	Redistribution finale	Salomé Zourabichvili	2018-12-16
+israel	republique-parlementaire	2025	\N	t	Redistribution finale	Isaac Herzog	2021-07-07
+laos	republique-parlementaire	2025	\N	t	Redistribution finale	Thongloun Sisoulith	2021-03-22
+north-macedonia	republique-parlementaire	2025	\N	t	Redistribution finale	Stevo Pendarovski	2019-05-12
+montenegro	republique-parlementaire	2025	\N	t	Redistribution finale	Jakov Milatović	2023-05-20
+myanmar	republique-parlementaire	2025	\N	t	Redistribution finale	Min Aung Hlaing	2021-02-01
+nepal	republique-parlementaire	2025	\N	t	Redistribution finale	Pushpa Kamal Dahal	2022-12-25
+serbia	republique-parlementaire	2025	\N	t	Redistribution finale	Aleksandar Vučić	2017-05-31
 \.
 
 
@@ -1894,17 +2189,17 @@ org_mercosur	Mercosur	Union politique et économique	Marché commun du Sud, unio
 -- Data for Name: political_regime; Type: TABLE DATA; Schema: public; Owner: wikigeo_user
 --
 
-COPY public.political_regime (id, name, description, characteristics, examples) FROM stdin;
-republique-parlementaire	République parlementaire	Système où le chef de l'État est élu mais le pouvoir exécutif appartient au gouvernement responsable devant le parlement.	["Chef d'État élu", "Gouvernement responsable devant le parlement", "Séparation des pouvoirs", "Élections législatives déterminantes"]	["germany", "italy", "india", "south-africa"]
-republique-presidentielle	République présidentielle	Système où le président est à la fois chef de l'État et chef du gouvernement.	["Président élu au suffrage universel", "Pouvoirs exécutifs étendus", "Séparation stricte des pouvoirs", "Veto présidentiel"]	["usa", "brazil", "france", "russia"]
-monarchie-absolue	Monarchie absolue	Système où le monarque détient tous les pouvoirs sans limitation constitutionnelle.	["Pouvoir absolu du monarque", "Absence de constitution limitative", "Hérédité du pouvoir", "Contrôle total de l'État"]	["saudi-arabia", "brunei", "oman"]
-regime-hybride	Régime hybride	Système combinant des éléments démocratiques et autoritaires.	["Élections mais avec restrictions", "Libertés civiles partielles", "Contrôle médiatique", "Opposition limitée"]	["russia", "turkey", "hungary", "poland"]
-theocratie	Théocratie	Système où le pouvoir politique est exercé au nom de la religion.	["Autorité religieuse suprême", "Lois basées sur la religion", "Clergé au pouvoir", "Fusion religion-État"]	["iran", "vatican"]
-democratie-representative	Démocratie représentative	Système dans lequel les citoyens élisent des représentants qui prennent les décisions en leur nom.	["Élections libres et régulières", "Séparation des pouvoirs", "Protection des libertés civiles", "État de droit"]	["usa", "france", "germany", "uk", "canada"]
-monarchie-constitutionnelle	Monarchie constitutionnelle	Système dans lequel un monarque est le chef d'État, mais son pouvoir est limité par une constitution.	["Monarque comme chef d'État", "Pouvoir limité par la constitution", "Parlement élu", "Premier ministre comme chef de gouvernement"]	["uk", "spain", "sweden", "norway", "japan"]
-republique-federale	République fédérale	Système où le pouvoir est partagé entre un gouvernement central et des entités fédérées.	["Constitution écrite définissant les pouvoirs", "Autonomie des entités fédérées", "Double niveau de gouvernement", "Mécanismes de résolution des conflits de compétence"]	["usa", "germany", "brazil", "india", "australia"]
-regime-autoritaire	Régime autoritaire	Système où le pouvoir politique est concentré et les libertés individuelles limitées.	["Concentration du pouvoir", "Limitations des libertés civiles", "Contrôle des médias", "Restrictions du pluralisme politique"]	["china", "russia", "north-korea", "iran", "saudi-arabia"]
-democratie-directe	Démocratie directe	Système où les citoyens participent directement aux décisions politiques.	["Référendums fréquents", "Initiative populaire", "Participation directe", "Transparence des processus"]	["switzerland"]
+COPY public.political_regime (id, name, description) FROM stdin;
+republique-parlementaire	République parlementaire	Système où le chef de l'État est élu mais le pouvoir exécutif appartient au gouvernement responsable devant le parlement.
+republique-presidentielle	République présidentielle	Système où le président est à la fois chef de l'État et chef du gouvernement.
+monarchie-absolue	Monarchie absolue	Système où le monarque détient tous les pouvoirs sans limitation constitutionnelle.
+regime-hybride	Régime hybride	Système combinant des éléments démocratiques et autoritaires.
+theocratie	Théocratie	Système où le pouvoir politique est exercé au nom de la religion.
+democratie-representative	Démocratie représentative	Système dans lequel les citoyens élisent des représentants qui prennent les décisions en leur nom.
+monarchie-constitutionnelle	Monarchie constitutionnelle	Système dans lequel un monarque est le chef d'État, mais son pouvoir est limité par une constitution.
+republique-federale	République fédérale	Système où le pouvoir est partagé entre un gouvernement central et des entités fédérées.
+regime-autoritaire	Régime autoritaire	Système où le pouvoir politique est concentré et les libertés individuelles limitées.
+democratie-directe	Démocratie directe	Système où les citoyens participent directement aux décisions politiques.
 \.
 
 
@@ -2815,14 +3110,6 @@ ALTER TABLE ONLY public.demographic_data
 
 ALTER TABLE ONLY public.demographic
     ADD CONSTRAINT demographic_pays_fkey FOREIGN KEY (pays) REFERENCES public.country(id);
-
-
---
--- Name: country fk_country_regime; Type: FK CONSTRAINT; Schema: public; Owner: wikigeo_user
---
-
-ALTER TABLE ONLY public.country
-    ADD CONSTRAINT fk_country_regime FOREIGN KEY (regimepolitique) REFERENCES public.political_regime(id);
 
 
 --
