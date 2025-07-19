@@ -1219,6 +1219,12 @@ export const useAsideStore = defineStore('aside', {
           mapStore.setCountryDisplayMode('all')  // IMPORTANT : remettre l'affichage de tous les pays
           this.currentDetailData = null
           this.clearAllSelections()
+          
+          // Réinitialiser complètement le système de sélection
+          const { useSelectionSystem } = await import('@/stores/selectionSystem')
+          const selectionSystem = useSelectionSystem()
+          await selectionSystem.resetToInitial()
+          
           console.log('🚫 Retour au menu principal : tout effacé et affichage de tous les pays restauré')
         } else if (currentViewType === 'armedConflictsList' || currentViewType.includes('Conflict')) {
           // On sort du menu conflits armés : effacer les zones de combat, les épicentres et déselectionner le conflit

@@ -30,7 +30,7 @@
     <!-- Pays impliqués -->
     <EntitySection
       title="Pays Impliqués"
-      :items="data.paysImpliques"
+      :items="enrichedPaysImpliques"
       :expanded="countriesExpanded"
       :config="countriesConfig"
       no-data-message="Aucun pays impliqué répertorié."
@@ -104,6 +104,39 @@ import type { ConflictDetailData } from '@/types/conflict'
 const props = defineProps<{
   data: ConflictDetailData
 }>()
+
+// Enrichir les pays impliqués avec leurs vrais rôles
+const enrichedPaysImpliques = ref(props.data.paysImpliques || [])
+
+// Fonction pour charger les vrais rôles
+const loadRealRoles = async () => {
+  if (!props.data.paysImpliques || !props.data.id) return
+  
+  console.log('[ConflictDetailView] Chargement des vrais rôles...')
+  
+  const { supabaseService } = await import('@/services/supabaseService')
+  
+  const enrichedCountries = await Promise.all(
+    props.data.paysImpliques.map(async (country) => {
+      try {
+        const realRole = await supabaseService.getCountryRoleInConflict(country.id, props.data.id)
+        return {
+          ...country,
+          role: realRole || country.role || 'participant'
+        }
+      } catch (error) {
+        console.error(`Erreur récupération rôle pour ${country.nom}:`, error)
+        return country
+      }
+    })
+  )
+  
+  enrichedPaysImpliques.value = enrichedCountries
+  console.log('[ConflictDetailView] Rôles enrichis:', enrichedCountries)
+}
+
+// Charger les rôles au montage
+loadRealRoles()
 
 // États des sections collapsibles
 const victimsExpanded = ref(false)

@@ -104,6 +104,8 @@ export const useSelectionSystem = defineStore('selectionSystem', {
      * UC1 - État initial / Reset complet
      */
     async resetToInitial() {
+      console.log('[SelectionSystem] 🔄 Reset to initial state')
+      
       // Sauvegarder l'état actuel
       this.saveCurrentState()
       
@@ -126,6 +128,12 @@ export const useSelectionSystem = defineStore('selectionSystem', {
         type: 'initial',
         id: null
       }
+      
+      // Nettoyer les couches de conflits
+      const { useMapStore } = await import('@/stores/mapStore')
+      const mapStore = useMapStore()
+      mapStore.visibleLayers.armedConflicts = false
+      mapStore.armedConflicts = null
       
       // Synchroniser avec les autres stores
       await this.syncWithStores()
@@ -304,6 +312,12 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       this.highlightedCountries = []
       this.conflictZonesVisible = false
       
+      // Nettoyer les couches de conflits
+      const { useMapStore } = await import('@/stores/mapStore')
+      const mapStore = useMapStore()
+      mapStore.visibleLayers.armedConflicts = false
+      mapStore.armedConflicts = null
+      
       // Reset du contexte parent
       this.parentContext = {
         type: 'initial',
@@ -311,8 +325,6 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       }
       
       // Configurer l'affichage pour le menu conflits
-      const { useMapStore } = await import('@/stores/mapStore')
-      const mapStore = useMapStore()
       mapStore.setCountryDisplayMode('none')
       mapStore.clearSelectedCountries()
       
@@ -333,7 +345,8 @@ export const useSelectionSystem = defineStore('selectionSystem', {
         mapStore.visibleLayers.conflictEpicenters = true
       }
       
-      // Pas besoin d'appeler syncWithStores() car on configure directement mapStore
+      // Synchroniser avec les autres stores pour forcer le rafraîchissement des marqueurs
+      await this.syncWithStores()
     },
 
     /**
