@@ -144,6 +144,7 @@ import SectionTitle from '@/components/common/SectionTitle.vue'
 import ReturnButton from '@/components/navigation/ReturnButton.vue'
 import { useAsideStore } from '@/stores/asideStore'
 import { useSelectionSystem } from '@/stores/selectionSystem'
+import { storeToRefs } from 'pinia'
 
 export default defineComponent({
   name: 'AsideNavigationView',
@@ -158,6 +159,9 @@ export default defineComponent({
     const asideStore = useAsideStore()
     const selectionSystem = useSelectionSystem()
     
+    // Extraire les refs réactives du selectionSystem
+    const { selectedConflict } = storeToRefs(selectionSystem)
+    
     // Vue actuelle
     const currentView = computed(() => asideStore.currentView)
     
@@ -166,15 +170,31 @@ export default defineComponent({
     const isOrganizationSelected = (orgId) => selectionSystem.selectedOrganization === orgId
     const isPoliticalRegimeSelected = (regimeId) => selectionSystem.selectedRegime === regimeId
     
-    // Référence réactive à selectedConflict pour forcer la réactivité
-    const selectedConflictRef = toRef(selectionSystem, 'selectedConflict')
+    // Computed pour la sélection actuelle des conflits armés - utilise la ref réactive
+    const conflictSelectionMap = computed(() => {
+      const selectedId = selectedConflict.value
+      console.log(`🔍 AsideNav: Recalcul du conflictSelectionMap, selectedConflict:`, selectedId, 'type:', typeof selectedId)
+      
+      // Créer un objet qui mappe chaque conflit à son état de sélection
+      const map = {}
+      if (currentView.value.type === 'armedConflictsList' && currentView.value.items) {
+        currentView.value.items.forEach(conflict => {
+          // Assurer la comparaison en convertissant les deux en string
+          const conflictIdStr = String(conflict.id)
+          const selectedIdStr = String(selectedId)
+          const isSelected = (conflictIdStr === selectedIdStr)
+          
+          console.log(`🔍 AsideNav: Comparaison conflit ${conflict.id} (${typeof conflict.id}) === ${selectedId} (${typeof selectedId}) = ${isSelected}`)
+          map[conflict.id] = isSelected
+        })
+      }
+      return map
+    })
     
     // Fonction réactive pour la sélection des conflits armés
     const isArmedConflictSelected = (conflictId) => {
-      // Utiliser la ref pour déclencher la réactivité
-      const isSelected = selectedConflictRef.value === conflictId
-      // Debug pour voir si la sélection fonctionne
-      console.log(`🔍 AsideNav: Conflit ${conflictId} sélectionné ?`, isSelected, 'selectedConflict:', selectedConflictRef.value)
+      const isSelected = conflictSelectionMap.value[conflictId] || false
+      console.log(`🔍 AsideNav: Conflit ${conflictId} sélectionné ?`, isSelected)
       return isSelected
     }
     
@@ -340,9 +360,9 @@ export default defineComponent({
       await selectionSystem.selectConflict(id, 'aside')
     }
     
-    // Watcher pour écouter les changements de sélection de conflit
-    watch(() => selectionSystem.selectedConflict, (newConflictId, oldConflictId) => {
-      console.log('🔍 AsideNav: Changement de sélection conflit:', oldConflictId, '->', newConflictId)
+    // Watcher pour écouter les changements de sélection de conflit avec la ref réactive
+    watch(selectedConflict, (newConflictId, oldConflictId) => {
+      console.log('🔍 AsideNav: Changement de sélection conflit (via storeToRefs):', oldConflictId, '->', newConflictId)
       console.log('🔍 AsideNav: Vue actuelle:', currentView.value.type)
       
       // Force le re-render des éléments de la liste si on est dans armedConflictsList
