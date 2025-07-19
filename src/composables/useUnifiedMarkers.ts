@@ -69,7 +69,7 @@ export function useUnifiedMarkers(map: L.Map | null) {
    * Création d'icône selon le type et l'état
    */
   const createMarkerIcon = (markerData: MarkerData, states: { isSelected: boolean, isHighlighted: boolean, isVisible: boolean }) => {
-    const { type, flag, icon, id } = markerData
+    const { type, flag, icon, id, name } = markerData
     const { isSelected, isHighlighted, isVisible } = states
     
     // Classes CSS
@@ -93,9 +93,15 @@ export function useUnifiedMarkers(map: L.Map | null) {
     const size = isSelected ? baseSize + 5 : baseSize
     const anchor = [size / 2, size / 2]
     
+    // Créer les attributs data pour le tooltip CSS
+    let dataAttrs = ''
+    if (markerData.type === 'conflict' && markerData.data?.description) {
+      dataAttrs = `data-tooltip="${markerData.name}" data-description="${markerData.data.description}"`
+    }
+    
     return L.divIcon({
       className: className,
-      html: `<div class="marker-content">${iconContent}</div>`,
+      html: `<div class="marker-content" ${dataAttrs}>${iconContent}</div>`,
       iconSize: [size, size],
       iconAnchor: anchor
     })
@@ -153,6 +159,8 @@ export function useUnifiedMarkers(map: L.Map | null) {
         icon: createMarkerIcon(markerData, states),
         zIndexOffset: getZIndexForType(markerData.type)
       })
+      
+      // Pas de tooltip Leaflet - utilisation de CSS pur via data attributes
       
       // Ajouter à la carte seulement si visible
       if (states.isVisible && map) {
@@ -331,10 +339,8 @@ export function useUnifiedMarkers(map: L.Map | null) {
     console.log('[UnifiedMarkers] conflictEpicenterMarkers count:', mapStore.conflictEpicenterMarkers.length)
     
     if (!mapStore.visibleLayers.conflictEpicenters) {
-      // Supprimer tous les marqueurs d'épicentres existants
-      const epicenterMarkers = Array.from(markers.value.keys()).filter(id => id.startsWith('conflict-epicenter-'))
-      console.log('[UnifiedMarkers] Suppression de', epicenterMarkers.length, 'marqueurs d\'épicentres')
-      epicenterMarkers.forEach(id => removeMarker(id))
+      // Ne plus supprimer - laisser updateMarkerAppearance gérer la visibilité
+      console.log('[UnifiedMarkers] Épicentres masqués - visibilité gérée par updateMarkerAppearance')
       return
     }
     
@@ -363,10 +369,8 @@ export function useUnifiedMarkers(map: L.Map | null) {
     console.log('[UnifiedMarkers] armedConflicts features count:', mapStore.armedConflicts?.features?.length || 0)
     
     if (!mapStore.visibleLayers.armedConflicts || !mapStore.armedConflicts?.features) {
-      // Supprimer tous les marqueurs de zones de combat existants
-      const combatZoneMarkers = Array.from(markers.value.keys()).filter(id => id.startsWith('combat-zone-'))
-      console.log('[UnifiedMarkers] Suppression de', combatZoneMarkers.length, 'marqueurs de zones de combat')
-      combatZoneMarkers.forEach(id => removeMarker(id))
+      // Ne plus supprimer - laisser updateMarkerAppearance gérer la visibilité
+      console.log('[UnifiedMarkers] Zones de combat masquées - visibilité gérée par updateMarkerAppearance')
       return
     }
     

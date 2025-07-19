@@ -79,17 +79,7 @@ export default defineComponent({
         return
       }
       
-      
-      // Supprimer les anciens marqueurs de conflits
-      if (unifiedMarkers.value?.markers?.value) {
-        unifiedMarkers.value.markers.value.forEach((marker, id) => {
-          if (id.startsWith('conflict-')) {
-            unifiedMarkers.value!.removeMarker(id)
-          }
-        })
-      }
-      
-      // Créer les nouveaux marqueurs de conflits
+      // Créer/mettre à jour les marqueurs de conflits SANS supprimer les existants
       mapStore.armedConflicts.features.forEach((feature: any, index: number) => {
         const coords = feature.geometry?.coordinates
         const props = feature.properties
@@ -105,9 +95,8 @@ export default defineComponent({
           }
           
           const marker = unifiedMarkers.value!.createOrUpdateMarker(markerData)
-          if (marker) {
-            marker.bindPopup(`<strong>${props.name}</strong><br/>${props.description || ''}`)
-          }
+          // Temporairement pas de tooltip pour éviter les conflits de zoom
+          // Nous utiliserons l'attribut title du marqueur comme alternative
         }
       })
       
@@ -177,15 +166,6 @@ export default defineComponent({
         
         if (featuresCount > 0 && (isVisible || conflictZonesVisible)) {
           loadConflictMarkers()
-        } else if (!isVisible && !conflictZonesVisible) {
-          // Supprimer les marqueurs de conflits
-          if (unifiedMarkers.value?.markers?.value) {
-            unifiedMarkers.value.markers.value.forEach((marker, id) => {
-              if (id.startsWith('conflict-')) {
-                unifiedMarkers.value!.removeMarker(id)
-              }
-            })
-          }
         }
       }, { immediate: false }
     )
@@ -359,5 +339,76 @@ export default defineComponent({
 :deep(.leaflet-container) {
   height: 100%;
   width: 100%;
+}
+
+/* Styles pour les tooltips des zones de combat */
+:deep(.combat-zone-tooltip) {
+  background: white !important;
+  border: 1px solid #ccc !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  color: #333 !important;
+  max-width: 200px !important;
+}
+
+:deep(.combat-zone-tooltip.leaflet-tooltip-top:before) {
+  border-top-color: white !important;
+}
+
+:deep(.combat-zone-tooltip.leaflet-tooltip-bottom:before) {
+  border-bottom-color: white !important;
+}
+
+:deep(.combat-zone-tooltip.leaflet-tooltip-left:before) {
+  border-left-color: white !important;
+}
+
+:deep(.combat-zone-tooltip.leaflet-tooltip-right:before) {
+  border-right-color: white !important;
+}
+
+/* Tooltip CSS pur pour les zones de combat */
+:deep(.conflict-marker .marker-content[data-tooltip]) {
+  position: relative;
+}
+
+:deep(.conflict-marker .marker-content[data-tooltip]:hover::before) {
+  content: attr(data-tooltip) " - " attr(data-description);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface-color);
+  border: 1px solid var(--border-hover);
+  border-radius: 8px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  box-shadow: var(--shadow-md);
+
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-default);
+  line-height: var(--line-height-sm);
+  color: var(--text-color);
+  width: 312px;
+  white-space: normal;
+  word-wrap: break-word;
+  z-index: 10000;
+  pointer-events: none;
+  margin-bottom: 5px;
+  z-index: 10000;
+}
+
+:deep(.conflict-marker .marker-content[data-tooltip]:hover::after) {
+  content: "";
+  position: absolute;
+  bottom: 90%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--surface-color);
+  z-index: 10001;
+  pointer-events: none;
 }
 </style>
