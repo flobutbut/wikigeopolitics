@@ -86,11 +86,11 @@ const handleClick = (event: MouseEvent) => {
 
 <style scoped>
 .entity-item {
-  background-color: var(--surface-dimmed);
+  background-color: var(--surface-color);
   border-radius: var(--radius-sm);
   padding: var(--spacing-sm);
   transition: all var(--transition-speed) var(--transition-function);
-  border: 1px solid transparent;
+  border: 1px solid var(--border-color);
 }
 
 .entity-item.clickable {
@@ -98,13 +98,13 @@ const handleClick = (event: MouseEvent) => {
 }
 
 .entity-item.clickable:hover {
-  background-color: var(--surface-hover);
-  border-color: var(--border-color);
+  background-color: var(--surface-color);
+  border-color: var(--border-hover);
 }
 
 .entity-item.selected {
-  background-color: var(--primary-color-light);
-  border-color: var(--primary-color);
+  background-color: var(--surface-color);
+  border-color: var(--border-active);
 }
 
 .entity-item__header {
@@ -127,7 +127,7 @@ const handleClick = (event: MouseEvent) => {
 }
 
 .entity-item__title {
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-bold);
   color: var(--text-dark);
   flex: 1;
 }
@@ -147,7 +147,7 @@ const handleClick = (event: MouseEvent) => {
 
 .entity-item__badge {
   background-color: var(--primary-color);
-  color: var(--surface-color);
+  color: var(--text-muted);
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-xs);
   font-size: var(--font-size-xs);

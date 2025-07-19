@@ -31,7 +31,7 @@
     --primary-font: 'inter', sans-serif;
     --line-height-regular: 20px;
     --font-weight-default: 400;
-    --font-weight-medium: 500;
+    --font-weight-medium: 600;
     --font-weight-bold: 700;
     --font-size-xs: 11px;
     --font-size-sm: 13px;
@@ -68,7 +68,8 @@
     /* Couleurs de bordure */
     --border-color: var(--color-neutral-300);
     --border-hover: var(--color-neutral-500);
-    --border-focus: var(--color-neutral-800);
+    --border-focus: var(--color-primary-300);
+    --border-active: var(--color-primary-500);
     
     /* Couleurs d'état */
     --hover-color: var(--color-neutral-200);
