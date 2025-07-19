@@ -34,6 +34,7 @@ export const useMapStore = defineStore('map', {
       data: any
     }>,
     
+    
     // Visibilité des couches
     visibleLayers: {
       countries: true,
@@ -435,6 +436,7 @@ export const useMapStore = defineStore('map', {
         }
       })
       window.dispatchEvent(event)
-    }
+    },
+    
   }
 }) 

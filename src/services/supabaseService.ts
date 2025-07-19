@@ -428,8 +428,8 @@ export const supabaseService = {
     if (!data) return null
 
 
-    // Récupérer les pays impliqués avec leurs détails
-    const paysImpliques = await this.getCountriesByConflict(id)
+    // Récupérer les pays impliqués avec leurs détails et rôles
+    const paysImpliques = await this.getCountriesByConflictWithRole(id)
     
     // Récupérer les zones de combat
     const zones = await this.getCombatZonesByConflict(id)
@@ -456,7 +456,7 @@ export const supabaseService = {
         id: country.id,
         nom: country.nom,
         flag: country.drapeau,
-        role: 'participant', // À déterminer selon la relation
+        role: country.role, // Maintenant récupéré depuis la base de données
         dateEntree: data.startyear?.toString()
       })),
       
@@ -516,6 +516,57 @@ export const supabaseService = {
         }
       })()
     }
+  },
+
+  // Récupérer les pays impliqués dans un conflit avec leur rôle
+  async getCountriesByConflictWithRole(conflictId: string): Promise<Array<Country & { role: string }>> {
+    console.log('[supabaseService] 🔍 Récupération des pays avec rôles pour conflit:', conflictId)
+    
+    // D'abord récupérer les relations conflit-pays avec rôles
+    const { data: conflictCountries, error: idError } = await supabase
+      .from('conflict_country')
+      .select('countryid, role')
+      .eq('conflictid', conflictId)
+    
+    if (idError) {
+      console.error('[supabaseService] Erreur récupération relations conflit-pays:', idError)
+      throw idError
+    }
+    
+    if (!conflictCountries || conflictCountries.length === 0) {
+      console.log('[supabaseService] Aucune relation conflit-pays trouvée')
+      return []
+    }
+    
+    console.log('[supabaseService] Relations trouvées:', conflictCountries)
+    
+    // Ensuite récupérer les données des pays
+    const countryIds = conflictCountries.map(cc => cc.countryid)
+    const { data: countries, error: countryError } = await supabase
+      .from('country')
+      .select('*')
+      .in('id', countryIds)
+    
+    if (countryError) {
+      console.error('[supabaseService] Erreur récupération données pays:', countryError)
+      throw countryError
+    }
+    
+    if (!countries) {
+      return []
+    }
+    
+    // Combiner les données pays avec leurs rôles
+    const result = countries.map(country => {
+      const relation = conflictCountries.find(cc => cc.countryid === country.id)
+      return {
+        ...country,
+        role: relation?.role || 'Non spécifié'
+      }
+    })
+    
+    console.log('[supabaseService] Pays avec rôles résultat:', result)
+    return result
   },
 
   // Récupérer les pays impliqués dans un conflit
@@ -741,6 +792,23 @@ export const supabaseService = {
     
     if (error) throw error
     return data || []
+  },
+  
+  // Récupérer le rôle d'un pays spécifique dans un conflit spécifique
+  async getCountryRoleInConflict(countryId: string, conflictId: string): Promise<string | null> {
+    const { data, error } = await supabase
+      .from('conflict_country')
+      .select('role')
+      .eq('countryid', countryId)
+      .eq('conflictid', conflictId)
+      .single()
+    
+    if (error) {
+      console.error('[supabaseService] Erreur récupération rôle pays dans conflit:', error)
+      return null
+    }
+    
+    return data?.role || null
   }
 }
 

@@ -97,6 +97,43 @@ export function useUnifiedMarkers(map: L.Map | null) {
     let dataAttrs = ''
     if (markerData.type === 'conflict' && markerData.data?.description) {
       dataAttrs = `data-tooltip="${markerData.name}" data-description="${markerData.data.description}"`
+    } else if (markerData.type === 'country') {
+      // Vérifier si ce pays a un rôle dans le conflit sélectionné
+      const selectionSystem = useSelectionSystem()
+      if (selectionSystem.selectedConflict) {
+        // Pour les pays impliqués dans le conflit (via selectionSystem.visibleCountries),
+        // ne récupérer le rôle que s'ils sont effectivement impliqués
+        if (selectionSystem.visibleCountries.includes(markerData.id)) {
+          // Stocker temporairement le rôle sur le marqueur pour éviter les appels répétés
+          if (!markerData.data._conflictRole) {
+            markerData.data._conflictRole = 'loading'
+            // Récupérer le rôle de manière asynchrone
+            ;(async () => {
+              try {
+                const { supabaseService } = await import('@/services/supabaseService')
+                const role = await supabaseService.getCountryRoleInConflict(markerData.id, selectionSystem.selectedConflict!)
+                if (role && role !== 'participant') {
+                  markerData.data._conflictRole = role
+                  // Rafraîchir ce marqueur spécifique
+                  refreshAllMarkers()
+                } else {
+                  markerData.data._conflictRole = null
+                }
+              } catch (error) {
+                console.error('Erreur récupération rôle:', error)
+                markerData.data._conflictRole = null
+              }
+            })()
+          } else if (markerData.data._conflictRole && markerData.data._conflictRole !== 'loading') {
+            dataAttrs = `data-tooltip="${markerData.name}" data-role="${markerData.data._conflictRole}"`
+          }
+        }
+      } else {
+        // Effacer le cache du rôle si aucun conflit sélectionné
+        if (markerData.data._conflictRole) {
+          delete markerData.data._conflictRole
+        }
+      }
     }
     
     return L.divIcon({
@@ -501,6 +538,13 @@ export function useUnifiedMarkers(map: L.Map | null) {
       syncConflictEpicenters()
     }
   })
+  
+  // Surveiller les changements des données détaillées de l'aside pour mettre à jour les tooltips
+  watch(() => [asideStore.currentDetailData, asideStore.currentEntityType], () => {
+    if (isInitialized.value) {
+      refreshAllMarkers()
+    }
+  }, { deep: true })
   
   // Nettoyage lors de la destruction (seulement si on est dans un contexte de composant)
   const instance = getCurrentInstance()

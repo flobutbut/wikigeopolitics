@@ -228,10 +228,6 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       this.floatingPanelOpen = true
       this.floatingPanelType = source === 'panel' ? 'country' : 'conflict'
       
-      // Marquer les zones de combat comme visibles (même si vides dans Supabase)
-      this.conflictZonesVisible = true
-      console.log(`[SelectionSystem] 🔥 conflictZonesVisible défini à true pour conflit ${conflictId}`)
-      
       // Garder les marqueurs d'épicentres visibles lors de la sélection d'un conflit
       const { useMapStore } = await import('@/stores/mapStore')
       const mapStore = useMapStore()
@@ -246,6 +242,20 @@ export const useSelectionSystem = defineStore('selectionSystem', {
         
         if (source === 'aside') {
           this.highlightedCountries = this.visibleCountries
+        }
+        
+        if (source === 'aside') {
+          // Menu conflit armé : marquer visible AVANT pour que les watchers se déclenchent
+          this.conflictZonesVisible = true
+          console.log(`[SelectionSystem] 🔥 conflictZonesVisible défini à true pour conflit ${conflictId} (menu)`)
+          await mapStore.loadConflictZones(conflictId)
+          console.log(`[SelectionSystem] 🔥 Zones de combat chargées pour conflit ${conflictId}`)
+        } else {
+          // Floating panel : charger AVANT de marquer visible pour éviter les watchers prématurés
+          await mapStore.loadConflictZones(conflictId)
+          console.log(`[SelectionSystem] 🔥 Zones de combat chargées pour conflit ${conflictId}`)
+          this.conflictZonesVisible = true
+          console.log(`[SelectionSystem] 🔥 conflictZonesVisible défini à true pour conflit ${conflictId} (panel)`)
         }
       } catch (error) {
         console.error('[SelectionSystem] Erreur chargement pays conflit:', error)

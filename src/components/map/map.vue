@@ -170,6 +170,20 @@ export default defineComponent({
       }, { immediate: false }
     )
     
+    // Watcher spécifique pour les changements de conflictZonesVisible
+    // pour forcer le chargement même si les données arrivent en retard
+    watch(() => selectionSystem.conflictZonesVisible, async (isVisible) => {
+      if (isVisible && selectionSystem.selectedConflict) {
+        await nextTick()
+        // Attendre un peu que les données se chargent si elles ne sont pas encore là
+        setTimeout(() => {
+          if (mapStore.armedConflicts?.features?.length > 0) {
+            loadConflictMarkers()
+          }
+        }, 100)
+      }
+    })
+    
     // Surveiller les épicentres de conflits
     watch(() => [
       mapStore.conflictEpicenterMarkers?.length,
@@ -401,6 +415,46 @@ export default defineComponent({
 }
 
 :deep(.conflict-marker .marker-content[data-tooltip]:hover::after) {
+  content: "";
+  position: absolute;
+  bottom: 90%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--surface-color);
+  z-index: 10001;
+  pointer-events: none;
+}
+
+/* Tooltip CSS pour les marqueurs de pays avec rôle dans un conflit */
+:deep(.country-marker .marker-content[data-role]) {
+  position: relative;
+}
+
+:deep(.country-marker .marker-content[data-role]:hover::before) {
+  content: attr(data-tooltip) " - Rôle: " attr(data-role);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface-color);
+  border: 1px solid var(--border-hover);
+  border-radius: 8px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  box-shadow: var(--shadow-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-default);
+  line-height: var(--line-height-sm);
+  color: var(--text-color);
+  width: 312px;
+  white-space: normal;
+  word-wrap: break-word;
+  z-index: 10000;
+  pointer-events: none;
+  margin-bottom: 5px;
+}
+
+:deep(.country-marker .marker-content[data-role]:hover::after) {
   content: "";
   position: absolute;
   bottom: 90%;
