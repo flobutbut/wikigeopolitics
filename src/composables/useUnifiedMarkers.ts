@@ -36,6 +36,65 @@ export function useUnifiedMarkers(map: L.Map | null) {
   const markers = ref<Map<string, UnifiedMarker>>(new Map())
   const isInitialized = ref(false)
   
+  // Système de debounce pour éviter les rafraîchissements excessifs
+  let refreshTimer: number | null = null
+  const REFRESH_DEBOUNCE_MS = 50
+  
+  // Cache des rôles des pays dans les conflits pour éviter les appels API répétés
+  const countryRolesCache = ref<Map<string, string>>(new Map())
+  
+  /**
+   * Précharger les rôles des pays dans un conflit
+   */
+  const preloadCountryRoles = async (conflictId: string, countryIds: string[]) => {
+    try {
+      const { supabaseService } = await import('@/services/supabaseService')
+      
+      // Charger les rôles en parallèle pour tous les pays
+      const rolePromises = countryIds.map(async (countryId) => {
+        const cacheKey = `${conflictId}-${countryId}`
+        
+        if (!countryRolesCache.value.has(cacheKey)) {
+          try {
+            const role = await supabaseService.getCountryRoleInConflict(countryId, conflictId)
+            countryRolesCache.value.set(cacheKey, role || 'participant')
+            return { countryId, role: role || 'participant' }
+          } catch (error) {
+            console.error(`Erreur récupération rôle ${countryId}:`, error)
+            countryRolesCache.value.set(cacheKey, 'participant')
+            return { countryId, role: 'participant' }
+          }
+        }
+        
+        return { countryId, role: countryRolesCache.value.get(cacheKey)! }
+      })
+      
+      await Promise.all(rolePromises)
+      
+      // Déclencher un rafraîchissement des marqueurs pour appliquer les nouveaux rôles
+      refreshAllMarkersImmediate()
+      
+    } catch (error) {
+      console.error('[UnifiedMarkers] Erreur préchargement rôles:', error)
+    }
+  }
+  
+  /**
+   * Nettoyer le cache des rôles pour un conflit spécifique
+   */
+  const clearConflictRolesCache = (conflictId?: string) => {
+    if (conflictId) {
+      // Nettoyer seulement les rôles de ce conflit
+      const keysToDelete = Array.from(countryRolesCache.value.keys())
+        .filter(key => key.startsWith(`${conflictId}-`))
+      
+      keysToDelete.forEach(key => countryRolesCache.value.delete(key))
+    } else {
+      // Nettoyer tout le cache
+      countryRolesCache.value.clear()
+    }
+  }
+  
   /**
    * Validation sécurisée des coordonnées
    */
@@ -100,38 +159,13 @@ export function useUnifiedMarkers(map: L.Map | null) {
     } else if (markerData.type === 'country') {
       // Vérifier si ce pays a un rôle dans le conflit sélectionné
       const selectionSystem = useSelectionSystem()
-      if (selectionSystem.selectedConflict) {
-        // Pour les pays impliqués dans le conflit (via selectionSystem.visibleCountries),
-        // ne récupérer le rôle que s'ils sont effectivement impliqués
-        if (selectionSystem.visibleCountries.includes(markerData.id)) {
-          // Stocker temporairement le rôle sur le marqueur pour éviter les appels répétés
-          if (!markerData.data._conflictRole) {
-            markerData.data._conflictRole = 'loading'
-            // Récupérer le rôle de manière asynchrone
-            ;(async () => {
-              try {
-                const { supabaseService } = await import('@/services/supabaseService')
-                const role = await supabaseService.getCountryRoleInConflict(markerData.id, selectionSystem.selectedConflict!)
-                if (role && role !== 'participant') {
-                  markerData.data._conflictRole = role
-                  // Rafraîchir ce marqueur spécifique
-                  refreshAllMarkers()
-                } else {
-                  markerData.data._conflictRole = null
-                }
-              } catch (error) {
-                console.error('Erreur récupération rôle:', error)
-                markerData.data._conflictRole = null
-              }
-            })()
-          } else if (markerData.data._conflictRole && markerData.data._conflictRole !== 'loading') {
-            dataAttrs = `data-tooltip="${markerData.name}" data-role="${markerData.data._conflictRole}"`
-          }
-        }
-      } else {
-        // Effacer le cache du rôle si aucun conflit sélectionné
-        if (markerData.data._conflictRole) {
-          delete markerData.data._conflictRole
+      if (selectionSystem.selectedConflict && selectionSystem.visibleCountries.includes(markerData.id)) {
+        // Utiliser le cache pour récupérer le rôle (synchrone)
+        const cacheKey = `${selectionSystem.selectedConflict}-${markerData.id}`
+        const cachedRole = countryRolesCache.value.get(cacheKey)
+        
+        if (cachedRole && cachedRole !== 'participant') {
+          dataAttrs = `data-tooltip="${markerData.name}" data-role="${cachedRole}"`
         }
       }
     }
@@ -356,12 +390,36 @@ export function useUnifiedMarkers(map: L.Map | null) {
     })
     
     markers.value.clear()
+    
+    // Nettoyer aussi le cache des rôles
+    clearConflictRolesCache()
   }
   
   /**
-   * Rafraîchir tous les marqueurs
+   * Rafraîchir tous les marqueurs (avec debounce)
    */
   const refreshAllMarkers = () => {
+    if (refreshTimer !== null) {
+      clearTimeout(refreshTimer)
+    }
+    
+    refreshTimer = window.setTimeout(() => {
+      markers.value.forEach((unifiedMarker) => {
+        updateMarkerAppearance(unifiedMarker)
+      })
+      refreshTimer = null
+    }, REFRESH_DEBOUNCE_MS)
+  }
+  
+  /**
+   * Rafraîchir immédiatement tous les marqueurs (sans debounce)
+   */
+  const refreshAllMarkersImmediate = () => {
+    if (refreshTimer !== null) {
+      clearTimeout(refreshTimer)
+      refreshTimer = null
+    }
+    
     markers.value.forEach((unifiedMarker) => {
       updateMarkerAppearance(unifiedMarker)
     })
@@ -371,18 +429,12 @@ export function useUnifiedMarkers(map: L.Map | null) {
    * Synchroniser les marqueurs d'épicentres depuis mapStore
    */
   const syncConflictEpicenters = () => {
-    console.log('[UnifiedMarkers] 🔄 Synchronisation des épicentres')
-    console.log('[UnifiedMarkers] visibleLayers.conflictEpicenters:', mapStore.visibleLayers.conflictEpicenters)
-    console.log('[UnifiedMarkers] conflictEpicenterMarkers count:', mapStore.conflictEpicenterMarkers.length)
-    
     if (!mapStore.visibleLayers.conflictEpicenters) {
       // Ne plus supprimer - laisser updateMarkerAppearance gérer la visibilité
-      console.log('[UnifiedMarkers] Épicentres masqués - visibilité gérée par updateMarkerAppearance')
       return
     }
     
     // Ajouter/mettre à jour les marqueurs d'épicentres
-    console.log('[UnifiedMarkers] Ajout/mise à jour des marqueurs d\'épicentres')
     mapStore.conflictEpicenterMarkers.forEach(epicenterData => {
       const markerData: MarkerData = {
         id: epicenterData.id,
@@ -400,28 +452,16 @@ export function useUnifiedMarkers(map: L.Map | null) {
    * Synchroniser les zones de combat depuis mapStore
    */
   const syncConflictZones = () => {
-    console.log('[UnifiedMarkers] 🔄 Synchronisation des zones de combat')
-    console.log('[UnifiedMarkers] visibleLayers.armedConflicts:', mapStore.visibleLayers.armedConflicts)
-    console.log('[UnifiedMarkers] armedConflicts:', mapStore.armedConflicts)
-    console.log('[UnifiedMarkers] armedConflicts features count:', mapStore.armedConflicts?.features?.length || 0)
-    
     if (!mapStore.visibleLayers.armedConflicts || !mapStore.armedConflicts?.features) {
       // Ne plus supprimer - laisser updateMarkerAppearance gérer la visibilité
-      console.log('[UnifiedMarkers] Zones de combat masquées - visibilité gérée par updateMarkerAppearance')
       return
     }
     
     // Ajouter/mettre à jour les marqueurs de zones de combat
-    console.log('[UnifiedMarkers] Ajout/mise à jour des marqueurs de zones de combat')
-    console.log('[UnifiedMarkers] Features à traiter:', mapStore.armedConflicts.features)
     
-    mapStore.armedConflicts.features.forEach((feature, index) => {
-      console.log(`[UnifiedMarkers] Traitement feature ${index}:`, feature)
-      
+    mapStore.armedConflicts.features.forEach((feature) => {
       if (feature.geometry?.type === 'Point' && feature.geometry.coordinates) {
         const coords = feature.geometry.coordinates
-        console.log(`[UnifiedMarkers] Coordonnées trouvées:`, coords)
-        
         const markerData: MarkerData = {
           id: feature.properties.id,
           type: 'conflict',
@@ -431,20 +471,9 @@ export function useUnifiedMarkers(map: L.Map | null) {
           data: feature.properties
         }
         
-        console.log(`[UnifiedMarkers] Création marqueur zone de combat:`, markerData)
-        const marker = createOrUpdateMarker(markerData)
-        
-        if (marker) {
-          console.log(`[UnifiedMarkers] ✅ Marqueur zone de combat créé avec succès: ${markerData.id}`)
-        } else {
-          console.log(`[UnifiedMarkers] ❌ Échec création marqueur zone de combat: ${markerData.id}`)
-        }
-      } else {
-        console.log(`[UnifiedMarkers] ⚠️ Feature invalide:`, feature)
+        createOrUpdateMarker(markerData)
       }
     })
-    
-    console.log('[UnifiedMarkers] 📊 Total marqueurs après sync:', markers.value.size)
   }
   
   /**
@@ -491,65 +520,46 @@ export function useUnifiedMarkers(map: L.Map | null) {
     isInitialized.value = true
   }
   
-  // Surveiller les changements d'état pour rafraîchir les marqueurs
-  watch(() => selectionSystem.currentState, () => {
+  // Watcher centralisé pour la synchronisation des marqueurs (optimisé avec debounce)
+  watch(() => ({
+    // États de sélection qui affectent l'apparence des marqueurs
+    selectionState: selectionSystem.currentState,
+    countryDisplayMode: mapStore.countryDisplayMode,
+    currentViewType: asideStore.currentView?.type,
+    currentDetailData: asideStore.currentDetailData,
+    currentEntityType: asideStore.currentEntityType
+  }), () => {
     if (isInitialized.value) {
       refreshAllMarkers()
     }
   }, { deep: true })
   
-  // Surveiller les changements d'épicentres de conflits
-  watch(() => mapStore.conflictEpicenterMarkers, () => {
+  // Watcher séparé pour les épicentres (synchronisation immédiate nécessaire)
+  watch(() => ({
+    epicenterMarkers: mapStore.conflictEpicenterMarkers,
+    epicenterVisible: mapStore.visibleLayers.conflictEpicenters,
+    selectionType: selectionSystem.type
+  }), () => {
     syncConflictEpicenters()
   }, { deep: true })
   
-  // Surveiller la visibilité des épicentres
-  watch(() => mapStore.visibleLayers.conflictEpicenters, () => {
-    syncConflictEpicenters()
-  })
-
-  // Surveiller les changements des zones de combat
-  watch(() => mapStore.armedConflicts, () => {
+  // Watcher séparé pour les zones de combat (synchronisation immédiate nécessaire)
+  watch(() => ({
+    armedConflicts: mapStore.armedConflicts,
+    conflictsVisible: mapStore.visibleLayers.armedConflicts
+  }), () => {
     syncConflictZones()
-  }, { deep: true })
-  
-  // Surveiller la visibilité des zones de combat
-  watch(() => mapStore.visibleLayers.armedConflicts, () => {
-    syncConflictZones()
-  })
-  
-  // Surveiller le mode d'affichage des pays
-  watch(() => mapStore.countryDisplayMode, () => {
-    if (isInitialized.value) {
-      refreshAllMarkers()
-    }
-  })
-  
-  // Surveiller les changements de vue de l'aside
-  watch(() => asideStore.currentView?.type, () => {
-    if (isInitialized.value) {
-      refreshAllMarkers()
-    }
-  })
-  
-  // Surveiller les changements de type de sélection pour les épicentres
-  watch(() => selectionSystem.type, () => {
-    if (isInitialized.value) {
-      syncConflictEpicenters()
-    }
-  })
-  
-  // Surveiller les changements des données détaillées de l'aside pour mettre à jour les tooltips
-  watch(() => [asideStore.currentDetailData, asideStore.currentEntityType], () => {
-    if (isInitialized.value) {
-      refreshAllMarkers()
-    }
   }, { deep: true })
   
   // Nettoyage lors de la destruction (seulement si on est dans un contexte de composant)
   const instance = getCurrentInstance()
   if (instance) {
     onUnmounted(() => {
+      // Nettoyer le timer de debounce
+      if (refreshTimer !== null) {
+        clearTimeout(refreshTimer)
+        refreshTimer = null
+      }
       clearAllMarkers()
     })
   }
@@ -564,8 +574,13 @@ export function useUnifiedMarkers(map: L.Map | null) {
     removeMarker,
     clearAllMarkers,
     refreshAllMarkers,
+    refreshAllMarkersImmediate,
     initializeMarkers,
     syncConflictEpicenters,
+    
+    // Gestion des rôles
+    preloadCountryRoles,
+    clearConflictRolesCache,
     
     // Utilitaires
     validateCoordinates,

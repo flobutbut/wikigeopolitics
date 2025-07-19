@@ -135,6 +135,11 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       mapStore.visibleLayers.armedConflicts = false
       mapStore.armedConflicts = null
       
+      // Nettoyer le cache des rôles
+      const { useUnifiedMarkers } = await import('@/composables/useUnifiedMarkers')
+      const { clearConflictRolesCache } = useUnifiedMarkers(null)
+      clearConflictRolesCache()
+      
       // Synchroniser avec les autres stores
       await this.syncWithStores()
     },
@@ -248,6 +253,15 @@ export const useSelectionSystem = defineStore('selectionSystem', {
         this.visibleCountries = countries.map((c: any) => c.id)
         console.log(`[SelectionSystem] 🏳️ Pays du conflit ${conflictId}:`, this.visibleCountries)
         
+        // Précharger les rôles des pays pour éviter les appels API dans createMarkerIcon
+        if (this.visibleCountries.length > 0) {
+          console.log(`[SelectionSystem] 🔄 Préchargement des rôles pour ${this.visibleCountries.length} pays`)
+          // Import dynamique pour éviter les dépendances circulaires
+          const { useUnifiedMarkers } = await import('@/composables/useUnifiedMarkers')
+          const { preloadCountryRoles } = useUnifiedMarkers(null)
+          await preloadCountryRoles(conflictId, this.visibleCountries)
+        }
+        
         if (source === 'aside') {
           this.highlightedCountries = this.visibleCountries
         }
@@ -317,6 +331,11 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       const mapStore = useMapStore()
       mapStore.visibleLayers.armedConflicts = false
       mapStore.armedConflicts = null
+      
+      // Nettoyer le cache des rôles
+      const { useUnifiedMarkers } = await import('@/composables/useUnifiedMarkers')
+      const { clearConflictRolesCache } = useUnifiedMarkers(null)
+      clearConflictRolesCache()
       
       // Reset du contexte parent
       this.parentContext = {
