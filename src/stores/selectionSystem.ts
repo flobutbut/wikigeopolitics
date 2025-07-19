@@ -25,6 +25,9 @@ export interface SelectionState {
   // Zones de combat visibles
   conflictZonesVisible: boolean
   
+  // Rôles des pays dans le conflit sélectionné
+  countryRolesInConflict: Record<string, string>
+  
   // Contexte parent pour navigation contextuelle
   parentContext: {
     type: 'regime' | 'organization' | 'conflict' | 'initial'
@@ -58,6 +61,8 @@ export const useSelectionSystem = defineStore('selectionSystem', {
     highlightedCountries: [],
     
     conflictZonesVisible: false,
+    
+    countryRolesInConflict: {},
     
     parentContext: {
       type: 'initial',
@@ -122,6 +127,7 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       this.visibleCountries = []
       this.highlightedCountries = []
       this.conflictZonesVisible = false
+      this.countryRolesInConflict = {}
       
       // Reset du contexte parent
       this.parentContext = {
@@ -256,14 +262,35 @@ export const useSelectionSystem = defineStore('selectionSystem', {
         // Précharger les rôles des pays pour éviter les appels API dans createMarkerIcon
         if (this.visibleCountries.length > 0) {
           console.log(`[SelectionSystem] 🔄 Préchargement des rôles pour ${this.visibleCountries.length} pays`)
-          // Import dynamique pour éviter les dépendances circulaires
-          const { useUnifiedMarkers } = await import('@/composables/useUnifiedMarkers')
-          const { preloadCountryRoles } = useUnifiedMarkers(null)
-          await preloadCountryRoles(conflictId, this.visibleCountries)
+          // Précharger les rôles directement sans utiliser useUnifiedMarkers
+          // pour éviter les problèmes de dépendances circulaires
+          const { supabaseService: supabaseForRoles } = await import('@/services/supabaseService')
+          
+          // Charger les rôles en parallèle pour tous les pays
+          const rolePromises = this.visibleCountries.map(async (countryId) => {
+            try {
+              const role = await supabaseForRoles.getCountryRoleInConflict(countryId, conflictId)
+              return { countryId, role: role || 'participant' }
+            } catch (error) {
+              console.error(`Erreur récupération rôle ${countryId}:`, error)
+              return { countryId, role: 'participant' }
+            }
+          })
+          
+          const roles = await Promise.all(rolePromises)
+          console.log(`[SelectionSystem] ✅ Rôles chargés pour conflit ${conflictId}:`, roles)
+          
+          // Stocker les rôles dans le state
+          this.countryRolesInConflict = {}
+          roles.forEach(({ countryId, role }) => {
+            this.countryRolesInConflict[countryId] = role
+          })
         }
         
         if (source === 'aside') {
-          this.highlightedCountries = this.visibleCountries
+          // Ne pas mettre en évidence tous les pays du conflit automatiquement
+          // Les pays seront mis en évidence seulement s'ils sont sélectionnés individuellement
+          this.highlightedCountries = []
         }
         
         if (source === 'aside') {
@@ -325,6 +352,7 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       this.visibleCountries = []
       this.highlightedCountries = []
       this.conflictZonesVisible = false
+      this.countryRolesInConflict = {}
       
       // Nettoyer les couches de conflits
       const { useMapStore } = await import('@/stores/mapStore')

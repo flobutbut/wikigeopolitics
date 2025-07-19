@@ -71,8 +71,7 @@ export function useUnifiedMarkers(map: L.Map | null) {
       
       await Promise.all(rolePromises)
       
-      // Déclencher un rafraîchissement des marqueurs pour appliquer les nouveaux rôles
-      refreshAllMarkersImmediate()
+      // Les watchers vont automatiquement déclencher le rafraîchissement
       
     } catch (error) {
       console.error('[UnifiedMarkers] Erreur préchargement rôles:', error)
@@ -160,12 +159,12 @@ export function useUnifiedMarkers(map: L.Map | null) {
       // Vérifier si ce pays a un rôle dans le conflit sélectionné
       const selectionSystem = useSelectionSystem()
       if (selectionSystem.selectedConflict && selectionSystem.visibleCountries.includes(markerData.id)) {
-        // Utiliser le cache pour récupérer le rôle (synchrone)
-        const cacheKey = `${selectionSystem.selectedConflict}-${markerData.id}`
-        const cachedRole = countryRolesCache.value.get(cacheKey)
+        // Utiliser les rôles stockés dans selectionSystem (synchrone)
+        const role = selectionSystem.countryRolesInConflict[markerData.id]
         
-        if (cachedRole && cachedRole !== 'participant') {
-          dataAttrs = `data-tooltip="${markerData.name}" data-role="${cachedRole}"`
+        if (role) {
+          // Afficher le tooltip pour tous les rôles, même "participant"
+          dataAttrs = `data-tooltip="${markerData.name}" data-role="${role}"`
         }
       }
     }
@@ -527,7 +526,9 @@ export function useUnifiedMarkers(map: L.Map | null) {
     countryDisplayMode: mapStore.countryDisplayMode,
     currentViewType: asideStore.currentView?.type,
     currentDetailData: asideStore.currentDetailData,
-    currentEntityType: asideStore.currentEntityType
+    currentEntityType: asideStore.currentEntityType,
+    // Inclure les rôles des pays pour déclencher le rafraîchissement quand ils sont chargés
+    countryRoles: selectionSystem.countryRolesInConflict
   }), () => {
     if (isInitialized.value) {
       refreshAllMarkers()
