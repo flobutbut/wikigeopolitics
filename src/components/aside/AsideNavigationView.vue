@@ -138,7 +138,7 @@
 </template>
 
 <script>
-import { defineComponent, computed, ref, watch, onMounted } from 'vue'
+import { defineComponent, computed, ref, watch, onMounted, toRef } from 'vue'
 import MenuItem from '@/components/common/MenuItem.vue'
 import SectionTitle from '@/components/common/SectionTitle.vue'
 import ReturnButton from '@/components/navigation/ReturnButton.vue'
@@ -165,7 +165,18 @@ export default defineComponent({
     const isCountrySelected = (countryId) => selectionSystem.isCountrySelected(countryId)
     const isOrganizationSelected = (orgId) => selectionSystem.selectedOrganization === orgId
     const isPoliticalRegimeSelected = (regimeId) => selectionSystem.selectedRegime === regimeId
-    const isArmedConflictSelected = (conflictId) => selectionSystem.isConflictSelected(conflictId)
+    
+    // Référence réactive à selectedConflict pour forcer la réactivité
+    const selectedConflictRef = toRef(selectionSystem, 'selectedConflict')
+    
+    // Fonction réactive pour la sélection des conflits armés
+    const isArmedConflictSelected = (conflictId) => {
+      // Utiliser la ref pour déclencher la réactivité
+      const isSelected = selectedConflictRef.value === conflictId
+      // Debug pour voir si la sélection fonctionne
+      console.log(`🔍 AsideNav: Conflit ${conflictId} sélectionné ?`, isSelected, 'selectedConflict:', selectedConflictRef.value)
+      return isSelected
+    }
     
     // Éléments filtrés
     const filteredItems = computed(() => {
@@ -329,6 +340,18 @@ export default defineComponent({
       await selectionSystem.selectConflict(id, 'aside')
     }
     
+    // Watcher pour écouter les changements de sélection de conflit
+    watch(() => selectionSystem.selectedConflict, (newConflictId, oldConflictId) => {
+      console.log('🔍 AsideNav: Changement de sélection conflit:', oldConflictId, '->', newConflictId)
+      console.log('🔍 AsideNav: Vue actuelle:', currentView.value.type)
+      
+      // Force le re-render des éléments de la liste si on est dans armedConflictsList
+      if (currentView.value.type === 'armedConflictsList' && newConflictId) {
+        console.log('🔍 AsideNav: Dans la vue conflits, forçage du refresh')
+        // La réactivité de Vue devrait automatiquement mettre à jour l'état selected
+      }
+    })
+
     return {
       currentView,
       filteredItems,

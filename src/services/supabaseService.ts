@@ -77,6 +77,66 @@ export const supabaseService = {
     return data || []
   },
 
+  // Récupérer tous les pays avec leurs régimes politiques (optimisé pour la recherche)
+  async getCountriesWithRegimes(): Promise<any[]> {
+    try {
+      // Récupérer tous les pays
+      const { data: countries, error: countryError } = await supabase
+        .from('country')
+        .select('id, nom, population, drapeau')
+        .order('nom')
+      
+      if (countryError) throw countryError
+      if (!countries) return []
+
+      // Récupérer tous les régimes politiques actuels en une seule requête
+      const { data: regimes, error: regimeError } = await supabase
+        .from('country_political_regime')
+        .select(`
+          country_id,
+          political_regime:regime_id(name)
+        `)
+        .eq('current_regime', true)
+      
+      if (regimeError) {
+        console.warn('Erreur récupération régimes politiques:', regimeError)
+      }
+
+      // Créer un map pour accès rapide aux régimes
+      const regimeMap = new Map()
+      if (regimes) {
+        regimes.forEach(regime => {
+          regimeMap.set(regime.country_id, regime.political_regime?.name || 'Non spécifié')
+        })
+      }
+
+      // Combiner pays et régimes
+      return countries.map(country => ({
+        id: country.id,
+        nom: country.nom,
+        population: country.population,
+        drapeau: country.drapeau,
+        regimePolitique: regimeMap.get(country.id) || 'Non spécifié'
+      }))
+      
+    } catch (error) {
+      console.error('Erreur dans getCountriesWithRegimes:', error)
+      // Fallback : récupérer au moins les pays sans régimes
+      const { data: countries } = await supabase
+        .from('country')
+        .select('id, nom, population, drapeau')
+        .order('nom')
+      
+      return (countries || []).map(country => ({
+        id: country.id,
+        nom: country.nom,
+        population: country.population,
+        drapeau: country.drapeau,
+        regimePolitique: 'Non spécifié'
+      }))
+    }
+  },
+
   // Récupérer un pays par ID avec toutes les données pour floating panel
   async getCountryById(id: string): Promise<any | null> {
     const { data, error } = await supabase

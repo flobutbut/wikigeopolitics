@@ -221,6 +221,7 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       }
       
       this.selectedConflict = conflictId
+      console.log(`[SelectionSystem] 🎯 selectedConflict mis à jour:`, this.selectedConflict)
       this.selectedOrganization = null
       this.selectedRegime = null
       

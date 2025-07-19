@@ -131,10 +131,10 @@ export default defineComponent({
     }
     
     const handleConflictSelected = async (conflictId: string) => {
-      console.log(`Conflit sélectionné depuis la carte: ${conflictId}`)
+      console.log(`🗺️ Conflit sélectionné depuis la carte: ${conflictId}`)
       
-      // Utiliser le nouveau système de sélection
-      await selectionSystem.selectConflict(conflictId, 'aside')
+      // Utiliser le nouveau système de sélection avec le bon source
+      await selectionSystem.selectConflict(conflictId, 'map')
     }
     
     // Méthode pour zoomer sur un pays depuis l'aside

@@ -6,9 +6,9 @@
     
     <!-- Barre de recherche centrée -->
     <div class="search-container">
-      <Search 
-        v-if="currentView.searchEnabled !== false"
-        @search="handleSearch" 
+      <CountrySearch 
+        placeholder="Rechercher un pays..."
+        @country-selected="handleCountrySelected"
       />
     </div>
     
@@ -26,31 +26,32 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue'
+import { defineComponent } from 'vue'
 import Button from '@components/common/Button.vue'
-import Search from '@components/common/Search.vue'
-import { useAsideStore } from '@/stores/asideStore'
+import CountrySearch from '@components/common/CountrySearch.vue'
+
+interface Country {
+  id: string
+  nom: string
+  population?: number
+  drapeau?: string
+  regimePolitique?: string
+}
 
 export default defineComponent({
   name: 'HeaderNav',
   
   components: {
     Button,
-    Search
+    CountrySearch
   },
   
   setup() {
-    const asideStore = useAsideStore()
-    
-    // Computed pour le placeholder de recherche
-    const searchPlaceholder = computed(() => asideStore.searchPlaceholder)
-    
-    // Vue actuelle
-    const currentView = computed(() => asideStore.currentView)
-    
-    // Gestion de la recherche
-    const handleSearch = (query: string) => {
-      asideStore.setSearchQuery(query)
+    // Gestion de la sélection de pays
+    const handleCountrySelected = (country: Country) => {
+      console.log('Pays sélectionné depuis header:', country.nom)
+      // La sélection est déjà gérée dans le composant CountrySearch
+      // via asideStore.selectCountry()
     }
     
     const handleContribute = () => {
@@ -64,9 +65,7 @@ export default defineComponent({
     }
     
     return {
-      currentView,
-      searchPlaceholder,
-      handleSearch,
+      handleCountrySelected,
       handleContribute,
       handleLogin
     }
@@ -117,8 +116,36 @@ export default defineComponent({
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  width: 400px; /* Ajustez selon vos besoins */
-  max-width: 40%;
+  width: 420px;
+  max-width: 45%;
+}
+
+@media (max-width: 1024px) {
+  .search-container {
+    width: 350px;
+    max-width: 40%;
+  }
+}
+
+@media (max-width: 768px) {
+  .search-container {
+    position: relative;
+    left: auto;
+    transform: none;
+    width: 100%;
+    max-width: none;
+    order: 3;
+    margin-top: var(--spacing-sm);
+  }
+  
+  .header {
+    flex-wrap: wrap;
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+  
+  .header nav {
+    order: 2;
+  }
 }
 
 .header nav ul {
