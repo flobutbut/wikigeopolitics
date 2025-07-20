@@ -231,6 +231,18 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       // Sauvegarder l'état actuel
       this.saveCurrentState()
       
+      // Nettoyer l'état du conflit précédent AVANT de charger le nouveau
+      this.visibleCountries = []
+      this.highlightedCountries = []
+      this.countryRolesInConflict = {}
+      this.conflictZonesVisible = false
+      
+      // Nettoyer aussi les données de conflit dans mapStore
+      const { useMapStore } = await import('@/stores/mapStore')
+      const mapStore = useMapStore()
+      mapStore.visibleLayers.armedConflicts = false
+      mapStore.armedConflicts = null
+      
       // Déterminer le nouvel état
       if (this.selectedCountry && source === 'panel') {
         this.type = 'country_conflict'
@@ -247,10 +259,8 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       this.floatingPanelOpen = true
       this.floatingPanelType = source === 'panel' ? 'country' : 'conflict'
       
-      // Garder les marqueurs d'épicentres visibles lors de la sélection d'un conflit
-      const { useMapStore } = await import('@/stores/mapStore')
-      const mapStore = useMapStore()
-      // On garde les épicentres visibles pour permettre la sélection d'autres conflits
+      // Petit délai pour permettre aux watchers de traiter le nettoyage
+      await new Promise(resolve => setTimeout(resolve, 10))
       
       // Charger les pays du conflit
       const { supabaseService } = await import('@/services/supabaseService')
@@ -261,7 +271,6 @@ export const useSelectionSystem = defineStore('selectionSystem', {
         
         // Précharger les rôles des pays pour éviter les appels API dans createMarkerIcon
         if (this.visibleCountries.length > 0) {
-          console.log(`[SelectionSystem] 🔄 Préchargement des rôles pour ${this.visibleCountries.length} pays`)
           // Précharger les rôles directement sans utiliser useUnifiedMarkers
           // pour éviter les problèmes de dépendances circulaires
           const { supabaseService: supabaseForRoles } = await import('@/services/supabaseService')
@@ -278,7 +287,6 @@ export const useSelectionSystem = defineStore('selectionSystem', {
           })
           
           const roles = await Promise.all(rolePromises)
-          console.log(`[SelectionSystem] ✅ Rôles chargés pour conflit ${conflictId}:`, roles)
           
           // Stocker les rôles dans le state
           this.countryRolesInConflict = {}

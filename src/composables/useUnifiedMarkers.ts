@@ -197,7 +197,12 @@ export function useUnifiedMarkers(map: L.Map | null) {
    */
   const createOrUpdateMarker = (markerData: MarkerData): L.Marker | null => {
     if (!map) {
-      console.warn('[UnifiedMarkers] Carte non disponible')
+      // Retarder l'exécution si la carte n'est pas encore disponible
+      setTimeout(() => {
+        if (map) {
+          createOrUpdateMarker(markerData)
+        }
+      }, 100)
       return null
     }
     
@@ -428,6 +433,14 @@ export function useUnifiedMarkers(map: L.Map | null) {
    * Synchroniser les marqueurs d'épicentres depuis mapStore
    */
   const syncConflictEpicenters = () => {
+    if (!map) {
+      // Retarder si la carte n'est pas disponible
+      setTimeout(() => {
+        if (map) syncConflictEpicenters()
+      }, 100)
+      return
+    }
+    
     if (!mapStore.visibleLayers.conflictEpicenters) {
       // Ne plus supprimer - laisser updateMarkerAppearance gérer la visibilité
       return
@@ -451,6 +464,14 @@ export function useUnifiedMarkers(map: L.Map | null) {
    * Synchroniser les zones de combat depuis mapStore
    */
   const syncConflictZones = () => {
+    if (!map) {
+      // Retarder si la carte n'est pas disponible
+      setTimeout(() => {
+        if (map) syncConflictZones()
+      }, 100)
+      return
+    }
+    
     if (!mapStore.visibleLayers.armedConflicts || !mapStore.armedConflicts?.features) {
       // Ne plus supprimer - laisser updateMarkerAppearance gérer la visibilité
       return

@@ -93,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import DetailSection from '@/components/aside/DetailSection.vue'
 import CollapsibleSection from '@/components/aside/CollapsibleSection.vue'
 import EntitySection from '@/components/common/EntitySection.vue'
@@ -135,8 +135,15 @@ const loadRealRoles = async () => {
   console.log('[ConflictDetailView] Rôles enrichis:', enrichedCountries)
 }
 
-// Charger les rôles au montage
-loadRealRoles()
+// Watcher pour mettre à jour les pays quand les props changent
+watch(() => props.data, (newData) => {
+  if (newData && newData.paysImpliques) {
+    // Réinitialiser avec les nouveaux pays
+    enrichedPaysImpliques.value = [...newData.paysImpliques]
+    // Charger les nouveaux rôles
+    loadRealRoles()
+  }
+}, { immediate: true, deep: true })
 
 // États des sections collapsibles
 const victimsExpanded = ref(false)
