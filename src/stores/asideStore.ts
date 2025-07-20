@@ -1597,23 +1597,13 @@ export const useAsideStore = defineStore('aside', {
         const resourceData = await supabaseService.getResourceById(id)
         
         if (resourceData) {
-          this.currentDetailData = {
-            id: resourceData.id,
-            title: resourceData.nom,
-            type: 'resource',
-            description: resourceData.description || '',
-            categorie: resourceData.categorie || '',
-            etatReserves: resourceData.etatReserves || 'Non spécifié',
-            rarete: resourceData.rarete || 'Non spécifié',
-            localisationPrincipale: resourceData.localisationPrincipale || 'Mondiale',
-            zonesExtraction: resourceData.zonesExtraction || [],
-            unite: resourceData.unite || '',
-            reservesMondiales: resourceData.reservesMondiales || {
-              total: 0,
-              principauxGisements: []
-            }
-          } as ResourceDetailData
+          this.currentDetailData = resourceData
           this.currentEntityType = 'resource'
+          
+          // Ne pas changer la vue si on est déjà dans le menu des ressources
+          if (this.currentView?.type !== 'resourcesList') {
+            this.currentView = { type: 'detail' }
+          }
           
           // Mettre en cache
           this.dataCache[`resource-${id}`] = this.currentDetailData
@@ -1684,6 +1674,28 @@ export const useAsideStore = defineStore('aside', {
           await this.loadResourceData(id)
           break
       }
+    },
+
+    // Sélectionner un pays depuis une ressource (mutualisation avec selectCountryWithinConflict)
+    async selectCountryFromResource(countryId: string) {
+      console.log('🏳️ Sélection pays depuis ressource:', countryId)
+      
+      // Sauvegarder la ressource actuellement sélectionnée
+      const currentResourceId = this.currentDetailData?.id
+      
+      if (!currentResourceId) {
+        console.warn('⚠️ Aucune ressource sélectionnée, utilisation de la sélection normale')
+        return this.selectCountry(countryId)
+      }
+      
+      // Mettre à jour seulement la sélection du pays
+      this.selectedCountryId = countryId
+      // Garder les autres sélections intactes, notamment la ressource
+      
+      // Charger les données du pays
+      await this.loadCountryData(countryId)
+      
+      console.log('✅ Sélection pays depuis ressource terminée:', countryId, 'ressource préservée:', currentResourceId)
     },
 
     // Effacer les données de l'entité actuelle

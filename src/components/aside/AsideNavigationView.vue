@@ -183,7 +183,7 @@ export default defineComponent({
     const selectionSystem = useSelectionSystem()
     
     // Extraire les refs réactives du selectionSystem
-    const { selectedConflict } = storeToRefs(selectionSystem)
+    const { selectedConflict, selectedResource } = storeToRefs(selectionSystem)
     
     // Vue actuelle
     const currentView = computed(() => {
@@ -196,7 +196,13 @@ export default defineComponent({
     const isCountrySelected = (countryId) => selectionSystem.isCountrySelected(countryId)
     const isOrganizationSelected = (orgId) => selectionSystem.selectedOrganization === orgId
     const isPoliticalRegimeSelected = (regimeId) => selectionSystem.selectedRegime === regimeId
-    const isResourceSelected = (resourceId) => selectionSystem.selectedResource === resourceId
+    
+    // Fonction réactive pour la sélection des ressources
+    const isResourceSelected = (resourceId) => {
+      const isSelected = selectedResource.value === resourceId
+      console.log(`🔍 AsideNav: Ressource ${resourceId} sélectionnée ?`, isSelected)
+      return isSelected
+    }
     
     // Computed pour la sélection actuelle des conflits armés - utilise la ref réactive
     const conflictSelectionMap = computed(() => {
@@ -458,6 +464,18 @@ export default defineComponent({
       // Force le re-render des éléments de la liste si on est dans armedConflictsList
       if (currentView.value.type === 'armedConflictsList' && newConflictId) {
         console.log('🔍 AsideNav: Dans la vue conflits, forçage du refresh')
+        // La réactivité de Vue devrait automatiquement mettre à jour l'état selected
+      }
+    })
+
+    // Watcher pour écouter les changements de sélection de ressource avec la ref réactive
+    watch(selectedResource, (newResourceId, oldResourceId) => {
+      console.log('🔍 AsideNav: Changement de sélection ressource (via storeToRefs):', oldResourceId, '->', newResourceId)
+      console.log('🔍 AsideNav: Vue actuelle:', currentView.value.type)
+      
+      // Force le re-render des éléments de la liste si on est dans resourcesList
+      if (currentView.value.type === 'resourcesList' && newResourceId) {
+        console.log('🔍 AsideNav: Dans la vue ressources, forçage du refresh')
         // La réactivité de Vue devrait automatiquement mettre à jour l'état selected
       }
     })

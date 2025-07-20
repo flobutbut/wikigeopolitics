@@ -869,8 +869,31 @@ export const supabaseService = {
     console.log('✅ [supabaseService] Données brutes reçues:', data)
     console.log('📊 [supabaseService] Nombre de ressources:', data?.length || 0)
 
-    // Grouper par catégorie (sans compter les pays pour l'instant)
-    const grouped = (data || []).reduce((acc, resource: any) => {
+    // Compter les pays producteurs pour chaque ressource
+    const resourcesWithCount = await Promise.all(
+      (data || []).map(async (resource: any) => {
+        try {
+          const { count } = await supabase
+            .from('resource_country')
+            .select('*', { count: 'exact', head: true })
+            .eq('resourceid', resource.id)
+          
+          return {
+            ...resource,
+            country_count: count || 0
+          }
+        } catch (error) {
+          console.warn(`⚠️ [supabaseService] Erreur comptage pays pour ${resource.id}:`, error)
+          return {
+            ...resource,
+            country_count: 0
+          }
+        }
+      })
+    )
+
+    // Grouper par catégorie
+    const grouped = resourcesWithCount.reduce((acc, resource: any) => {
       const category = resource.categorie || 'Autre'
       if (!acc[category]) acc[category] = []
       
@@ -901,7 +924,7 @@ export const supabaseService = {
         priceUpdateDate: resource.price_update_date,
         environmentalImpact: resource.environmental_impact,
         geopoliticalIssues: resource.geopolitical_issues,
-        country_count: 0 // Pas de table de liaison pour l'instant
+        country_count: resource.country_count
       })
       return acc
     }, {} as Record<string, any[]>)
@@ -936,6 +959,51 @@ export const supabaseService = {
     if (error) throw error
     if (!data) return null
 
+    // Récupérer les pays producteurs de cette ressource
+    // Utiliser une requête manuelle car Supabase ne reconnaît pas la relation automatique
+    const { data: countryData, error: countryError } = await supabase
+      .from('resource_country')
+      .select(`
+        countryid,
+        role,
+        quantite,
+        unite
+      `)
+      .eq('resourceid', id)
+    
+    if (countryError) {
+      console.error('❌ [supabaseService] Erreur récupération pays producteurs:', countryError)
+    }
+
+    // Récupérer les données des pays producteurs
+    let paysProducteurs = []
+    if (countryData && countryData.length > 0) {
+      const countryIds = countryData.map((item: any) => item.countryid)
+      
+      const { data: countriesData, error: countriesError } = await supabase
+        .from('country')
+        .select('id, nom, drapeau')
+        .in('id', countryIds)
+      
+      if (countriesError) {
+        console.error('❌ [supabaseService] Erreur récupération données pays:', countriesError)
+      } else {
+        // Associer les données des pays avec les données de production
+        const countriesMap = new Map(countriesData?.map((c: any) => [c.id, c]) || [])
+        paysProducteurs = (countryData || []).map((item: any) => {
+          const country = countriesMap.get(item.countryid)
+          return {
+            id: country?.id,
+            nom: country?.nom,
+            flag: country?.drapeau,
+            role: item.role,
+            quantite: item.quantite,
+            unite: item.unite
+          }
+        })
+      }
+    }
+
     // Extraire les données des réserves globales depuis le JSONB
     const globalReserves = data.global_reserves || {}
     const reservesValue = globalReserves.value || 0
@@ -964,9 +1032,62 @@ export const supabaseService = {
       environmentalImpact: data.environmental_impact,
       geopoliticalIssues: data.geopolitical_issues,
       
-      // Pays producteurs (vide pour l'instant car pas de table de liaison)
-      paysProducteurs: []
+      // Pays producteurs
+      paysProducteurs
     }
+  },
+
+  // Récupérer les pays producteurs d'une ressource (mutualisation avec les méthodes existantes)
+  async getCountriesByResource(resourceId: string): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('resource_country')
+      .select(`
+        countryid,
+        role,
+        quantite,
+        unite
+      `)
+      .eq('resourceid', resourceId)
+      .order('quantite', { ascending: false })
+    
+    if (error) {
+      console.error('❌ [supabaseService] Erreur récupération pays par ressource:', error)
+      return []
+    }
+
+    // Récupérer les données des pays séparément
+    if (data && data.length > 0) {
+      const countryIds = data.map((item: any) => item.countryid)
+      
+      const { data: countriesData, error: countriesError } = await supabase
+        .from('country')
+        .select('id, nom, drapeau, capitale, langue, monnaie')
+        .in('id', countryIds)
+      
+      if (countriesError) {
+        console.error('❌ [supabaseService] Erreur récupération données pays:', countriesError)
+        return []
+      }
+
+      // Associer les données des pays avec les données de production
+      const countriesMap = new Map(countriesData?.map((c: any) => [c.id, c]) || [])
+      return (data || []).map((item: any) => {
+        const country = countriesMap.get(item.countryid)
+        return {
+          id: country?.id,
+          nom: country?.nom,
+          flag: country?.drapeau,
+          capitale: country?.capitale,
+          langue: country?.langue,
+          monnaie: country?.monnaie,
+          role: item.role,
+          quantite: item.quantite,
+          unite: item.unite
+        }
+      })
+    }
+
+    return []
   }
 }
 

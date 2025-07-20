@@ -706,10 +706,20 @@ export const useSelectionSystem = defineStore('selectionSystem', {
         id: resourceId
       }
       
-      // Pour les ressources, on affiche tous les pays par défaut
-      // car les ressources sont globales
-      this.visibleCountries = []
-      this.highlightedCountries = []
+      // Charger les pays producteurs de cette ressource
+      const { supabaseService } = await import('@/services/supabaseService')
+      try {
+        const countries = await supabaseService.getCountriesByResource(resourceId)
+        this.visibleCountries = countries.map((c: any) => c.id)
+        
+        // Pour les ressources, on affiche les pays producteurs mais sans les pré-sélectionner
+        // Ils restent en état normal, juste visibles
+        this.highlightedCountries = []
+      } catch (error) {
+        console.error('[SelectionSystem] Erreur chargement pays producteurs:', error)
+        this.visibleCountries = []
+        this.highlightedCountries = []
+      }
       
       // Charger les données de la ressource si nécessaire
       if (source === 'aside') {

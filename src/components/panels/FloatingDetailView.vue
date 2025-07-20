@@ -1,7 +1,6 @@
 <template>
   <DetailViewContainer>
 
-
         <!-- Bloc principal : Forme de l'État + Chef d'État -->
         <DetailSection
           :sections="[
@@ -75,6 +74,7 @@ import CollapsibleSection from '@/components/aside/CollapsibleSection.vue'
 import DetailSection from '@/components/aside/DetailSection.vue'
 import EntitySection from '@/components/common/EntitySection.vue'
 import DetailViewContainer from '@/components/panels/DetailViewContainer.vue'
+
 
 interface CountryData {
   id: string
@@ -298,6 +298,8 @@ export default defineComponent({
     const detailData = computed(() => {
       return props.data || asideStore.currentDetailData
     })
+
+
     
     return {
       detailData,
