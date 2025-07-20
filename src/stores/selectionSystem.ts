@@ -6,7 +6,7 @@ import { useAsideStore } from './asideStore'
 export type EntityType = 'country' | 'conflict' | 'conflict-epicenter' | 'organization' | 'regime' | 'resource'
 
 export interface SelectionState {
-  type: 'initial' | 'country' | 'conflict' | 'country_conflict' | 'organization' | 'regime' | 'resource'
+  type: 'initial' | 'country' | 'conflict' | 'country_conflict' | 'organization' | 'regime' | 'resource' | 'country_resource'
   
   // Entités sélectionnées
   selectedCountry: string | null
@@ -215,6 +215,39 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       this.floatingPanelType = 'country'
       
       // Les pays visibles et zones de combat restent inchangés
+      this.highlightedCountries = [countryId]
+      
+      // Charger les données du pays
+      const asideStore = useAsideStore()
+      await asideStore.loadCountryData(countryId)
+      
+      // Synchroniser avec les autres stores
+      await this.syncWithStores()
+    },
+
+    /**
+     * UC12 - Sélection contextuelle d'un pays depuis une ressource
+     */
+    async selectCountryInResourceContext(countryId: string): Promise<void> {
+      console.log(`[SelectionSystem] 🎯 Sélection contextuelle pays ${countryId} depuis ressource`)
+      
+      if (!this.selectedResource) {
+        console.warn('[SelectionSystem] Sélection contextuelle sans ressource active')
+        return this.selectCountry(countryId)
+      }
+      
+      // Sauvegarder l'état actuel
+      this.saveCurrentState()
+      
+      // Mise à jour contextuelle
+      this.type = 'country_resource'
+      this.selectedCountry = countryId
+      // Conserver this.selectedResource
+      
+      this.floatingPanelOpen = true
+      this.floatingPanelType = 'country'
+      
+      // Les pays visibles restent inchangés (tous les producteurs)
       this.highlightedCountries = [countryId]
       
       // Charger les données du pays
@@ -505,6 +538,24 @@ export const useSelectionSystem = defineStore('selectionSystem', {
           console.error('[SelectionSystem] Erreur rechargement pays organisation:', error)
           this.visibleCountries = []
         }
+      } else if (this.parentContext.type === 'resource') {
+        this.type = 'resource'
+        this.selectedResource = this.parentContext.id
+        this.selectedCountry = null
+        this.selectedRegime = null
+        this.selectedConflict = null
+        this.selectedOrganization = null
+        
+        // Recharger les pays producteurs de la ressource
+        const { supabaseService } = await import('@/services/supabaseService')
+        try {
+          const countries = await supabaseService.getCountriesByResource(this.parentContext.id!)
+          this.visibleCountries = countries.map((c: any) => c.id)
+          this.highlightedCountries = []
+        } catch (error) {
+          console.error('[SelectionSystem] Erreur rechargement pays producteurs:', error)
+          this.visibleCountries = []
+        }
       } else {
         // Fallback vers l'état initial
         await this.resetToInitial()
@@ -525,6 +576,23 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       if (this.type === 'initial') {
         // État initial, rien à faire
         console.log('[SelectionSystem] Aucune sélection active à désélectionner')
+        return
+      }
+      
+      // Gestion spéciale pour les ressources
+      if (this.type === 'country_resource' && this.selectedResource) {
+        // Retour au menu ressources (désélectionner le pays, garder la ressource)
+        console.log('[SelectionSystem] 🔄 deselectOnMapClick: Désélection contextuelle - retour au menu ressources')
+        this.type = 'resource'
+        this.selectedCountry = null
+        this.floatingPanelOpen = true
+        this.floatingPanelType = 'resource'
+        this.highlightedCountries = []
+        
+        // Recharger les données de la ressource
+        const asideStore = useAsideStore()
+        await asideStore.loadResourceData(this.selectedResource)
+        await this.syncWithStores()
         return
       }
       
@@ -816,6 +884,29 @@ export const useSelectionSystem = defineStore('selectionSystem', {
     },
 
     /**
+     * Retour au menu des ressources (mutualisation avec returnToConflictMenu)
+     */
+    async returnToResourceMenu() {
+      console.log('[SelectionSystem] 🔄 returnToResourceMenu: Retour au menu ressources')
+      
+      // Réinitialiser l'état de sélection
+      this.type = 'initial'
+      this.selectedResource = null
+      this.selectedCountry = null
+      this.visibleCountries = []
+      this.highlightedCountries = []
+      this.floatingPanelOpen = false
+      this.floatingPanelType = null
+      
+      // Retourner au menu des ressources
+      const asideStore = useAsideStore()
+      await asideStore.navigateToResourcesList()
+      
+      // Synchroniser avec les autres stores
+      await this.syncWithStores()
+    },
+
+    /**
      * UC10 - Navigation retour
      */
     async goBack() {
@@ -842,6 +933,10 @@ export const useSelectionSystem = defineStore('selectionSystem', {
     async selectEntity(type: EntityType, id: string, source: string = 'unknown') {
       switch (type) {
         case 'country':
+          // Si on a une ressource sélectionnée, utiliser la sélection contextuelle
+          if (this.selectedResource && source === 'map') {
+            return this.selectCountryInResourceContext(id)
+          }
           return this.selectCountry(id, source as 'map' | 'aside')
         case 'conflict':
           return this.selectConflict(id, source as 'aside' | 'panel' | 'map')
