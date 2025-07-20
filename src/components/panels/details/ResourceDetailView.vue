@@ -81,7 +81,10 @@ const selectionSystem = useSelectionSystem()
 const asideStore = useAsideStore()
 
 // Enrichir les pays producteurs avec leurs données de production
-const enrichedPaysProducteurs = computed(() => props.data.paysProducteurs || [])
+const enrichedPaysProducteurs = computed(() => {
+  console.log('🔍 [ResourceDetailView] Pays producteurs reçus:', props.data.paysProducteurs)
+  return props.data.paysProducteurs || []
+})
 
 // États des sections collapsibles
 const descriptionExpanded = ref(true)
@@ -96,13 +99,14 @@ const countriesConfig = {
   iconField: 'flag',
   metadataFields: [
     {
-      key: 'quantite',
+      key: 'production',
       label: 'Production',
-      field: 'quantite',
-      formatter: (value: any) => {
-        const item = value as any
+      field: 'production',
+      formatter: (item: any) => {
+        console.log('🔍 [ResourceDetailView] Formatter reçoit item complet:', item)
         const quantite = item.quantite
         const unite = item.unite || ''
+        console.log('🔍 [ResourceDetailView] Quantite:', quantite, 'Unite:', unite)
         if (quantite === undefined || quantite === null) {
           return 'Non spécifié'
         }
@@ -133,16 +137,24 @@ const toggleEnvironment = () => { environmentExpanded.value = !environmentExpand
 const toggleGeopolitics = () => { geopoliticsExpanded.value = !geopoliticsExpanded.value }
 
 // Fonctions utilitaires
-const formatQuantity = (quantity: number) => {
+const formatQuantity = (quantity: number | string) => {
   if (quantity === undefined || quantity === null) {
     return 'Non spécifié'
   }
-  if (quantity >= 1000000) {
-    return (quantity / 1000000).toFixed(1) + 'M'
-  } else if (quantity >= 1000) {
-    return (quantity / 1000).toFixed(1) + 'K'
+  
+  // Convertir en nombre si c'est une chaîne
+  const numQuantity = typeof quantity === 'string' ? parseFloat(quantity) : quantity
+  
+  if (isNaN(numQuantity)) {
+    return quantity.toString() // Retourner la valeur brute si pas un nombre
   }
-  return quantity.toString()
+  
+  if (numQuantity >= 1000000) {
+    return (numQuantity / 1000000).toFixed(1) + 'M'
+  } else if (numQuantity >= 1000) {
+    return (numQuantity / 1000).toFixed(1) + 'K'
+  }
+  return numQuantity.toString()
 }
 
 const formatExchangeValue = () => {

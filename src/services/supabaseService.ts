@@ -971,6 +971,8 @@ export const supabaseService = {
       `)
       .eq('resourceid', id)
     
+    console.log('🔍 [supabaseService] Données brutes resource_country:', countryData)
+    
     if (countryError) {
       console.error('❌ [supabaseService] Erreur récupération pays producteurs:', countryError)
     }
@@ -992,14 +994,17 @@ export const supabaseService = {
         const countriesMap = new Map(countriesData?.map((c: any) => [c.id, c]) || [])
         paysProducteurs = (countryData || []).map((item: any) => {
           const country = countriesMap.get(item.countryid)
-          return {
+          const paysProducteur = {
             id: country?.id,
             nom: country?.nom,
             flag: country?.drapeau,
             role: item.role,
             quantite: item.quantite,
-            unite: item.unite
+            unite: item.unite,
+            production: item // Ajouter l'objet complet pour le formatter
           }
+          console.log('🔍 [supabaseService] Pays producteur créé:', paysProducteur)
+          return paysProducteur
         })
       }
     }
