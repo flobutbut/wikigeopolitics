@@ -16,6 +16,7 @@ interface AppData {
   politicalRegimeList: any[];
   organizationList: Record<string, any[]>;
   armedConflictList: any[];
+  resourceList: Record<string, any[]>;
   subPages: Record<string, any>;
   detailPages: Record<string, any>;
 }
@@ -213,6 +214,7 @@ export const useAsideStore = defineStore('aside', {
       politicalRegimeList: [],
       organizationList: {},
       armedConflictList: [],
+      resourceList: {},
       subPages: {},
       detailPages: {}
     } as AppData,
@@ -394,6 +396,11 @@ export const useAsideStore = defineStore('aside', {
       // Vérifier si c'est "Conflits armés" - utiliser la liste des conflits armés
       if (id === 'conflits-armes') {
         this.navigateToArmedConflictsList()
+        return
+      }
+      // Vérifier si c'est "Exploitation des matières premières" - utiliser la liste des ressources
+      if (id === 'exploitations-des-matieres-premieres') {
+        this.navigateToResourcesList()
         return
       }
       // Sauvegarder la vue précédente
@@ -823,8 +830,48 @@ export const useAsideStore = defineStore('aside', {
       } catch (error) {
         console.error('❌ Erreur lors de la navigation vers les conflits armés:', error)
       }
+        },
+
+    // Navigation vers la liste des ressources naturelles
+    async navigateToResourcesList() {
+      console.log('Navigating to resources list')
+
+      // Nettoyer les zones de combat si on vient du menu conflits
+      await this.clearConflictData()
+
+      // Sauvegarder la vue précédente
+      this.currentView.previousView = { ...this.currentView }
+
+      this.currentView.type = 'resourcesList'
+      this.currentView.id = 'resources-list'
+      this.currentView.title = 'Exploitation des Matières Premières'
+      this.currentView.searchEnabled = true
+      this.currentView.hasReturnButton = true
+      this.currentView.items = []
+      this.currentView.organizations = null
+      
+      console.log('🔍 [asideStore] currentView après mise à jour:', this.currentView)
+      console.log('🔍 [asideStore] currentView.type:', this.currentView.type)
+
+      // Réinitialiser la recherche
+      this.searchQuery = ''
+
+      try {
+        const { supabaseService } = await import('@/services/supabaseService')
+        const resources = await supabaseService.getResourcesByCategory()
+        
+        // Stocker les ressources dans appData
+        this.appData.resourceList = resources || {}
+        console.log('✅ Ressources chargées avec données complètes:', Object.keys(resources || {}).length, 'catégories')
+        
+        // Vider currentView.organizations car les ressources sont dans appData.resourceList
+        this.currentView.organizations = null
+      } catch (error) {
+        console.error('Erreur lors du chargement des ressources naturelles:', error)
+        this.error = 'Erreur lors du chargement des ressources'
+      }
     },
-    
+
     // Retour à la vue principale
     async returnToMainView() {
       console.log('Returning to main view')
@@ -1545,28 +1592,51 @@ export const useAsideStore = defineStore('aside', {
       try {
         this.isLoading = true
         
-        // Charger les données de la ressource depuis l'API
-        // const resourceData = await resourceApi.getResourceDetails(id)
+        // Charger les données de la ressource depuis Supabase
+        const { supabaseService } = await import('@/services/supabaseService')
+        const resourceData = await supabaseService.getResourceById(id)
         
-        // Pour l'instant, créer des données mock
-        this.currentDetailData = {
-          id: id,
-          title: id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' '),
-          type: 'resource',
-          description: 'Description de la ressource',
-          categorie: '',
-          etatReserves: '',
-          rarete: '',
-          localisationPrincipale: '',
-          zonesExtraction: [],
-          unite: '',
-          reservesMondiales: {}
-        } as ResourceDetailData
-        this.currentEntityType = 'resource'
-        
-        // Mettre en cache les données
-        this.dataCache[`resource-${id}`] = this.currentDetailData
-        
+        if (resourceData) {
+          this.currentDetailData = {
+            id: resourceData.id,
+            title: resourceData.nom,
+            type: 'resource',
+            description: resourceData.description || '',
+            categorie: resourceData.categorie || '',
+            etatReserves: resourceData.etatReserves || 'Non spécifié',
+            rarete: resourceData.rarete || 'Non spécifié',
+            localisationPrincipale: resourceData.localisationPrincipale || 'Mondiale',
+            zonesExtraction: resourceData.zonesExtraction || [],
+            unite: resourceData.unite || '',
+            reservesMondiales: resourceData.reservesMondiales || {
+              total: 0,
+              principauxGisements: []
+            }
+          } as ResourceDetailData
+          this.currentEntityType = 'resource'
+          
+          // Mettre en cache
+          this.dataCache[`resource-${id}`] = this.currentDetailData
+        } else {
+          // Données par défaut si la ressource n'existe pas
+          this.currentDetailData = {
+            id: id,
+            title: id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' '),
+            type: 'resource',
+            description: 'Description de la ressource',
+            categorie: 'Métal',
+            etatReserves: 'Non spécifié',
+            rarete: 'Non spécifié',
+            localisationPrincipale: 'Non spécifié',
+            zonesExtraction: [],
+            unite: '',
+            reservesMondiales: {
+              total: 0,
+              principauxGisements: []
+            }
+          } as ResourceDetailData
+          this.currentEntityType = 'resource'
+        }
       } catch (error) {
         console.error(`Error loading resource data for ${id}:`, error)
       } finally {
@@ -1609,7 +1679,7 @@ export const useAsideStore = defineStore('aside', {
           await this.loadOrganizationData(id)
           break
         case 'resource':
-          // Pas encore de sélection pour les ressources, mais charger les données
+          // Sélectionner la ressource et charger les données
           this.clearAllSelections()
           await this.loadResourceData(id)
           break

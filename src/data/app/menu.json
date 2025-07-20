@@ -182,8 +182,24 @@
             "title": "Ressources énergétiques"
           },
           {
-            "id": "ressources-forestieres",
-            "title": "Ressources forestières"
+            "id": "metaux-strategiques",
+            "title": "Métaux stratégiques"
+          },
+          {
+            "id": "metaux-precieux",
+            "title": "Métaux précieux"
+          },
+          {
+            "id": "metaux-industriels",
+            "title": "Métaux industriels"
+          },
+          {
+            "id": "pierres-precieuses",
+            "title": "Pierres précieuses"
+          },
+          {
+            "id": "ressources-vitales",
+            "title": "Ressources vitales"
           }
         ]
       },

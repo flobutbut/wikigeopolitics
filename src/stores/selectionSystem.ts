@@ -6,13 +6,14 @@ import { useAsideStore } from './asideStore'
 export type EntityType = 'country' | 'conflict' | 'conflict-epicenter' | 'organization' | 'regime' | 'resource'
 
 export interface SelectionState {
-  type: 'initial' | 'country' | 'conflict' | 'country_conflict' | 'organization' | 'regime'
+  type: 'initial' | 'country' | 'conflict' | 'country_conflict' | 'organization' | 'regime' | 'resource'
   
   // Entités sélectionnées
   selectedCountry: string | null
   selectedConflict: string | null
   selectedOrganization: string | null
   selectedRegime: string | null
+  selectedResource: string | null
   
   // État de l'interface
   floatingPanelOpen: boolean
@@ -30,7 +31,7 @@ export interface SelectionState {
   
   // Contexte parent pour navigation contextuelle
   parentContext: {
-    type: 'regime' | 'organization' | 'conflict' | 'initial'
+    type: 'regime' | 'organization' | 'conflict' | 'resource' | 'initial'
     id: string | null
   }
   
@@ -53,6 +54,7 @@ export const useSelectionSystem = defineStore('selectionSystem', {
     selectedConflict: null,
     selectedOrganization: null,
     selectedRegime: null,
+    selectedResource: null,
     
     floatingPanelOpen: false,
     floatingPanelType: null,
@@ -120,6 +122,7 @@ export const useSelectionSystem = defineStore('selectionSystem', {
       this.selectedConflict = null
       this.selectedOrganization = null
       this.selectedRegime = null
+      this.selectedResource = null
       
       this.floatingPanelOpen = false
       this.floatingPanelType = null
@@ -676,6 +679,49 @@ export const useSelectionSystem = defineStore('selectionSystem', {
     },
 
     /**
+     * UC11 - Sélection d'une ressource naturelle
+     */
+    async selectResource(resourceId: string, source: 'aside' | 'panel' = 'aside') {
+      console.log(`[SelectionSystem] 💎 Sélection ressource ${resourceId} depuis ${source}`)
+      
+      // Sauvegarder l'état actuel
+      this.saveCurrentState()
+      
+      // Nouvelle sélection de ressource
+      this.type = 'resource'
+      this.selectedResource = resourceId
+      this.selectedCountry = null
+      this.selectedConflict = null
+      this.selectedOrganization = null
+      this.selectedRegime = null
+      
+      this.floatingPanelOpen = true
+      this.floatingPanelType = 'resource'
+      
+      this.conflictZonesVisible = false
+      
+      // Définir le contexte parent
+      this.parentContext = {
+        type: 'resource',
+        id: resourceId
+      }
+      
+      // Pour les ressources, on affiche tous les pays par défaut
+      // car les ressources sont globales
+      this.visibleCountries = []
+      this.highlightedCountries = []
+      
+      // Charger les données de la ressource si nécessaire
+      if (source === 'aside') {
+        const asideStore = useAsideStore()
+        await asideStore.loadResourceData(resourceId)
+      }
+      
+      // Synchroniser avec les autres stores
+      await this.syncWithStores()
+    },
+
+    /**
      * Synchronisation avec mapStore et asideStore
      */
     async syncWithStores() {
@@ -740,6 +786,7 @@ export const useSelectionSystem = defineStore('selectionSystem', {
         selectedConflict: this.selectedConflict,
         selectedOrganization: this.selectedOrganization,
         selectedRegime: this.selectedRegime,
+        selectedResource: this.selectedResource,
         floatingPanelOpen: this.floatingPanelOpen,
         floatingPanelType: this.floatingPanelType,
         visibleCountries: this.visibleCountries,
@@ -796,9 +843,7 @@ export const useSelectionSystem = defineStore('selectionSystem', {
         case 'regime':
           return this.selectRegime(id, source as 'aside' | 'panel')
         case 'resource':
-          // TODO: Implémenter pour les ressources
-          console.warn('[SelectionSystem] Sélection de ressource non implémentée')
-          break
+          return this.selectResource(id, source as 'aside' | 'panel')
       }
     }
   }

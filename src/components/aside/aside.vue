@@ -8,7 +8,7 @@
       
       <!-- Vue intermédiaire (niveaux 1 à n) -->
       <AsideNavigationView 
-        v-else-if="['submenu', 'countryList', 'politicalRegimeList', 'organizationsList', 'armedConflictsList'].includes(currentView.type)" 
+        v-else-if="['submenu', 'countryList', 'politicalRegimeList', 'organizationsList', 'armedConflictsList', 'resourcesList'].includes(currentView.type)" 
       />
       
       <!-- Vue détail (fiche finale) -->

@@ -849,6 +849,124 @@ export const supabaseService = {
     }
     
     return data?.role || null
+  },
+
+    // Récupérer les ressources naturelles par catégorie
+  async getResourcesByCategory(): Promise<Record<string, any[]>> {
+    console.log('🔍 [supabaseService] Début getResourcesByCategory')
+    
+    const { data, error } = await supabase
+      .from('resource')
+      .select('*')
+      .neq('categorie', 'Agricole') // Exclure les ressources agricoles
+      .order('nom')
+    
+    if (error) {
+      console.error('❌ [supabaseService] Erreur lors de la récupération des ressources:', error)
+      throw error
+    }
+    
+    console.log('✅ [supabaseService] Données brutes reçues:', data)
+    console.log('📊 [supabaseService] Nombre de ressources:', data?.length || 0)
+
+    // Grouper par catégorie (sans compter les pays pour l'instant)
+    const grouped = (data || []).reduce((acc, resource: any) => {
+      const category = resource.categorie || 'Autre'
+      if (!acc[category]) acc[category] = []
+      
+      // Extraire les données des réserves globales depuis le JSONB
+      const globalReserves = resource.global_reserves || {}
+      const reservesValue = globalReserves.value || 0
+      const reservesUnit = globalReserves.unit || ''
+      
+      acc[category].push({
+        id: resource.id,
+        nom: resource.nom,
+        title: resource.nom,
+        type: 'resource',
+        description: resource.description || '',
+        categorie: resource.categorie,
+        etatReserves: reservesValue ? `${reservesValue} ${reservesUnit}` : 'Non spécifié',
+        rarete: this.getRarityLevel(reservesValue, reservesUnit),
+        localisationPrincipale: 'Mondiale',
+        zonesExtraction: [],
+        unite: reservesUnit,
+        reservesMondiales: {
+          total: reservesValue,
+          principauxGisements: []
+        },
+        exchangeValue: resource.exchange_value,
+        valueUnit: resource.value_unit,
+        currency: resource.currency,
+        priceUpdateDate: resource.price_update_date,
+        environmentalImpact: resource.environmental_impact,
+        geopoliticalIssues: resource.geopolitical_issues,
+        country_count: 0 // Pas de table de liaison pour l'instant
+      })
+      return acc
+    }, {} as Record<string, any[]>)
+
+    console.log('🎯 [supabaseService] Ressources groupées par catégorie:', grouped)
+    console.log('📋 [supabaseService] Catégories trouvées:', Object.keys(grouped))
+    
+    return grouped
+  },
+
+  // Méthode utilitaire pour déterminer le niveau de rareté
+  getRarityLevel(value: number, unit: string): string {
+    if (!value) return 'Non spécifié'
+    
+    // Logique basique pour déterminer la rareté selon la valeur et l'unité
+    if (unit.includes('tonnes') && value < 1000) return 'Très rare'
+    if (unit.includes('tonnes') && value < 10000) return 'Rare'
+    if (unit.includes('millions') && value < 100) return 'Rare'
+    if (unit.includes('milliards') && value < 10) return 'Rare'
+    
+    return 'Abondante'
+  },
+
+  // Récupérer une ressource par ID avec toutes les données
+  async getResourceById(id: string): Promise<any | null> {
+    const { data, error } = await supabase
+      .from('resource')
+      .select('*')
+      .eq('id', id)
+      .single()
+    
+    if (error) throw error
+    if (!data) return null
+
+    // Extraire les données des réserves globales depuis le JSONB
+    const globalReserves = data.global_reserves || {}
+    const reservesValue = globalReserves.value || 0
+    const reservesUnit = globalReserves.unit || ''
+
+    return {
+      id: data.id,
+      nom: data.nom,
+      title: data.nom,
+      type: 'resource',
+      description: data.description || '',
+      categorie: data.categorie,
+      etatReserves: reservesValue ? `${reservesValue} ${reservesUnit}` : 'Non spécifié',
+      rarete: this.getRarityLevel(reservesValue, reservesUnit),
+      localisationPrincipale: 'Mondiale',
+      zonesExtraction: [],
+      unite: reservesUnit,
+      reservesMondiales: {
+        total: reservesValue,
+        principauxGisements: []
+      },
+      exchangeValue: data.exchange_value,
+      valueUnit: data.value_unit,
+      currency: data.currency,
+      priceUpdateDate: data.price_update_date,
+      environmentalImpact: data.environmental_impact,
+      geopoliticalIssues: data.geopolitical_issues,
+      
+      // Pays producteurs (vide pour l'instant car pas de table de liaison)
+      paysProducteurs: []
+    }
   }
 }
 

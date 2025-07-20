@@ -133,6 +133,29 @@
           </MenuItem>
         </ul>
       </template>
+
+      <!-- Vue de liste des ressources naturelles -->
+      <template v-if="currentView.type === 'resourcesList'">
+        <div v-for="(resources, category) in resourcesByCategory" :key="category" class="resource-category-section">
+          <SectionTitle :level="2" size="default">{{ category }}</SectionTitle>
+          <ul class="aside__menu">
+            <MenuItem
+              v-for="resource in resources"
+              :key="resource.id"
+              :title="resource.nom"
+              :selected="isResourceSelected(resource.id)"
+              :badge-value="resource.country_count"
+              :show-badge="true"
+              badge-variant="secondary"
+              @click="selectResource(resource.id)"
+            >
+              <template #prepend>
+                <span class="resource-icon">{{ getResourceIcon(category) }}</span>
+              </template>
+            </MenuItem>
+          </ul>
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -163,12 +186,17 @@ export default defineComponent({
     const { selectedConflict } = storeToRefs(selectionSystem)
     
     // Vue actuelle
-    const currentView = computed(() => asideStore.currentView)
+    const currentView = computed(() => {
+      console.log('🔍 [AsideNavigationView] currentView computed:', asideStore.currentView)
+      console.log('🔍 [AsideNavigationView] currentView.type:', asideStore.currentView?.type)
+      return asideStore.currentView
+    })
     
     // Getters pour les sélections - utiliser le nouveau système
     const isCountrySelected = (countryId) => selectionSystem.isCountrySelected(countryId)
     const isOrganizationSelected = (orgId) => selectionSystem.selectedOrganization === orgId
     const isPoliticalRegimeSelected = (regimeId) => selectionSystem.selectedRegime === regimeId
+    const isResourceSelected = (resourceId) => selectionSystem.selectedResource === resourceId
     
     // Computed pour la sélection actuelle des conflits armés - utilise la ref réactive
     const conflictSelectionMap = computed(() => {
@@ -298,6 +326,43 @@ export default defineComponent({
       )
       return filtered
     })
+
+    // Ressources classées par catégorie
+    const resourcesByCategory = computed(() => {
+      console.log('🔍 [AsideNavigationView] resourcesByCategory computed')
+      console.log('🔍 [AsideNavigationView] appData.resourceList:', asideStore.appData.resourceList)
+      
+      if (!asideStore.appData.resourceList) {
+        console.log('❌ [AsideNavigationView] Pas de resourceList dans appData')
+        return {}
+      }
+      
+      const resources = asideStore.appData.resourceList
+      console.log('📊 [AsideNavigationView] Nombre de catégories:', Object.keys(resources).length)
+      console.log('📋 [AsideNavigationView] Catégories:', Object.keys(resources))
+      
+      if (!asideStore.searchQuery) {
+        console.log('✅ [AsideNavigationView] Retour des ressources sans filtre')
+        return resources
+      }
+      
+      const query = asideStore.searchQuery.toLowerCase()
+      const filtered = {}
+      
+      Object.keys(resources).forEach(category => {
+        const filteredResources = resources[category].filter(resource => 
+          resource.nom.toLowerCase().includes(query) ||
+          resource.description?.toLowerCase().includes(query) ||
+          resource.categorie?.toLowerCase().includes(query)
+        )
+        if (filteredResources.length > 0) {
+          filtered[category] = filteredResources
+        }
+      })
+      
+      console.log('🔍 [AsideNavigationView] Ressources filtrées:', filtered)
+      return filtered
+    })
     
     // Continents pour la classification des pays
     const continents = computed(() => {
@@ -359,6 +424,31 @@ export default defineComponent({
       console.log('🎯 Armed conflict selected in AsideNavigationView:', id)
       await selectionSystem.selectConflict(id, 'aside')
     }
+
+    const selectResource = async (id) => {
+      console.log('💎 Resource selected in AsideNavigationView:', id)
+      await selectionSystem.selectEntity('resource', id, 'aside')
+    }
+    
+    // Fonction pour obtenir l'icône selon la catégorie
+    const getResourceIcon = (category) => {
+      const iconMap = {
+        'Métal': '🔩',
+        'Métal précieux': '🥇',
+        'Métal rare': '🔋',
+        'Métaux rares': '🔋',
+        'Minerai': '⛏️',
+        'Minéral': '💎',
+        'Pierre précieuse': '💎',
+        'Énergie': '⚡',
+        'Énergie fossile': '🛢️',
+        'Énergie nucléaire': '☢️',
+        'Ressource renouvelable': '🌱',
+        'Ressource vitale': '💧',
+        'Ressource alimentaire': '🍽️'
+      }
+      return iconMap[category] || '💎'
+    }
     
     // Watcher pour écouter les changements de sélection de conflit avec la ref réactive
     watch(selectedConflict, (newConflictId, oldConflictId) => {
@@ -378,6 +468,7 @@ export default defineComponent({
       filteredOrganizations,
       filteredPoliticalRegimes,
       filteredArmedConflicts,
+      resourcesByCategory,
       countriesByRegime,
       organizationsByType,
       continents,
@@ -386,12 +477,15 @@ export default defineComponent({
       isOrganizationSelected,
       isPoliticalRegimeSelected,
       isArmedConflictSelected,
+      isResourceSelected,
       returnToPreviousView,
       navigateToDetail,
       selectCountry,
       selectOrganization,
       selectPoliticalRegime,
-      selectArmedConflict
+      selectArmedConflict,
+      selectResource,
+      getResourceIcon
     }
   }
 })
@@ -504,5 +598,14 @@ export default defineComponent({
 
 .organization-type-section {
   margin-bottom: var(--spacing-md);
+}
+
+.resource-category-section {
+  margin-bottom: var(--spacing-md);
+}
+
+.resource-icon {
+  margin-right: var(--spacing-xs);
+  font-size: var(--font-size-md);
 }
 </style> 
