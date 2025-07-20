@@ -711,6 +711,46 @@ export const supabaseService = {
   },
 
   // Récupérer une organisation par ID avec toutes les données pour floating panel
+  async getPoliticalRegimeById(id: string): Promise<any | null> {
+    const { data, error } = await supabase
+      .from('political_regime')
+      .select('*')
+      .eq('id', id)
+      .single()
+    
+    if (error) throw error
+    if (!data) return null
+
+    // Récupérer les pays avec ce régime
+    const countries = await this.getCountriesByRegime(id)
+
+    return {
+      id: data.id,
+      nom: data.name || data.nom,
+      title: data.name || data.nom,
+      type: 'regime',
+      description: data.description || '',
+      classification: data.classification || data.type || '',
+      systemeElectoral: data.electoral_system || '',
+      characteristics: data.characteristics || [],
+      
+      // Pays avec ce régime politique
+      countries: countries.map(country => ({
+        id: country.id,
+        nom: country.nom,
+        flag: country.drapeau,
+        chefEtat: country.chef_etat,
+        capitale: country.capitale,
+        population: country.population
+      })),
+      
+      avantages: data.advantages || [],
+      inconvenients: data.disadvantages || [],
+      evolutionHistorique: data.historical_evolution || '',
+      exemplesNotables: data.notable_examples || []
+    }
+  },
+
   async getOrganizationById(id: string): Promise<any | null> {
     const { data, error } = await supabase
       .from('organization')

@@ -1421,27 +1421,33 @@ export const useAsideStore = defineStore('aside', {
       try {
         this.isLoading = true
         
-        // Charger les données du régime depuis l'API
-        // const regimeData = await politicalRegimeApi.getRegimeDetails(id)
+        // Charger les données du régime depuis Supabase
+        const { supabaseService } = await import('@/services/supabaseService')
+        const regimeData = await supabaseService.getPoliticalRegimeById(id)
         
-        // Pour l'instant, créer des données mock
-        this.currentDetailData = {
-          id: id,
-          title: id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' '),
-          type: 'regime',
-          description: 'Description du régime politique',
-          classification: '',
-          systemeElectoral: '',
-          characteristics: [],
-          countries: [],
-          avantages: [],
-          inconvenients: [],
-          evolutionHistorique: ''
-        } as RegimeDetailData
-        this.currentEntityType = 'regime'
-        
-        // Mettre en cache les données
-        this.dataCache[`regime-${id}`] = this.currentDetailData
+        if (regimeData) {
+          this.currentDetailData = regimeData
+          this.currentEntityType = 'regime'
+          this.dataCache[`regime-${id}`] = regimeData
+          console.log('✅ Regime data loaded:', regimeData)
+        } else {
+          // Fallback avec données basiques si pas trouvé en DB
+          this.currentDetailData = {
+            id: id,
+            title: id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' '),
+            type: 'regime',
+            description: 'Données non disponibles pour ce régime politique',
+            classification: '',
+            systemeElectoral: '',
+            characteristics: [],
+            countries: [],
+            avantages: [],
+            inconvenients: [],
+            evolutionHistorique: ''
+          } as RegimeDetailData
+          this.currentEntityType = 'regime'
+          this.dataCache[`regime-${id}`] = this.currentDetailData
+        }
         
       } catch (error) {
         console.error(`Error loading regime data for ${id}:`, error)
