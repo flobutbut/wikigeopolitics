@@ -347,22 +347,41 @@ export default defineComponent({
       console.log('📊 [AsideNavigationView] Nombre de catégories:', Object.keys(resources).length)
       console.log('📋 [AsideNavigationView] Catégories:', Object.keys(resources))
       
+      // Filtrer les catégories à exclure (Agriculture et Ressource alimentaire)
+      const excludedCategories = ['Agriculture', 'Ressource alimentaire']
+      const filteredResources = {}
+      
+      Object.keys(resources).forEach(category => {
+        if (!excludedCategories.includes(category)) {
+          filteredResources[category] = resources[category]
+        }
+      })
+      
+      // Trier les catégories par ordre alphabétique
+      const sortedCategories = Object.keys(filteredResources).sort((a, b) => a.localeCompare(b, 'fr'))
+      
+      // Créer un nouvel objet avec les catégories triées
+      const sortedResources = {}
+      sortedCategories.forEach(category => {
+        sortedResources[category] = filteredResources[category]
+      })
+      
       if (!asideStore.searchQuery) {
-        console.log('✅ [AsideNavigationView] Retour des ressources sans filtre')
-        return resources
+        console.log('✅ [AsideNavigationView] Retour des ressources sans filtre (catégories exclues)')
+        return sortedResources
       }
       
       const query = asideStore.searchQuery.toLowerCase()
       const filtered = {}
       
-      Object.keys(resources).forEach(category => {
-        const filteredResources = resources[category].filter(resource => 
+      Object.keys(sortedResources).forEach(category => {
+        const filteredResourcesInCategory = sortedResources[category].filter(resource => 
           resource.nom.toLowerCase().includes(query) ||
           resource.description?.toLowerCase().includes(query) ||
           resource.categorie?.toLowerCase().includes(query)
         )
-        if (filteredResources.length > 0) {
-          filtered[category] = filteredResources
+        if (filteredResourcesInCategory.length > 0) {
+          filtered[category] = filteredResourcesInCategory
         }
       })
       

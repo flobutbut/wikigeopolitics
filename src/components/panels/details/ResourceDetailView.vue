@@ -21,6 +21,20 @@
       </div>
     </CollapsibleSection>
 
+    <!-- Enjeux géopolitiques -->
+    <CollapsibleSection
+      title="Enjeux Géopolitiques"
+      :expanded="geopoliticsExpanded"
+      @toggle="toggleGeopolitics"
+    >
+      <div v-if="data.geopoliticalIssues" class="geopolitics-info">
+        {{ data.geopoliticalIssues }}
+      </div>
+      <div v-else class="no-data">
+        Aucun enjeu géopolitique documenté.
+      </div>
+    </CollapsibleSection>
+
     <!-- Pays producteurs -->
     <EntitySection
       title="Pays Producteurs"
@@ -45,20 +59,6 @@
       </div>
       <div v-else class="no-data">
         Aucune information environnementale disponible.
-      </div>
-    </CollapsibleSection>
-
-    <!-- Enjeux géopolitiques -->
-    <CollapsibleSection
-      title="Enjeux Géopolitiques"
-      :expanded="geopoliticsExpanded"
-      @toggle="toggleGeopolitics"
-    >
-      <div v-if="data.geopoliticalIssues" class="geopolitics-info">
-        {{ data.geopoliticalIssues }}
-      </div>
-      <div v-else class="no-data">
-        Aucun enjeu géopolitique documenté.
       </div>
     </CollapsibleSection>
   </DetailViewContainer>
@@ -126,7 +126,7 @@ const mainSections = computed(() => [
 // Computed pour les sections techniques
 const technicalSections = computed(() => [
   { title: 'Valeur d\'échange', value: formatExchangeValue() },
-  { title: 'Unité', value: props.data.unite || 'Non spécifiée' },
+  { title: 'Production annuelle', value: formatAnnualProduction() },
   { title: 'Dernière mise à jour', value: formatDate(props.data.priceUpdateDate) }
 ].filter(section => section.value && section.value !== 'Non spécifié'))
 
@@ -158,12 +158,22 @@ const formatQuantity = (quantity: number | string) => {
 }
 
 const formatExchangeValue = () => {
-  if (!props.data.exchangeValue) return undefined
+  if (!props.data.exchangeValue) return 'Non spécifiée'
   return `${props.data.exchangeValue} ${props.data.valueUnit || ''} (${props.data.currency || ''})`
 }
 
+const formatAnnualProduction = () => {
+  // Utiliser les champs de la table resource
+  if (!props.data.annual_production) return 'Non spécifiée'
+  
+  const production = formatQuantity(props.data.annual_production)
+  const unite = props.data.annual_production_unit || ''
+  
+  return `${production} ${unite}`.trim()
+}
+
 const formatDate = (dateString: string) => {
-  if (!dateString) return undefined
+  if (!dateString) return 'Non spécifiée'
   return new Date(dateString).toLocaleDateString('fr-FR')
 }
 

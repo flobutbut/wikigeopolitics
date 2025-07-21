@@ -1037,6 +1037,10 @@ export const supabaseService = {
       environmentalImpact: data.environmental_impact,
       geopoliticalIssues: data.geopolitical_issues,
       
+      // Production annuelle globale (champs existants dans la table resource)
+      annual_production: data.annual_production,
+      annual_production_unit: data.unit,
+      
       // Pays producteurs
       paysProducteurs
     }
