@@ -458,12 +458,10 @@ export default defineComponent({
     // Fonction pour obtenir l'icône selon la catégorie
     const getResourceIcon = (category) => {
       const iconMap = {
-        'Métal': '🔩',
-        'Métal précieux': '🥇',
-        'Métal rare': '🔋',
+        'Métaux': '🔩',
+        'Métaux précieux': '🥇',
         'Métaux rares': '🔋',
-        'Minerai': '⛏️',
-        'Minéral': '💎',
+        'Minéral': '⛏️',
         'Pierre précieuse': '💎',
         'Énergie': '⚡',
         'Énergie fossile': '🛢️',
